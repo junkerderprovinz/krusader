@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# KasmVNC autostart – wird vom Baseimage als der "User-App"-Befehl
+# ausgeführt, sobald der Desktop bereit ist.
+#
+# Wir starten Krusader unter dbus-launch, damit alle KIO-Slaves
+# (krarc, file, smb, …) korrekt funktionieren.
+exec dbus-launch --exit-with-session krusader

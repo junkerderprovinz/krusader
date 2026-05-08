@@ -1,22 +1,22 @@
 <!--
-  Krusader UserActions – Rechtsklick-Menüeinträge.
-  Wird beim ersten Start nach /config/home/.local/share/krusader/useractions.xml
-  kopiert (sofern dort noch keine Datei liegt).
+  Krusader UserActions – right-click menu entries.
+  Copied to /config/.local/share/krusader/useractions.xml on first run
+  (only if no file exists there yet).
 
-  Krusader erkennt RAR/7z/ZIP Archive nativ über sein KIO-Slave (krarc),
-  sobald die passenden Tools (unrar, p7zip, …) im PATH sind. Diese Actions
-  ergänzen schnelle Rechtsklick-Workflows für Power-User.
+  Krusader natively recognizes RAR/7z/ZIP archives via its KIO slave
+  (krarc) once unrar / p7zip-rar are present in PATH.  These actions
+  add quick-access right-click workflows for power users.
 -->
 <!DOCTYPE KrusaderUserActions>
 <KrusaderUserActions>
 
   <action name="extract_rar_here">
-    <title>RAR hier entpacken</title>
+    <title>RAR hier entpacken / Extract RAR here</title>
     <tooltip>Markiertes RAR-Archiv im aktuellen Ordner entpacken</tooltip>
     <icon>archive-extract</icon>
     <category>Archive</category>
     <description sameastooltip="true"/>
-    <command executionmode="collect_output" >unrar x -o+ -- %aCurrent% .</command>
+    <command executionmode="collect_output">unrar x -o+ -- %aCurrent% .</command>
     <startpath>%aPath%</startpath>
     <availability>
       <showonlyifexec>
@@ -34,7 +34,7 @@
   </action>
 
   <action name="extract_rar_to_subfolder">
-    <title>RAR in Unterordner entpacken</title>
+    <title>RAR in Unterordner entpacken / Extract RAR to subfolder</title>
     <tooltip>Markiertes RAR in gleichnamigen Unterordner entpacken</tooltip>
     <icon>archive-extract</icon>
     <category>Archive</category>
@@ -53,7 +53,7 @@
   </action>
 
   <action name="extract_7z_here">
-    <title>7z / Archiv hier entpacken</title>
+    <title>7z / Archiv hier entpacken / Extract archive here</title>
     <tooltip>Beliebiges Archiv (7z, zip, tar, gz, …) entpacken</tooltip>
     <icon>archive-extract</icon>
     <category>Archive</category>
@@ -67,11 +67,11 @@
   </action>
 
   <action name="open_with_kate">
-    <title>Mit Kate öffnen</title>
+    <title>Mit Kate öffnen / Open with Kate</title>
     <tooltip>Markierte Datei(en) im Kate-Editor öffnen</tooltip>
     <icon>kate</icon>
     <category>Editor</category>
-    <command executionmode="normal" >kate %aList("Selected","Local","Yes")%</command>
+    <command executionmode="normal">kate %aList("Selected","Local","Yes")%</command>
     <startpath>%aPath%</startpath>
     <availability>
       <showonlyifexec>
@@ -81,7 +81,7 @@
   </action>
 
   <action name="open_terminal_here">
-    <title>Konsole hier öffnen</title>
+    <title>Konsole hier öffnen / Open terminal here</title>
     <tooltip>Konsole im aktuellen Ordner öffnen</tooltip>
     <icon>utilities-terminal</icon>
     <category>System</category>

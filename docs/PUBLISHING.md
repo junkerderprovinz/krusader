@@ -1,144 +1,64 @@
-# Veröffentlichung in Community Applications (CA)
+# Publishing Checklist — Krusader for Unraid
 
-Diese Anleitung beschreibt den vollständigen Prozess, vom GitHub-Repo bis zum
-Eintrag in der Unraid-CA.
+Internal notes for getting this image listed on Unraid Community Applications.
+**Not** part of the user-facing docs.
 
-## 0. Voraussetzungen
+## 0. Repo state
 
-- GitHub-Account
-- Docker-Hub-Account *(optional, GHCR reicht)*
-- Unraid-Forum-Account
-- Funktionierendes Image, das auf Unraid getestet wurde
+- [ ] Repo is **public** (CA crawler can't see private repos)
+- [ ] GHCR image `ghcr.io/junkerderprovinz/krusader:latest` is **public**
+      (Settings → Packages → krusader → Change visibility)
+- [ ] First successful build run completed (green Build & Push action)
+- [ ] First successful lint run completed (green Lint action)
 
-## 1. Repo auf GitHub anlegen
+## 1. Forum thread
 
-```bash
-cd krusader-unraid
-git init -b main
-git add .
-git commit -m "Initial commit: Krusader Unraid community edition"
-git remote add origin git@github.com:<dein-user>/krusader-unraid.git
-git push -u origin main
+CA requires a support thread on the Unraid forums.
+
+1. Create a thread in **Community Applications → Docker Containers (User)**:
+   <https://forums.unraid.net/forum/61-docker-containers-user/>
+2. Title suggestion: `[Support] junkerderprovinz - Krusader (KasmVNC)`
+3. First post should include: short description, image link, GitHub link,
+   screenshot, basic config notes.
+4. Copy the thread URL.
+
+## 2. Update template Support URL
+
+Replace the placeholder in `unraid-template.xml`:
+
+```xml
+<Support>https://forums.unraid.net/topic/REPLACE_WITH_FORUM_THREAD/</Support>
 ```
 
-Anschließend in **allen Dateien** den Platzhalter `REPLACE_ME` durch deinen
-GitHub-Username ersetzen:
+→ commit + push.
 
-```bash
-grep -rl REPLACE_ME . | xargs sed -i 's/REPLACE_ME/<dein-user>/g'
-git commit -am "Set repository owner"
-git push
-```
+## 3. Submit to CA
 
-> Betroffen sind: `Dockerfile`, `README.md`, `unraid-template/krusader-unraid.xml`,
-> Workflow-Dateien.
-
-## 2. GHCR-Push einrichten
-
-`ghcr.io` funktioniert ohne Zusatz-Konfiguration, sobald Actions Schreib-
-zugriff auf Packages hat:
-
-1. Repo → **Settings → Actions → General → Workflow permissions**
-2. Auf **„Read and write permissions"** stellen.
-3. Erstes Build manuell triggern: **Actions → build-and-publish → Run workflow**.
-4. Nach Erfolg: Repo → **Packages** → das Image `krusader-unraid` öffnen
-   → **Package settings → Change visibility → Public**.
-
-### (Optional) Docker Hub zusätzlich
-
-In den Repo-**Secrets** anlegen:
-
-| Secret | Wert |
-|---|---|
-| `DOCKERHUB_USER` | dein Docker-Hub-Username |
-| `DOCKERHUB_TOKEN` | Access-Token aus Docker-Hub |
-
-Der Workflow pusht dann automatisch zusätzlich nach Docker Hub.
-
-## 3. Container-Icon hinzufügen
-
-Lege ein 128×128 (oder 256×256) PNG unter `unraid-template/icon.png` ab und
-committe es:
-
-```bash
-cp ~/Downloads/krusader-icon.png unraid-template/icon.png
-git add unraid-template/icon.png
-git commit -m "Add container icon"
-git push
-```
-
-## 4. Lokal auf Unraid testen
-
-1. Image manuell pullen via SSH:
-   ```bash
-   docker pull ghcr.io/<dein-user>/krusader-unraid:latest
+1. Fork <https://github.com/Squidly271/AppFeed>
+2. Add an entry to `templates.xml` pointing to your raw `unraid-template.xml`:
    ```
-2. In der Unraid-WebGUI **Docker → Add Container**, **„Template"** unten
-   auf den GitHub-Raw-Link der XML setzen:
-   `https://raw.githubusercontent.com/<dein-user>/krusader-unraid/main/unraid-template/krusader-unraid.xml`
-3. Apply, WebUI öffnen, Dark Mode + deutsche Sprache + Rar-Rechtsklick prüfen.
-4. Iterieren, bis alles passt.
+   https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml
+   ```
+3. Open a PR. Squid (CA maintainer) reviews — usually within a few days.
+4. Once merged, the container shows up in Apps for everyone.
 
-## 5. Support-Thread im Unraid-Forum
+## 4. Optional — DockerHub mirror
 
-CA verlangt einen aktiven Support-Thread.
+If you want broader reach, mirror the image to Docker Hub too:
 
-1. Forum → **Community Applications → Docker Containers** (Subforum):
-   <https://forums.unraid.net/forum/55-docker-containers/>
-2. Thread-Titel: `[Support] <dein-user>/krusader-unraid – Krusader mit Dark Mode, Kate, RAR`
-3. Im Post: kurze Beschreibung, Link zu Repo + GHCR + Screenshots.
-4. Thread-URL kopieren und in `unraid-template/krusader-unraid.xml`
-   im `<Support>`-Tag eintragen, dann committen.
-
-## 6. CA-Submission
-
-CA benötigt eine **Templates-Repo-URL** mit gültiger Struktur.
-
-### Variante A: eigenes Templates-Repo
-
-Lege ein zweites Repo `<dein-user>/unraid-templates` an, mit Struktur:
-
-```
-unraid-templates/
-└── krusader-unraid/
-    └── krusader-unraid.xml
+```bash
+docker pull ghcr.io/junkerderprovinz/krusader:latest
+docker tag ghcr.io/junkerderprovinz/krusader:latest junkerderprovinz/krusader:latest
+docker push junkerderprovinz/krusader:latest
 ```
 
-(Du kannst dieses Repo später für weitere Templates nutzen.)
+(Or extend `.github/workflows/build.yml` to push to both registries.)
 
-### Variante B: dasselbe Repo nutzen
+## 5. Maintenance
 
-Mache aus diesem Repo ein offizielles Template-Repo, indem du die XML auf
-Top-Level-Ebene zugänglich machst (CA akzeptiert Templates aus
-beliebigen Pfaden, solange sie korrekt sind).
-
-### Submission
-
-1. Öffne die CA-Submission-Form: <https://forums.unraid.net/topic/87144-ca-application-policies-please-read/>
-   *(im Pinned-Post sind die aktuellen Submission-Links)*.
-2. Trage ein:
-   - **Repository URL** des Templates-Repos
-   - **Support-Thread-URL**
-   - **Image-Repository** (`ghcr.io/<dein-user>/krusader-unraid`)
-3. Submit. Reviewer melden sich i.d.R. innerhalb von 48 Stunden im Thread.
-
-## 7. Updates / Wartung
-
-- Der GitHub-Actions-Workflow rebuilt **wöchentlich** gegen das aktuelle
-  `binhex/arch-krusader:latest`. So bleiben Krusader & Kate aktuell, ohne
-  dass du etwas tun musst.
-- Bei größeren Änderungen am Dockerfile oder den Defaults: neuen Git-Tag
-  setzen (`git tag v1.1.0 && git push --tags`) – der Workflow erzeugt dann
-  passende SemVer-Tags auf GHCR.
-- Im Support-Thread Changelogs posten – das hilft der Community und ist
-  Voraussetzung für CA-Compliance.
-
-## Checkliste vor dem ersten Submit
-
-- [ ] `REPLACE_ME` überall ersetzt
-- [ ] `unraid-template/icon.png` hinzugefügt
-- [ ] Image auf GHCR public gepusht
-- [ ] Lokaler Test auf Unraid erfolgreich (Dark Mode, Kate, RAR-Rechtsklick, Sprache)
-- [ ] Support-Thread im Unraid-Forum erstellt
-- [ ] `<Support>`-URL im Template eingetragen
-- [ ] CA-Submission ausgefüllt
+- Weekly cron in `build.yml` already rebuilds for upstream KasmVNC / Ubuntu
+  patches.
+- Watch upstream Krusader releases: <https://krusader.org/get-krusader/>
+  Major version bumps may require config tweaks under `rootfs/defaults/`.
+- Keep `language-pack-*` package list in sync with the dropdown in
+  `unraid-template.xml`.

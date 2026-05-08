@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Maintainer>
+  <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
+  <Profile>Krusader twin-pane file manager for Unraid, built on KasmVNC for a fast, hardware-accelerated web desktop. Pre-configured with Breeze Dark, Kate as editor, RAR/7z/ZIP support and 13 selectable UI languages. Weekly auto-rebuild against the latest LinuxServer KasmVNC base image.</Profile>
+  <WebPage>https://github.com/junkerderprovinz/krusader</WebPage>
+  <Repo>https://github.com/junkerderprovinz/krusader</Repo>
+</Maintainer>

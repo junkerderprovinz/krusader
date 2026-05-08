@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Krusader for Unraid">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#1d99f3"/>
+      <stop offset="100%" stop-color="#1f3a4d"/>
+    </linearGradient>
+    <linearGradient id="paneL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3daee9"/>
+      <stop offset="100%" stop-color="#1f3a4d"/>
+    </linearGradient>
+    <linearGradient id="paneR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1d99f3"/>
+      <stop offset="100%" stop-color="#0d1c26"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+
+  <!-- Left pane -->
+  <rect x="40" y="60" width="80" height="140" rx="10" fill="url(#paneL)" stroke="#ffffff" stroke-opacity="0.25"/>
+  <rect x="40" y="60" width="80" height="22" rx="10" fill="#ffffff" fill-opacity="0.18"/>
+
+  <!-- Right pane -->
+  <rect x="136" y="60" width="80" height="140" rx="10" fill="url(#paneR)" stroke="#ffffff" stroke-opacity="0.25"/>
+  <rect x="136" y="60" width="80" height="22" rx="10" fill="#ffffff" fill-opacity="0.30"/>
+
+  <!-- File rows (left) -->
+  <g fill="#ffffff" fill-opacity="0.85">
+    <rect x="50"  y="98"  width="60" height="6" rx="2"/>
+    <rect x="50"  y="114" width="50" height="6" rx="2"/>
+    <rect x="50"  y="130" width="55" height="6" rx="2"/>
+    <rect x="50"  y="146" width="45" height="6" rx="2"/>
+    <rect x="50"  y="162" width="58" height="6" rx="2"/>
+    <rect x="50"  y="178" width="40" height="6" rx="2"/>
+  </g>
+
+  <!-- File rows (right) -->
+  <g fill="#ffffff" fill-opacity="0.85">
+    <rect x="146" y="98"  width="58" height="6" rx="2"/>
+    <rect x="146" y="114" width="48" height="6" rx="2"/>
+    <rect x="146" y="130" width="56" height="6" rx="2"/>
+    <rect x="146" y="146" width="44" height="6" rx="2"/>
+    <rect x="146" y="162" width="60" height="6" rx="2"/>
+    <rect x="146" y="178" width="42" height="6" rx="2"/>
+  </g>
+
+  <!-- Center K mark -->
+  <text x="128" y="237" text-anchor="middle"
+        font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif"
+        font-size="34" font-weight="800" fill="#ffffff"
+        letter-spacing="-1">K</text>
+</svg>

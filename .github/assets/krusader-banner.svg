@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 500" width="1600" height="500" role="img" aria-label="Krusader for Unraid">
+  <!-- Background: gradient inspired by the Krusader logo's blue/teal palette over dark KDE Breeze -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#1d2731"/>
+      <stop offset="60%" stop-color="#1f3a4d"/>
+      <stop offset="100%" stop-color="#244a63"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="#3daee9"/>
+      <stop offset="100%" stop-color="#1d99f3"/>
+    </linearGradient>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="500" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines for "twin-pane file manager" feel -->
+  <g stroke="#3daee9" stroke-opacity="0.07" stroke-width="1">
+    <line x1="800" y1="40" x2="800" y2="460"/>
+    <line x1="120" y1="120" x2="1480" y2="120"/>
+    <line x1="120" y1="380" x2="1480" y2="380"/>
+  </g>
+
+  <!-- Inline icon symbols (vector, no emoji font dependency) -->
+  <defs>
+    <symbol id="ic-folder" viewBox="0 0 16 16">
+      <path d="M2 4a1 1 0 0 1 1-1h3.5l1.5 1.5H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"
+            fill="#3daee9" fill-opacity="0.85"/>
+    </symbol>
+    <symbol id="ic-archive" viewBox="0 0 16 16">
+      <rect x="2" y="3" width="12" height="3" fill="#f0c674"/>
+      <rect x="2" y="6" width="12" height="7" fill="#dba14d"/>
+      <rect x="7" y="6" width="2" height="7" fill="#8b5e1c"/>
+    </symbol>
+    <symbol id="ic-doc" viewBox="0 0 16 16">
+      <path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"
+            fill="#cfd8dc" fill-opacity="0.85"/>
+      <path d="M10 2v3h3" fill="#0d1c26"/>
+    </symbol>
+    <symbol id="ic-cog" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="3" fill="none" stroke="#a8b8c4" stroke-width="1.5"/>
+      <circle cx="8" cy="8" r="1.5" fill="#a8b8c4"/>
+    </symbol>
+  </defs>
+
+  <!-- Twin pane illustration: two file lists side-by-side -->
+  <g transform="translate(120,140)" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+    <!-- Left pane -->
+    <g>
+      <rect x="0" y="0" width="320" height="220" rx="10" fill="#2b3742" stroke="#3daee9" stroke-opacity="0.4"/>
+      <rect x="0" y="0" width="320" height="28" rx="10" fill="#1d99f3"/>
+      <rect x="0" y="14" width="320" height="14" fill="#1d99f3"/>
+      <text x="14" y="20" font-size="14" fill="#ffffff" font-weight="600">/mnt/user</text>
+      <g fill="#cfd8dc" font-size="13">
+        <use href="#ic-folder"  x="14" y="44" width="16" height="16"/><text x="38" y="57">appdata</text>
+        <use href="#ic-folder"  x="14" y="68" width="16" height="16"/><text x="38" y="81">backups</text>
+        <use href="#ic-folder"  x="14" y="92" width="16" height="16"/><text x="38" y="105">isos</text>
+        <use href="#ic-folder"  x="14" y="116" width="16" height="16"/><text x="38" y="129">media</text>
+        <use href="#ic-folder"  x="14" y="140" width="16" height="16"/><text x="38" y="153">share</text>
+        <use href="#ic-archive" x="14" y="164" width="16" height="16"/><text x="38" y="177">archive.rar</text>
+        <use href="#ic-doc"     x="14" y="188" width="16" height="16"/><text x="38" y="201">docker-compose.yml</text>
+      </g>
+    </g>
+    <!-- Right pane -->
+    <g transform="translate(360,0)">
+      <rect x="0" y="0" width="320" height="220" rx="10" fill="#2b3742" stroke="#3daee9" stroke-opacity="0.4"/>
+      <rect x="0" y="0" width="320" height="28" rx="10" fill="#3daee9"/>
+      <rect x="0" y="14" width="320" height="14" fill="#3daee9"/>
+      <text x="14" y="20" font-size="14" fill="#0d1c26" font-weight="600">/mnt/disks/usb</text>
+      <g fill="#cfd8dc" font-size="13">
+        <use href="#ic-folder"  x="14" y="44" width="16" height="16"/><text x="38" y="57">photos</text>
+        <use href="#ic-folder"  x="14" y="68" width="16" height="16"/><text x="38" y="81">documents</text>
+        <use href="#ic-archive" x="14" y="92" width="16" height="16"/><text x="38" y="105">backup-2026.7z</text>
+        <use href="#ic-archive" x="14" y="116" width="16" height="16"/><text x="38" y="129">vault.rar</text>
+        <use href="#ic-doc"     x="14" y="140" width="16" height="16"/><text x="38" y="153">notes.md</text>
+        <use href="#ic-cog"     x="14" y="164" width="16" height="16"/><text x="38" y="177">config.yaml</text>
+        <use href="#ic-doc"     x="14" y="188" width="16" height="16"/><text x="38" y="201">wallpaper.png</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(840,180)" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+    <text x="0" y="0" font-size="86" font-weight="800" fill="#ffffff" letter-spacing="-2">Krusader</text>
+    <text x="0" y="50" font-size="28" font-weight="500" fill="#3daee9">for Unraid · KasmVNC edition</text>
+
+    <!-- Feature pills -->
+    <g transform="translate(0,90)" font-size="15" font-weight="600">
+      <g>
+        <rect x="0"   y="0" rx="14" ry="14" width="110" height="28" fill="#0d1c26" stroke="#3daee9" stroke-opacity="0.5"/>
+        <text x="55"  y="19" text-anchor="middle" fill="#3daee9">Dark Mode</text>
+      </g>
+      <g transform="translate(120,0)">
+        <rect x="0"   y="0" rx="14" ry="14" width="110" height="28" fill="#0d1c26" stroke="#3daee9" stroke-opacity="0.5"/>
+        <text x="55"  y="19" text-anchor="middle" fill="#3daee9">Kate Editor</text>
+      </g>
+      <g transform="translate(240,0)">
+        <rect x="0"   y="0" rx="14" ry="14" width="110" height="28" fill="#0d1c26" stroke="#3daee9" stroke-opacity="0.5"/>
+        <text x="55"  y="19" text-anchor="middle" fill="#3daee9">RAR · 7z · ZIP</text>
+      </g>
+      <g transform="translate(360,0)">
+        <rect x="0"   y="0" rx="14" ry="14" width="160" height="28" fill="#0d1c26" stroke="#3daee9" stroke-opacity="0.5"/>
+        <text x="80"  y="19" text-anchor="middle" fill="#3daee9">13 UI languages</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="492" width="1600" height="8" fill="url(#accent)"/>
+</svg>

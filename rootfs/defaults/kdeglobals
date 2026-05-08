@@ -1,5 +1,5 @@
-# Default KDE-Settings für Krusader Unraid Image
-# Wird beim ersten Start nach /config/home/.config/kdeglobals kopiert,
+# Default KDE-Settings für das Krusader-Image
+# Wird beim ersten Start nach /config/.config/kdeglobals kopiert,
 # falls dort noch keine Datei existiert.
 
 [General]

@@ -1,0 +1,49 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  hadolint:
+    name: Hadolint (Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          # DL3008 = pin apt versions – we deliberately skip pinning since
+          # the base image moves with Ubuntu Noble.
+          # DL3015 = recommends; we already use --no-install-recommends.
+          ignore: DL3008
+
+  shellcheck:
+    name: ShellCheck (init scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          # shellcheck $(git ls-files '*.sh')
+          find rootfs -type f \( -name '*.sh' -o -path '*/cont-init.d/*' \) -print0 | \
+            xargs -0 shellcheck --severity=warning --shell=bash || true
+
+  xml-validate:
+    name: XML Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate XML files
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+          for f in $(find . -name '*.xml' -not -path './.git/*'); do
+            echo "Checking $f"
+            xmllint --noout "$f"
+          done

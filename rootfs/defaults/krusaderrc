@@ -1,5 +1,5 @@
 # Default Krusader-Settings
-# Wird beim ersten Start nach /config/home/.config/krusaderrc kopiert,
+# Wird beim ersten Start nach /config/.config/krusaderrc kopiert,
 # falls dort noch keine Datei existiert. Bestehende User-Configs
 # werden NICHT überschrieben.
 

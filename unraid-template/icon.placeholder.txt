@@ -1,9 +1,0 @@
-An dieser Stelle bitte ein 128x128 (oder 256x256) PNG namens icon.png ablegen.
-
-Vorschläge:
-- Offizielles Krusader-Logo (https://krusader.org/images/krusader-logo.png) – Lizenz prüfen!
-- Eigene Variante mit Dark-Mode-Touch
-- Material/Breeze-Icon-Style passend zum KDE-Look
-
-Wichtig: das PNG muss am Ende unter unraid-template/icon.png liegen,
-damit der <Icon>-Tag im Template auflöst.
