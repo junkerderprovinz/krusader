@@ -1,0 +1,19 @@
+# Default KDE-Settings für Krusader Unraid Image
+# Wird beim ersten Start nach /config/home/.config/kdeglobals kopiert,
+# falls dort noch keine Datei existiert.
+
+[General]
+ColorScheme=BreezeDark
+Name=Breeze Dark
+shadeSortColumn=true
+widgetStyle=Breeze
+
+[KDE]
+ColorScheme=BreezeDark
+LookAndFeelPackage=org.kde.breezedark.desktop
+SingleClick=false
+contrast=4
+widgetStyle=Breeze
+
+[Icons]
+Theme=breeze-dark

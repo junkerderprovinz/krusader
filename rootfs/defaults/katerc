@@ -1,0 +1,63 @@
+# Default Kate-Settings
+# Wird beim ersten Start nach /config/home/.config/katerc kopiert,
+# falls dort noch keine Datei existiert.
+
+[General]
+Days Meta Infos=30
+Save Meta Infos=true
+Show Full Path in Title=false
+Show Menu Bar=true
+Show Status Bar=true
+Show Tab Bar=true
+Show Url Nav Bar=true
+Stash unsaved changes=true
+
+[KTextEditor Document]
+Auto Detect Indent=true
+Auto Save=false
+Auto Save Interval=0
+Backup Local=false
+Backup Remote=false
+Encoding=UTF-8
+Indent On Backspace=true
+Indent On Tab=true
+Indent On Text Paste=false
+Indentation Mode=normal
+Indentation Width=4
+Keep Extra Spaces=false
+Newline at End of File=true
+Replace Tabs On Load=true
+Replace Tabs=true
+Show Spaces=0
+Show Tabs=true
+Tab Handling=2
+Tab Width=4
+Trailing Spaces=0
+
+[KTextEditor Renderer]
+Auto Color Theme Selection=true
+Color Theme=Breeze Dark
+Schema=Breeze Dark
+Animate Bracket Matching=true
+Show Indentation Lines=true
+Show Whole Bracket Expression=true
+Word Wrap Marker=true
+
+[KTextEditor View]
+Allow Mark Menu=true
+Auto Brackets=true
+Auto Center Lines=0
+Bookmark Menu Sorting=0
+Dynamic Word Wrap=true
+Folding Bar=true
+Folding Preview=true
+Icon Bar=true
+Input Mode=0
+Line Modification=true
+Line Numbers=true
+Persistent Selection=false
+Scroll Past End=false
+Show Scrollbar Mini-Map=true
+Show Scrollbars=2
+Show Word Count=true
+Smart Copy Cut=true

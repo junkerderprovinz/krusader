@@ -1,0 +1,40 @@
+# Default Krusader-Settings
+# Wird beim ersten Start nach /config/home/.config/krusaderrc kopiert,
+# falls dort noch keine Datei existiert. Bestehende User-Configs
+# werden NICHT überschrieben.
+
+[General]
+Editor=kate
+View Font=Noto Sans,10,-1,5,50,0,0,0,0,0
+Filelist Font=Noto Sans,10,-1,5,50,0,0,0,0,0
+Show hidden files=true
+Mark Dirs=false
+
+[Look&Feel]
+Filelist Icon Size=22
+Single Click Selects=false
+Show Hidden Files=true
+Mark Dirs=false
+Numeric permissions=false
+Human Readable Size=true
+
+[Archives]
+Do Test Archive=true
+Allow Move Into Archive=true
+Use Krarc for Archives=true
+Test Archives Before Use=true
+fallback_extractor=true
+
+[Startup]
+Show splashscreen=false
+Start To Tray=false
+Remember Position=true
+Show Cmd Line=true
+Show Function Keys=true
+
+[Private]
+RememberPos=true
+
+[Colors]
+KDEDefault=false
+ColorScheme=Breeze Dark

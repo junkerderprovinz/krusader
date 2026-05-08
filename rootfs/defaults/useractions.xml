@@ -1,0 +1,97 @@
+<!--
+  Krusader UserActions – Rechtsklick-Menüeinträge.
+  Wird beim ersten Start nach /config/home/.local/share/krusader/useractions.xml
+  kopiert (sofern dort noch keine Datei liegt).
+
+  Krusader erkennt RAR/7z/ZIP Archive nativ über sein KIO-Slave (krarc),
+  sobald die passenden Tools (unrar, p7zip, …) im PATH sind. Diese Actions
+  ergänzen schnelle Rechtsklick-Workflows für Power-User.
+-->
+<!DOCTYPE KrusaderUserActions>
+<KrusaderUserActions>
+
+  <action name="extract_rar_here">
+    <title>RAR hier entpacken</title>
+    <tooltip>Markiertes RAR-Archiv im aktuellen Ordner entpacken</tooltip>
+    <icon>archive-extract</icon>
+    <category>Archive</category>
+    <description sameastooltip="true"/>
+    <command executionmode="collect_output" >unrar x -o+ -- %aCurrent% .</command>
+    <startpath>%aPath%</startpath>
+    <availability>
+      <showonlyifexec>
+        <filename>unrar</filename>
+      </showonlyifexec>
+      <showonlyifprotocol>
+        <protocol>file</protocol>
+      </showonlyifprotocol>
+      <showonlyiffile>
+        <file accept="files">*.rar</file>
+        <file accept="files">*.r00</file>
+        <file accept="files">*.cbr</file>
+      </showonlyiffile>
+    </availability>
+  </action>
+
+  <action name="extract_rar_to_subfolder">
+    <title>RAR in Unterordner entpacken</title>
+    <tooltip>Markiertes RAR in gleichnamigen Unterordner entpacken</tooltip>
+    <icon>archive-extract</icon>
+    <category>Archive</category>
+    <description sameastooltip="true"/>
+    <command executionmode="collect_output">bash -c 'mkdir -p "${1%.*}" &amp;&amp; unrar x -o+ -- "$1" "${1%.*}/"' _ %aCurrent%</command>
+    <startpath>%aPath%</startpath>
+    <availability>
+      <showonlyifexec>
+        <filename>unrar</filename>
+      </showonlyifexec>
+      <showonlyiffile>
+        <file accept="files">*.rar</file>
+        <file accept="files">*.cbr</file>
+      </showonlyiffile>
+    </availability>
+  </action>
+
+  <action name="extract_7z_here">
+    <title>7z / Archiv hier entpacken</title>
+    <tooltip>Beliebiges Archiv (7z, zip, tar, gz, …) entpacken</tooltip>
+    <icon>archive-extract</icon>
+    <category>Archive</category>
+    <command executionmode="collect_output">7z x -y -- %aCurrent%</command>
+    <startpath>%aPath%</startpath>
+    <availability>
+      <showonlyifexec>
+        <filename>7z</filename>
+      </showonlyifexec>
+    </availability>
+  </action>
+
+  <action name="open_with_kate">
+    <title>Mit Kate öffnen</title>
+    <tooltip>Markierte Datei(en) im Kate-Editor öffnen</tooltip>
+    <icon>kate</icon>
+    <category>Editor</category>
+    <command executionmode="normal" >kate %aList("Selected","Local","Yes")%</command>
+    <startpath>%aPath%</startpath>
+    <availability>
+      <showonlyifexec>
+        <filename>kate</filename>
+      </showonlyifexec>
+    </availability>
+  </action>
+
+  <action name="open_terminal_here">
+    <title>Konsole hier öffnen</title>
+    <tooltip>Konsole im aktuellen Ordner öffnen</tooltip>
+    <icon>utilities-terminal</icon>
+    <category>System</category>
+    <command executionmode="normal">konsole --workdir %aPath%</command>
+    <startpath>%aPath%</startpath>
+    <availability>
+      <showonlyifexec>
+        <filename>konsole</filename>
+      </showonlyifexec>
+    </availability>
+  </action>
+
+</KrusaderUserActions>
