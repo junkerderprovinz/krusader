@@ -48,89 +48,95 @@ ENV TITLE="Krusader"
 #       - `language-pack-<code>`         für allgemeine Locale-Daten
 #     Wir installieren beide Schichten.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Phase 1: Pflichtpakete (Build bricht ab, wenn etwas fehlt)
+# ---------------------------------------------------------------------------
 RUN set -eux; \
-    # multiverse aktivieren (für unrar, p7zip-rar)
+    # multiverse + universe + restricted aktivieren
     sed -i '/^Components:/ s/$/ multiverse universe restricted/' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         # File-Manager + Editor
-        krusader \
-        kate \
-        konsole \
-        ark \
+        krusader kate konsole ark \
         # Theme / Icons
-        breeze \
-        breeze-icon-theme \
-        kde-style-breeze \
-        # Tools, die Krusader für Archiv-Operationen aufruft
-        unrar \
-        p7zip-full \
-        p7zip-rar \
-        zip unzip \
-        bzip2 lzma xz-utils \
-        lhasa arj unace \
-        rpm cpio \
+        breeze breeze-icon-theme kde-style-breeze \
+        # Archiv-Tools (wichtig für Krusader)
+        unrar p7zip-full p7zip-rar \
+        zip unzip bzip2 lzma xz-utils \
+        lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
-        dbus-x11 \
-        kde-cli-tools \
-        kdialog \
-        keditbookmarks \
-        # Spell-checking für Kate (Auswahl der wichtigsten Sprachen)
+        dbus-x11 kde-cli-tools kdialog keditbookmarks \
+        # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
         hunspell \
+        fonts-noto fonts-noto-cjk fonts-noto-color-emoji \
+        # Locale-Werkzeuge
+        locales coreutils sed; \
+    # arj-Symlink (manche Tools erwarten "unarj")
+    [ -e /usr/bin/unarj ] || ln -s /usr/bin/arj /usr/bin/unarj
+
+# ---------------------------------------------------------------------------
+# Phase 2: Optionale i18n + Hunspell-Pakete (Build läuft weiter, wenn ein
+# einzelnes Paket nicht existiert / umbenannt wurde – z.B. Finnisch nutzt
+# voikko statt hunspell, manche Sprachen haben keine KDE-Translation).
+# ---------------------------------------------------------------------------
+# Wir filtern die Wunschliste mit `apt-cache search` und installieren nur
+# das, was tatsächlich existiert. So sind wir robust gegen Renamings in
+# zukünftigen Ubuntu-Releases.
+# ---------------------------------------------------------------------------
+RUN set -eux; \
+    WANT=" \
         hunspell-de-de hunspell-en-us hunspell-en-gb \
-        hunspell-fr hunspell-es hunspell-it hunspell-pt-pt hunspell-pt-br \
-        hunspell-nl hunspell-da hunspell-sv hunspell-no hunspell-fi \
-        hunspell-pl hunspell-cs hunspell-sk hunspell-hu hunspell-ro \
-        hunspell-hr hunspell-bg hunspell-uk hunspell-ru hunspell-el \
+        hunspell-fr hunspell-es hunspell-it \
+        hunspell-pt-pt hunspell-pt-br \
+        hunspell-nl hunspell-da hunspell-sv hunspell-no \
+        hunspell-pl hunspell-cs hunspell-sk hunspell-hu \
+        hunspell-ro hunspell-hr hunspell-bg \
+        hunspell-uk hunspell-ru \
         hunspell-tr hunspell-he hunspell-ar \
-        # Font-Pakete (CJK + Symbole) – damit Filenamen in jeder Sprache lesbar sind
-        fonts-noto \
-        fonts-noto-cjk \
-        fonts-noto-color-emoji \
-        # KDE i18n-Pakete für die im Template angebotenen Sprachen.
-        # 30 Sprachen + system-Default. Jeweils language-pack-<code> für
-        # Locale-Daten und language-pack-kde-<code> für die KDE-UI.
-        # Reihenfolge: Westeuropa → Nordeuropa → Osteuropa → Südosteuropa
-        # → Nahost → Asien → CJK.
-        language-pack-de         language-pack-kde-de \
-        language-pack-en         language-pack-kde-en \
-        language-pack-fr         language-pack-kde-fr \
-        language-pack-es         language-pack-kde-es \
-        language-pack-it         language-pack-kde-it \
-        language-pack-pt         language-pack-kde-pt \
-        language-pack-nl         language-pack-kde-nl \
-        language-pack-da         language-pack-kde-da \
-        language-pack-sv         language-pack-kde-sv \
-        language-pack-nb         language-pack-kde-nb \
-        language-pack-fi         language-pack-kde-fi \
-        language-pack-is         language-pack-kde-is \
-        language-pack-ga         language-pack-kde-ga \
-        language-pack-ca         language-pack-kde-ca \
-        language-pack-eu         language-pack-kde-eu \
-        language-pack-pl         language-pack-kde-pl \
-        language-pack-cs         language-pack-kde-cs \
-        language-pack-sk         language-pack-kde-sk \
-        language-pack-hu         language-pack-kde-hu \
-        language-pack-ro         language-pack-kde-ro \
-        language-pack-sl         language-pack-kde-sl \
-        language-pack-hr         language-pack-kde-hr \
-        language-pack-sr         language-pack-kde-sr \
-        language-pack-bg         language-pack-kde-bg \
-        language-pack-uk         language-pack-kde-uk \
-        language-pack-ru         language-pack-kde-ru \
-        language-pack-el         language-pack-kde-el \
-        language-pack-tr         language-pack-kde-tr \
-        language-pack-he         language-pack-kde-he \
-        language-pack-ar         language-pack-kde-ar \
-        language-pack-ja         language-pack-kde-ja \
-        language-pack-ko         language-pack-kde-ko \
-        language-pack-zh-hans    language-pack-kde-zh-hans \
-        language-pack-zh-hant    language-pack-kde-zh-hant \
-        # Symlink-Helper
-        coreutils \
-        sed; \
-    # arj wird als Binary "arj" installiert, manche Tools erwarten "unarj"
-    [ -e /usr/bin/unarj ] || ln -s /usr/bin/arj /usr/bin/unarj; \
+        language-pack-de language-pack-kde-de \
+        language-pack-en language-pack-kde-en \
+        language-pack-fr language-pack-kde-fr \
+        language-pack-es language-pack-kde-es \
+        language-pack-it language-pack-kde-it \
+        language-pack-pt language-pack-kde-pt \
+        language-pack-nl language-pack-kde-nl \
+        language-pack-da language-pack-kde-da \
+        language-pack-sv language-pack-kde-sv \
+        language-pack-nb language-pack-kde-nb \
+        language-pack-fi language-pack-kde-fi \
+        language-pack-is language-pack-kde-is \
+        language-pack-ga language-pack-kde-ga \
+        language-pack-ca language-pack-kde-ca \
+        language-pack-eu language-pack-kde-eu \
+        language-pack-pl language-pack-kde-pl \
+        language-pack-cs language-pack-kde-cs \
+        language-pack-sk language-pack-kde-sk \
+        language-pack-hu language-pack-kde-hu \
+        language-pack-ro language-pack-kde-ro \
+        language-pack-sl language-pack-kde-sl \
+        language-pack-hr language-pack-kde-hr \
+        language-pack-sr language-pack-kde-sr \
+        language-pack-bg language-pack-kde-bg \
+        language-pack-uk language-pack-kde-uk \
+        language-pack-ru language-pack-kde-ru \
+        language-pack-el language-pack-kde-el \
+        language-pack-tr language-pack-kde-tr \
+        language-pack-he language-pack-kde-he \
+        language-pack-ar language-pack-kde-ar \
+        language-pack-ja language-pack-kde-ja \
+        language-pack-ko language-pack-kde-ko \
+        language-pack-zh-hans language-pack-kde-zh-hans \
+        language-pack-zh-hant language-pack-kde-zh-hant \
+    "; \
+    AVAIL=""; \
+    for P in $WANT; do \
+        if apt-cache show "$P" >/dev/null 2>&1; then \
+            AVAIL="$AVAIL $P"; \
+        else \
+            echo "[i18n] skipping unavailable package: $P"; \
+        fi; \
+    done; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $AVAIL; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

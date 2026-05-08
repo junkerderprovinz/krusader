@@ -1,7 +1,7 @@
 <div align="center">
 
 <a href="https://krusader.org">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.svg" alt="Krusader for Unraid" width="100%">
+  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader for Unraid" width="100%">
 </a>
 
 <br>
@@ -91,11 +91,7 @@ First-run-only seeding. Your customisations in `/config` **survive every `docker
 
 ## 🚀 Quick Start
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### Option A — Unraid Template
+### Option A — Unraid Template *(recommended)*
 
 1. **Docker** tab → **Add Container**
 2. Paste this **Template URL**:
@@ -103,10 +99,7 @@ First-run-only seeding. Your customisations in `/config` **survive every `docker
    https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml
    ```
 3. Adjust paths / language / theme
-4. **Apply** → open WebUI
-
-</td>
-<td width="50%" valign="top">
+4. **Apply** → open WebUI at `http://your-unraid-ip:3000/`
 
 ### Option B — Plain Docker
 
@@ -126,10 +119,6 @@ docker run -d \
 ```
 
 Open **http://your-unraid-ip:3000/**.
-
-</td>
-</tr>
-</table>
 
 > 💡 **`--shm-size=1gb`** is required for smooth KDE rendering. The Unraid template sets it for you.
 > Once Community Applications has accepted this image, it will also be installable via **Apps** → search `Krusader`.
@@ -164,71 +153,16 @@ Open **http://your-unraid-ip:3000/**.
 The Unraid template ships a **dropdown** with **35 UI languages** (German default, plus `system` fallback).
 Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant.
 
-<table>
-<tr>
-<td width="25%" valign="top">
+| Region | Languages |
+|---|---|
+| **Western Europe** | 🇩🇪 `de` Deutsch · 🇬🇧 `en` English · 🇬🇧 `en_GB` English (UK) · 🇫🇷 `fr` Français · 🇪🇸 `es` Español · 🇮🇹 `it` Italiano · 🇵🇹 `pt` Português · 🇧🇷 `pt_BR` Português (BR) · 🇳🇱 `nl` Nederlands · 🇪🇸 `ca` Català · 🇪🇸 `eu` Euskara · 🇮🇪 `ga` Gaeilge |
+| **Northern Europe** | 🇩🇰 `da` Dansk · 🇸🇪 `sv` Svenska · 🇳🇴 `nb` Norsk Bokmål · 🇫🇮 `fi` Suomi · 🇮🇸 `is` Íslenska |
+| **Central / Eastern Europe** | 🇵🇱 `pl` Polski · 🇨🇿 `cs` Čeština · 🇸🇰 `sk` Slovenčina · 🇭🇺 `hu` Magyar · 🇷🇴 `ro` Română · 🇸🇮 `sl` Slovenščina · 🇭🇷 `hr` Hrvatski · 🇷🇸 `sr` Српски · 🇧🇬 `bg` Български · 🇺🇦 `uk` Українська · 🇷🇺 `ru` Русский · 🇬🇷 `el` Ελληνικά |
+| **Middle East** | 🇹🇷 `tr` Türkçe · 🇮🇱 `he` עברית · 🇸🇦 `ar` العربية |
+| **Asia / CJK** | 🇯🇵 `ja` 日本語 · 🇰🇷 `ko` 한국어 · 🇨🇳 `zh` 中文 (简体) · 🇹🇼 `zh_TW` 中文 (繁體) |
+| **Fallback** | `system` — use the container's default locale |
 
-**Western Europe**
-- 🇩🇪 `de` — Deutsch *(default)*
-- 🇬🇧 `en` — English (US)
-- 🇬🇧 `en_GB` — English (UK)
-- 🇫🇷 `fr` — Français
-- 🇪🇸 `es` — Español
-- 🇮🇹 `it` — Italiano
-- 🇵🇹 `pt` — Português
-- 🇧🇷 `pt_BR` — Português (BR)
-- 🇳🇱 `nl` — Nederlands
-- 🇪🇸 `ca` — Català
-- 🇪🇸 `eu` — Euskara
-- 🇮🇪 `ga` — Gaeilge
-
-</td>
-<td width="25%" valign="top">
-
-**Northern Europe**
-- 🇩🇰 `da` — Dansk
-- 🇸🇪 `sv` — Svenska
-- 🇳🇴 `nb` — Norsk Bokmål
-- 🇫🇮 `fi` — Suomi
-- 🇮🇸 `is` — Íslenska
-
-**Middle East**
-- 🇹🇷 `tr` — Türkçe
-- 🇮🇱 `he` — עברית
-- 🇸🇦 `ar` — العربية
-
-</td>
-<td width="25%" valign="top">
-
-**Central / Eastern Europe**
-- 🇵🇱 `pl` — Polski
-- 🇨🇿 `cs` — Čeština
-- 🇸🇰 `sk` — Slovenčina
-- 🇭🇺 `hu` — Magyar
-- 🇷🇴 `ro` — Română
-- 🇸🇮 `sl` — Slovenščina
-- 🇭🇷 `hr` — Hrvatski
-- 🇷🇸 `sr` — Српски
-- 🇧🇬 `bg` — Български
-- 🇺🇦 `uk` — Українська
-- 🇷🇺 `ru` — Русский
-- 🇬🇷 `el` — Ελληνικά
-
-</td>
-<td width="25%" valign="top">
-
-**Asia / CJK**
-- 🇯🇵 `ja` — 日本語
-- 🇰🇷 `ko` — 한국어
-- 🇨🇳 `zh` — 中文 (简体)
-- 🇹🇼 `zh_TW` — 中文 (繁體)
-
-**System**
-- `system` — container default
-
-</td>
-</tr>
-</table>
+*Default: `de` (Deutsch). Set via `KRUSADER_LANG` or the Unraid dropdown.*
 
 > **How it works:** Unraid renders any `<Default>a|b|c</Default>` value with at least one `|`
 > as a native `<select>` dropdown. The cont-init hook re-applies the language on every start.
