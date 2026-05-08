@@ -75,44 +75,57 @@ RUN set -eux; \
         kde-cli-tools \
         kdialog \
         keditbookmarks \
-        # Spell-checking für Kate
+        # Spell-checking für Kate (Auswahl der wichtigsten Sprachen)
         hunspell \
-        hunspell-de-de \
-        hunspell-en-us \
-        hunspell-fr \
-        hunspell-es \
-        hunspell-it \
+        hunspell-de-de hunspell-en-us hunspell-en-gb \
+        hunspell-fr hunspell-es hunspell-it hunspell-pt-pt hunspell-pt-br \
+        hunspell-nl hunspell-da hunspell-sv hunspell-no hunspell-fi \
+        hunspell-pl hunspell-cs hunspell-sk hunspell-hu hunspell-ro \
+        hunspell-hr hunspell-bg hunspell-uk hunspell-ru hunspell-el \
+        hunspell-tr hunspell-he hunspell-ar \
         # Font-Pakete (CJK + Symbole) – damit Filenamen in jeder Sprache lesbar sind
         fonts-noto \
         fonts-noto-cjk \
         fonts-noto-color-emoji \
-        # KDE i18n-Pakete für die im Template angebotenen Sprachen
-        language-pack-kde-de \
-        language-pack-de \
-        language-pack-kde-en \
-        language-pack-en \
-        language-pack-kde-fr \
-        language-pack-fr \
-        language-pack-kde-es \
-        language-pack-es \
-        language-pack-kde-it \
-        language-pack-it \
-        language-pack-kde-nl \
-        language-pack-nl \
-        language-pack-kde-pl \
-        language-pack-pl \
-        language-pack-kde-pt \
-        language-pack-pt \
-        language-pack-kde-ru \
-        language-pack-ru \
-        language-pack-kde-ja \
-        language-pack-ja \
-        language-pack-kde-zh-hans \
-        language-pack-zh-hans \
-        language-pack-kde-tr \
-        language-pack-tr \
-        language-pack-kde-cs \
-        language-pack-cs \
+        # KDE i18n-Pakete für die im Template angebotenen Sprachen.
+        # 30 Sprachen + system-Default. Jeweils language-pack-<code> für
+        # Locale-Daten und language-pack-kde-<code> für die KDE-UI.
+        # Reihenfolge: Westeuropa → Nordeuropa → Osteuropa → Südosteuropa
+        # → Nahost → Asien → CJK.
+        language-pack-de         language-pack-kde-de \
+        language-pack-en         language-pack-kde-en \
+        language-pack-fr         language-pack-kde-fr \
+        language-pack-es         language-pack-kde-es \
+        language-pack-it         language-pack-kde-it \
+        language-pack-pt         language-pack-kde-pt \
+        language-pack-nl         language-pack-kde-nl \
+        language-pack-da         language-pack-kde-da \
+        language-pack-sv         language-pack-kde-sv \
+        language-pack-nb         language-pack-kde-nb \
+        language-pack-fi         language-pack-kde-fi \
+        language-pack-is         language-pack-kde-is \
+        language-pack-ga         language-pack-kde-ga \
+        language-pack-ca         language-pack-kde-ca \
+        language-pack-eu         language-pack-kde-eu \
+        language-pack-pl         language-pack-kde-pl \
+        language-pack-cs         language-pack-kde-cs \
+        language-pack-sk         language-pack-kde-sk \
+        language-pack-hu         language-pack-kde-hu \
+        language-pack-ro         language-pack-kde-ro \
+        language-pack-sl         language-pack-kde-sl \
+        language-pack-hr         language-pack-kde-hr \
+        language-pack-sr         language-pack-kde-sr \
+        language-pack-bg         language-pack-kde-bg \
+        language-pack-uk         language-pack-kde-uk \
+        language-pack-ru         language-pack-kde-ru \
+        language-pack-el         language-pack-kde-el \
+        language-pack-tr         language-pack-kde-tr \
+        language-pack-he         language-pack-kde-he \
+        language-pack-ar         language-pack-kde-ar \
+        language-pack-ja         language-pack-kde-ja \
+        language-pack-ko         language-pack-kde-ko \
+        language-pack-zh-hans    language-pack-kde-zh-hans \
+        language-pack-zh-hant    language-pack-kde-zh-hant \
         # Symlink-Helper
         coreutils \
         sed; \
@@ -125,21 +138,16 @@ RUN set -eux; \
 # Locales generieren
 # ---------------------------------------------------------------------------
 RUN set -eux; \
-    sed -i \
-        -e 's/^# *\(de_DE\.UTF-8\)/\1/' \
-        -e 's/^# *\(en_US\.UTF-8\)/\1/' \
-        -e 's/^# *\(fr_FR\.UTF-8\)/\1/' \
-        -e 's/^# *\(es_ES\.UTF-8\)/\1/' \
-        -e 's/^# *\(it_IT\.UTF-8\)/\1/' \
-        -e 's/^# *\(nl_NL\.UTF-8\)/\1/' \
-        -e 's/^# *\(pl_PL\.UTF-8\)/\1/' \
-        -e 's/^# *\(pt_PT\.UTF-8\)/\1/' \
-        -e 's/^# *\(ru_RU\.UTF-8\)/\1/' \
-        -e 's/^# *\(ja_JP\.UTF-8\)/\1/' \
-        -e 's/^# *\(zh_CN\.UTF-8\)/\1/' \
-        -e 's/^# *\(tr_TR\.UTF-8\)/\1/' \
-        -e 's/^# *\(cs_CZ\.UTF-8\)/\1/' \
-        /etc/locale.gen; \
+    # 30 UTF-8 Locales aktivieren – passend zu den oben installierten
+    # language-pack-<code> Paketen.
+    for L in \
+        de_DE en_US en_GB fr_FR es_ES it_IT pt_PT pt_BR \
+        nl_NL da_DK sv_SE nb_NO fi_FI is_IS ga_IE ca_ES eu_ES \
+        pl_PL cs_CZ sk_SK hu_HU ro_RO sl_SI hr_HR sr_RS bg_BG \
+        uk_UA ru_RU el_GR tr_TR he_IL ar_SA \
+        ja_JP ko_KR zh_CN zh_TW; do \
+      sed -i -E "s/^# *(${L}\.UTF-8)/\1/" /etc/locale.gen; \
+    done; \
     locale-gen
 
 # ---------------------------------------------------------------------------

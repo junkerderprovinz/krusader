@@ -25,39 +25,71 @@ log() { echo "[krusader-language] $*"; }
 mkdir -p "${CONFIG_HOME}" "${PROFILE_D}"
 
 # Map ISO-Code → (Locale, Language-Chain, KDE-Translation-Code)
-case "${CODE}" in
-    de|de_DE|de_DE.UTF-8)
-        LOCALE="de_DE.UTF-8"; CHAIN="de_DE:de:en"; KDE="de";;
-    en|en_US|en_US.UTF-8)
-        LOCALE="en_US.UTF-8"; CHAIN="en_US:en";    KDE="en_US";;
-    fr|fr_FR|fr_FR.UTF-8)
-        LOCALE="fr_FR.UTF-8"; CHAIN="fr_FR:fr:en"; KDE="fr";;
-    es|es_ES|es_ES.UTF-8)
-        LOCALE="es_ES.UTF-8"; CHAIN="es_ES:es:en"; KDE="es";;
-    it|it_IT|it_IT.UTF-8)
-        LOCALE="it_IT.UTF-8"; CHAIN="it_IT:it:en"; KDE="it";;
-    nl|nl_NL|nl_NL.UTF-8)
-        LOCALE="nl_NL.UTF-8"; CHAIN="nl_NL:nl:en"; KDE="nl";;
-    pl|pl_PL|pl_PL.UTF-8)
-        LOCALE="pl_PL.UTF-8"; CHAIN="pl_PL:pl:en"; KDE="pl";;
-    pt|pt_PT|pt_PT.UTF-8)
-        LOCALE="pt_PT.UTF-8"; CHAIN="pt_PT:pt:en"; KDE="pt";;
-    ru|ru_RU|ru_RU.UTF-8)
-        LOCALE="ru_RU.UTF-8"; CHAIN="ru_RU:ru:en"; KDE="ru";;
-    ja|ja_JP|ja_JP.UTF-8)
-        LOCALE="ja_JP.UTF-8"; CHAIN="ja_JP:ja:en"; KDE="ja";;
-    zh|zh_CN|zh_CN.UTF-8)
-        LOCALE="zh_CN.UTF-8"; CHAIN="zh_CN:zh:en"; KDE="zh_CN";;
-    tr|tr_TR|tr_TR.UTF-8)
-        LOCALE="tr_TR.UTF-8"; CHAIN="tr_TR:tr:en"; KDE="tr";;
-    cs|cs_CZ|cs_CZ.UTF-8)
-        LOCALE="cs_CZ.UTF-8"; CHAIN="cs_CZ:cs:en"; KDE="cs";;
-    system|"")
-        LOCALE=""; CHAIN=""; KDE="";;
-    *)
-        # Best-effort fallback for any other ISO code
-        LOCALE="${CODE}.UTF-8"; CHAIN="${CODE}:en"; KDE="${CODE}";;
+# 30 Sprachen unterstützt. "system" → keine erzwungene Sprache.
+LOCALE=""; CHAIN=""; KDE=""
+
+# Normalize input — strip suffixes, lowercase, special-case CJK variants.
+NORM="$(echo "${CODE}" | tr '[:upper:]' '[:lower:]')"
+NORM="${NORM%%.*}"   # de_DE.UTF-8 → de_de
+NORM="${NORM%%@*}"
+
+case "${NORM}" in
+    # ----- Westeuropa -----
+    de|de_de)        LOCALE="de_DE.UTF-8"; KDE="de";;
+    en|en_us)        LOCALE="en_US.UTF-8"; KDE="en_US";;
+    en_gb)           LOCALE="en_GB.UTF-8"; KDE="en_GB";;
+    fr|fr_fr)        LOCALE="fr_FR.UTF-8"; KDE="fr";;
+    es|es_es)        LOCALE="es_ES.UTF-8"; KDE="es";;
+    it|it_it)        LOCALE="it_IT.UTF-8"; KDE="it";;
+    pt|pt_pt)        LOCALE="pt_PT.UTF-8"; KDE="pt";;
+    pt_br)           LOCALE="pt_BR.UTF-8"; KDE="pt_BR";;
+    nl|nl_nl)        LOCALE="nl_NL.UTF-8"; KDE="nl";;
+    ca|ca_es)        LOCALE="ca_ES.UTF-8"; KDE="ca";;
+    eu|eu_es)        LOCALE="eu_ES.UTF-8"; KDE="eu";;
+    ga|ga_ie)        LOCALE="ga_IE.UTF-8"; KDE="ga";;
+    # ----- Nordeuropa -----
+    da|da_dk)        LOCALE="da_DK.UTF-8"; KDE="da";;
+    sv|sv_se)        LOCALE="sv_SE.UTF-8"; KDE="sv";;
+    nb|nb_no|no)     LOCALE="nb_NO.UTF-8"; KDE="nb";;
+    fi|fi_fi)        LOCALE="fi_FI.UTF-8"; KDE="fi";;
+    is|is_is)        LOCALE="is_IS.UTF-8"; KDE="is";;
+    # ----- Mittel-/Osteuropa -----
+    pl|pl_pl)        LOCALE="pl_PL.UTF-8"; KDE="pl";;
+    cs|cs_cz)        LOCALE="cs_CZ.UTF-8"; KDE="cs";;
+    sk|sk_sk)        LOCALE="sk_SK.UTF-8"; KDE="sk";;
+    hu|hu_hu)        LOCALE="hu_HU.UTF-8"; KDE="hu";;
+    ro|ro_ro)        LOCALE="ro_RO.UTF-8"; KDE="ro";;
+    sl|sl_si)        LOCALE="sl_SI.UTF-8"; KDE="sl";;
+    hr|hr_hr)        LOCALE="hr_HR.UTF-8"; KDE="hr";;
+    sr|sr_rs)        LOCALE="sr_RS.UTF-8"; KDE="sr";;
+    bg|bg_bg)        LOCALE="bg_BG.UTF-8"; KDE="bg";;
+    uk|uk_ua)        LOCALE="uk_UA.UTF-8"; KDE="uk";;
+    ru|ru_ru)        LOCALE="ru_RU.UTF-8"; KDE="ru";;
+    el|el_gr)        LOCALE="el_GR.UTF-8"; KDE="el";;
+    # ----- Nahost -----
+    tr|tr_tr)        LOCALE="tr_TR.UTF-8"; KDE="tr";;
+    he|he_il)        LOCALE="he_IL.UTF-8"; KDE="he";;
+    ar|ar_sa)        LOCALE="ar_SA.UTF-8"; KDE="ar";;
+    # ----- Asien / CJK -----
+    ja|ja_jp)        LOCALE="ja_JP.UTF-8"; KDE="ja";;
+    ko|ko_kr)        LOCALE="ko_KR.UTF-8"; KDE="ko";;
+    zh|zh_cn|zh_hans)LOCALE="zh_CN.UTF-8"; KDE="zh_CN";;
+    zh_tw|zh_hant)   LOCALE="zh_TW.UTF-8"; KDE="zh_TW";;
+    # ----- system / unbekannt -----
+    system|"")       LOCALE=""; KDE="";;
+    *)               LOCALE="${CODE}.UTF-8"; KDE="${CODE}";;  # Best-effort
 esac
+
+# Build LANGUAGE chain so missing translations fall back to English
+if [[ -n "${LOCALE}" ]]; then
+    SHORT="${LOCALE%%_*}"
+    REGION="${LOCALE%%.*}"
+    if [[ "${SHORT}" == "en" ]]; then
+        CHAIN="${REGION}:en"
+    else
+        CHAIN="${REGION}:${SHORT}:en"
+    fi
+fi
 
 # -- system / unset ----------------------------------------------------------
 if [[ -z "${LOCALE}" ]]; then
