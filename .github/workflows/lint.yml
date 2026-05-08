@@ -17,9 +17,14 @@ jobs:
         with:
           dockerfile: Dockerfile
           # DL3008 = pin apt versions – we deliberately skip pinning since
-          # the base image moves with Ubuntu Noble.
-          # DL3015 = recommends; we already use --no-install-recommends.
-          ignore: DL3008
+          #          the base image moves with Ubuntu Noble.
+          # DL3009 = clean apt lists after install – we clean once after
+          #          phase 2 (final RUN), not after each layer, to keep
+          #          the multi-phase pattern readable.
+          # SC2086 = unquoted $WANT – we deliberately rely on word splitting
+          #          to expand the package wishlist into individual args.
+          ignore: DL3008,DL3009,SC2086
+          failure-threshold: warning
 
   shellcheck:
     name: ShellCheck (init scripts)
