@@ -1,0 +1,29 @@
+NOTICE — Bundled Software in the Krusader Unraid Container Image
+=================================================================
+
+The MIT License (see LICENSE) covers ONLY the wrapper assets in this
+repository:
+  * Dockerfile and rootfs/ overlay
+  * Helper scripts under scripts/ and rootfs/usr/local/bin/
+  * Unraid container templates (unraid-template*.xml, ca_profile.xml)
+  * README, banner and icon artwork
+
+It does NOT relicense any software shipped inside the resulting
+container image. Each bundled component retains its upstream license:
+
+  * Krusader                     GPL-3.0-or-later
+                                 https://invent.kde.org/utilities/krusader
+  * Kate, Konsole, Ark           GPL-2.0+ / LGPL-2.1+
+                                 https://kde.org/
+  * Breeze theme & KDE Frameworks
+                                 LGPL-2.1+ / GPL-2.0+
+  * LinuxServer.io baseimage-kasmvnc
+                                 GPL-3.0
+                                 https://github.com/linuxserver/docker-baseimage-kasmvnc
+  * unrar                        non-free, see upstream license
+                                 https://www.rarlab.com/rar/UnRARLicense.txt
+  * Hunspell dictionaries        various (LGPL, MPL, BSD)
+
+When you run, redistribute or rebuild the resulting container image, you
+must comply with the licenses of all bundled components in addition to
+the MIT license that covers this repository.
