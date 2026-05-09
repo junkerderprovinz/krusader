@@ -83,7 +83,7 @@ if [[ ! -f "${LOCK}" ]]; then
     log "First-run – seeding user-editable defaults"
     [[ ! -e "${CONFIG_HOME}/krusaderrc"      ]] && cp -a "${DEFAULTS}/krusaderrc"      "${CONFIG_HOME}/krusaderrc"
     [[ ! -e "${CONFIG_HOME}/katerc"          ]] && cp -a "${DEFAULTS}/katerc"          "${CONFIG_HOME}/katerc"
-    [[ ! -e "${LOCAL_SHARE}/krusader/useractions.xml" ]] && cp -a "${DEFAULTS}/useractions.xml" "${LOCAL_SHARE}/krusader/useractions.xml"
+    [[ ! -e "${LOCAL_SHARE}/krusader/useractions.xml" ]] && cp -a "${DEFAULTS}/useractions.xml.template" "${LOCAL_SHARE}/krusader/useractions.xml"
     touch "${LOCK}"
 fi
 
