@@ -48,6 +48,17 @@
   <DonateText/>
   <DonateLink/>
   <Requires/>
+  <MinVer>6.12.0</MinVer>
+  <Date>2026-05-09</Date>
+  <Changes>
+### 2026-05-09
+- Initial Community Apps release&#xD;
+- Breeze Dark by default via native KDE platform theme&#xD;
+- 25 UI languages, dropdown-selectable&#xD;
+- RAR support (extract here / to subfolder), 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO&#xD;
+- Kate pre-wired as external editor&#xD;
+- Optional KasmVNC HTTP-basic-auth&#xD;
+  </Changes>
 
   <!-- ========================================================
        PORTS
