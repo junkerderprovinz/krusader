@@ -21,7 +21,7 @@ BANNER_PNG = REPO / ".github/assets/krusader-banner.png"
 # Banner background = formerly the logo's frame grey (light Breeze grey).
 # Logo frame bars   = formerly the dark window background (Breeze dark grey).
 # Result: logo sits darker on a lighter grey backdrop — stronger dark-mode feel.
-BREEZE_BG_DARK = "#bdc3c7"      # banner background — light Breeze grey (was logo frame)
+BREEZE_BG_DARK = "#ffffff"      # banner background — weiß, identisch zur Matrix-Repo
 BREEZE_FRAME_DARK = "#1b1e20"   # darkest detail (was very dark navy #232341)
 BREEZE_FRAME_MID = "#232629"    # frame top/bottom bars — Breeze dark grey (swapped in)
 BREEZE_ACCENT = "#2980b9"       # primary panel blue — darker Breeze accent (was #9696ff)
