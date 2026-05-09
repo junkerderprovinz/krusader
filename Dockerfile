@@ -66,6 +66,10 @@ RUN set -eux; \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
+        # Sonnet-Hunspell-Plugin: macht KDE-Apps (Kate, KMail, ...) die
+        # Hunspell-Woerterbuecher als Spell-Backend zugaenglich. Ohne dieses
+        # Plugin meckert Sonnet "No speller backends available!".
+        sonnet-plugins \
         # Qt-Theme-Bridge fuer KDE-Apps:
         # plasma-integration liefert das offizielle 'kde' Qt-Platformtheme-
         # Plugin (libkdeplatformtheme.so). Damit liest Krusader/Kate die

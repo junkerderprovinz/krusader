@@ -19,26 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Note on bundled software:
-
-This MIT license covers only the wrapper assets in this repository
-(Dockerfile, rootfs/, scripts, Unraid templates, README, banner / icon
-artwork derived from public-domain sources). It does NOT relicense the
-software shipped inside the resulting container image.
-
-In particular:
-
-  * Krusader itself remains licensed under GPL-3.0-or-later
-    (https://invent.kde.org/utilities/krusader)
-  * Kate, Konsole, Ark, Breeze and other KDE components retain their
-    upstream licenses (mostly GPL-2.0+ / LGPL-2.1+).
-  * The LinuxServer.io baseimage-kasmvnc base image retains its own
-    license terms (GPL-3.0).
-  * The unrar tool is shipped under its non-free upstream license.
-
-When you run, distribute or rebuild the resulting container image, you
-must comply with the licenses of all bundled components, not only with
-this MIT license.
