@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Krusader-Test</Name>
+  <Repository>ghcr.io/junkerderprovinz/krusader:latest</Repository>
+  <Registry>https://ghcr.io/junkerderprovinz/krusader</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://forums.unraid.net/topic/REPLACE_WITH_FORUM_THREAD/</Support>
+  <Project>https://github.com/junkerderprovinz/krusader</Project>
+  <Overview>
+    Krusader for Unraid – community edition, built on KasmVNC for a smooth,
+    hardware-accelerated web desktop. Far snappier than the noVNC-based
+    Krusader containers (binhex / jlesage / ich777).&#xD;
+    &#xD;
+    What's pre-configured:&#xD;
+    • Breeze Dark theme for Krusader, Kate and KDE&#xD;
+    • Kate as Krusader's external editor&#xD;
+    • RAR support: right-click → "Extract RAR here" / "to subfolder"&#xD;
+    • 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO&#xD;
+    • Selectable UI language: 35 languages incl. German, English (US/UK),&#xD;
+      French, Spanish, Italian, Portuguese (PT/BR), Dutch, Catalan, Basque,&#xD;
+      Irish, Danish, Swedish, Norwegian, Finnish, Icelandic, Polish, Czech,&#xD;
+      Slovak, Hungarian, Romanian, Slovenian, Croatian, Serbian, Bulgarian,&#xD;
+      Ukrainian, Russian, Greek, Turkish, Hebrew, Arabic, Japanese, Korean,&#xD;
+      Chinese (CN/TW)&#xD;
+    • Spell-checking in Kate for ~25 languages via Hunspell&#xD;
+    &#xD;
+    Notes:&#xD;
+    • The /storage volume defaults to /mnt – this gives Krusader access to all&#xD;
+      shares (/mnt/user) and individual disks (/mnt/disk*).&#xD;
+    • Default WebUI port is 3000 (HTTP). 3001 (HTTPS) is also exposed if you&#xD;
+      prefer self-signed TLS.&#xD;
+    • PUID/PGID default to 99/100 (nobody/users on Unraid).&#xD;
+  </Overview>
+  <Category>Tools: Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:3030]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template-test.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
+  <ExtraParams>--restart=unless-stopped --shm-size=1gb</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <!-- ========================================================
+       PORTS
+       ======================================================== -->
+  <Config Name="WebUI Port (HTTP / KasmVNC)" Target="3000" Default="3030" Mode="tcp"
+          Description="HTTP port of the KasmVNC WebUI. Open in any modern browser. (Test-Container: 3030 statt 3000, damit keine Kollision mit produktivem Krusader entsteht.)"
+          Type="Port" Display="always" Required="true" Mask="false">3030</Config>
+
+  <Config Name="WebUI Port (HTTPS / KasmVNC)" Target="3001" Default="3031" Mode="tcp"
+          Description="HTTPS port of the KasmVNC WebUI (self-signed). Optional. (Test-Container: 3031 statt 3001.)"
+          Type="Port" Display="always" Required="false" Mask="false">3031</Config>
+
+  <!-- ========================================================
+       PATHS
+       ======================================================== -->
+  <Config Name="AppData (/config)" Target="/config" Default="/mnt/user/appdata/krusader-test" Mode="rw"
+          Description="Persistent Krusader configs, history, bookmarks, default-files lock."
+          Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/krusader-test</Config>
+
+  <Config Name="Storage (/storage)" Target="/storage" Default="/mnt" Mode="rw,slave"
+          Description="Main path for file operations. Default /mnt gives access to all shares (/mnt/user) and individual disks (/mnt/disk*). Adjust if you only need specific shares."
+          Type="Path" Display="always" Required="true" Mask="false">/mnt</Config>
+
+  <Config Name="Localtime" Target="/etc/localtime" Default="/etc/localtime" Mode="ro"
+          Description="Sync container timezone with host."
+          Type="Path" Display="advanced-hide" Required="false" Mask="false">/etc/localtime</Config>
+
+  <!-- ========================================================
+       UI PREFERENCES (with Unraid dropdowns via | syntax)
+       ========================================================
+       Unraid renders <Default>a|b|c</Default> as a select-dropdown when
+       the value has at least one '|' separator. The first value before the
+       first '|' is the pre-selected default.
+  -->
+  <Config Name="UI Language (KRUSADER_LANG)" Target="KRUSADER_LANG"
+          Default="de|en|en_GB|fr|es|it|pt|pt_BR|nl|ca|eu|ga|da|sv|nb|fi|is|pl|cs|sk|hu|ro|sl|hr|sr|bg|uk|ru|el|tr|he|ar|ja|ko|zh|zh_TW|system" Mode=""
+          Description="Language for the Krusader / Kate UI. 35 codes available: de, en, en_GB, fr, es, it, pt, pt_BR, nl, ca, eu, ga, da, sv, nb, fi, is, pl, cs, sk, hu, ro, sl, hr, sr, bg, uk, ru, el, tr, he, ar, ja, ko, zh, zh_TW. Use 'system' for the container default. Re-applied on every container start."
+          Type="Variable" Display="always" Required="false" Mask="false">de</Config>
+
+  <Config Name="Theme (KRUSADER_THEME)" Target="KRUSADER_THEME"
+          Default="dark|light" Mode=""
+          Description="Color scheme. 'dark' = Breeze Dark, 'light' = Breeze."
+          Type="Variable" Display="always" Required="false" Mask="false">dark</Config>
+
+  <!-- ========================================================
+       KASMVNC SECURITY
+       ======================================================== -->
+  <Config Name="KasmVNC Username" Target="CUSTOM_USER" Default="abc" Mode=""
+          Description="HTTP-basic-auth username for the KasmVNC web UI. Default 'abc'."
+          Type="Variable" Display="always" Required="false" Mask="false">abc</Config>
+
+  <Config Name="KasmVNC Password" Target="PASSWORD" Default="" Mode=""
+          Description="HTTP-basic-auth password for the KasmVNC web UI. STRONGLY recommended if exposed beyond LAN. Leave empty for no auth."
+          Type="Variable" Display="always" Required="false" Mask="true"/>
+
+  <!-- ========================================================
+       ADVANCED ENV VARIABLES
+       ======================================================== -->
+  <Config Name="Title (browser tab)" Target="TITLE" Default="Krusader-Test" Mode=""
+          Description="Title shown in browser tab and KasmVNC top bar."
+          Type="Variable" Display="advanced" Required="false" Mask="false">Krusader</Config>
+
+  <Config Name="Timezone (TZ)" Target="TZ" Default="Europe/Vienna" Mode=""
+          Description="Container timezone (affects log timestamps, file mtimes shown by Krusader)."
+          Type="Variable" Display="advanced" Required="false" Mask="false">Europe/Vienna</Config>
+
+  <Config Name="User ID (PUID)" Target="PUID" Default="99" Mode=""
+          Description="User-ID Krusader runs as. Default 99 (nobody on Unraid)."
+          Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
+
+  <Config Name="Group ID (PGID)" Target="PGID" Default="100" Mode=""
+          Description="Group-ID. Default 100 (users on Unraid)."
+          Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>
+
+  <Config Name="UMASK" Target="UMASK" Default="022" Mode=""
+          Description="Permission mask for newly created files. Use 000 if you want every container user to read/write everything."
+          Type="Variable" Display="advanced" Required="false" Mask="false">022</Config>
+
+</Container>
