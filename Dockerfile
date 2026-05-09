@@ -71,11 +71,23 @@ RUN set -eux; \
         qt5ct qt6ct \
         # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
         hunspell \
+        # WICHTIG: fontconfig + Standard-Fonts. Ohne fontconfig + fc-cache
+        # rendern Qt/KDE-Apps Text als leere Striche (Glyphen-Lookup
+        # schlägt fehl). Plus fonts-dejavu/liberation als robuste Defaults
+        # für UI-Render, fonts-hack als Monospace-Fallback.
+        fontconfig \
         fonts-noto fonts-noto-cjk fonts-noto-color-emoji \
+        fonts-dejavu fonts-dejavu-core fonts-dejavu-extra \
+        fonts-liberation fonts-liberation2 \
+        fonts-hack fonts-freefont-ttf \
         # Locale-Werkzeuge
         locales coreutils sed; \
     # arj-Symlink (manche Tools erwarten "unarj")
-    [ -e /usr/bin/unarj ] || ln -s /usr/bin/arj /usr/bin/unarj
+    [ -e /usr/bin/unarj ] || ln -s /usr/bin/arj /usr/bin/unarj; \
+    # Font-Cache JETZT aufbauen, damit Qt/KDE die Fonts beim ersten
+    # Container-Start sofort findet. Sonst rendert Krusader die Texte
+    # als leere Linien.
+    fc-cache -f -v >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------------------
 # Phase 2: Optionale i18n + Hunspell-Pakete (Build läuft weiter, wenn ein
