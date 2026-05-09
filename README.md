@@ -4,28 +4,18 @@
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
 </a>
 
-<table width="100%" align="center"><tr>
-<td align="center" width="25%">
-
-[![Build & Push](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml)
-
-</td>
-<td align="center" width="25%">
-
-[![Lint](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml)
-
-</td>
-<td align="center" width="25%">
-
-[![Image](https://img.shields.io/badge/image-ghcr.io%2Fjunkerderprovinz%2Fkrusader-blue)](https://ghcr.io/junkerderprovinz/krusader)
-
-</td>
-<td align="center" width="25%">
-
-[![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](LICENSE)
-
-</td>
-</tr></table>
+<p align="center">
+  <a href="https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/build.yml?branch=main&label=build&style=for-the-badge" alt="Build"></a>
+  <a href="https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/lint.yml?branch=main&label=lint&style=for-the-badge" alt="Lint"></a>
+  <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/image-ghcr.io-1d99f3?style=for-the-badge" alt="Image"></a>
+  <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/arch-amd64%20%7C%20arm64-success?style=for-the-badge" alt="Multi-arch"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/web%20stack-KasmVNC-3daee9?style=for-the-badge" alt="KasmVNC"></a>
+  <a href="#4-languages"><img src="https://img.shields.io/badge/languages-25-3daee9?style=for-the-badge" alt="Languages"></a>
+  <a href="https://github.com/junkerderprovinz/krusader/commits/main"><img src="https://img.shields.io/github/last-commit/junkerderprovinz/krusader?style=for-the-badge" alt="Last commit"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-yellow?style=for-the-badge" alt="License"></a>
+</p>
 
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
