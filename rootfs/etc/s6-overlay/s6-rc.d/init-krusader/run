@@ -1,0 +1,102 @@
+#!/usr/bin/with-contenv bash
+# -----------------------------------------------------------------------------
+# init-krusader  –  Krusader Theme & Config Bootstrap
+# -----------------------------------------------------------------------------
+# Laeuft als s6-Init-Skript NACH init-kasmvnc-config (wo /defaults/autostart
+# in /config/.config/openbox/autostart kopiert wird).
+#
+# Aufgaben:
+#   1. ENV via /run/s6/container_environment/* setzen, damit ALLE folgenden
+#      s6-Services (insbesondere svc-de = startwm.sh = openbox = krusader)
+#      die Variablen erhalten. Das ist der offizielle linuxserver-Mechanismus.
+#   2. openbox/autostart sicher mit unserem Krusader-Launcher ueberschreiben
+#      (init-kasmvnc-config kopiert nur, wenn nicht vorhanden — wir zwingen).
+#   3. KDE/Qt-Theme-Files bei jedem Start frisch nach /config/ ausrollen.
+# -----------------------------------------------------------------------------
+set -e
+
+log() { echo "[init-krusader] $*"; }
+
+# -- 1) ENV-Propagation via s6 ------------------------------------------------
+# /run/s6/container_environment/<NAME>=<VALUE> ist der offizielle Weg, ENV in
+# alle s6-Services zu injizieren. Jedes File = eine Variable.
+mkdir -p /run/s6/container_environment
+
+set_env() {
+    printf "%s" "$2" > "/run/s6/container_environment/$1"
+}
+
+set_env QT_QPA_PLATFORMTHEME      "qt5ct"
+set_env QT_STYLE_OVERRIDE         "Breeze"
+set_env QT_AUTO_SCREEN_SCALE_FACTOR "1"
+set_env KDE_COLOR_SCHEME_PATH     "/config/.local/share/color-schemes/BreezeDark.colors"
+set_env GTK_THEME                 "Breeze-Dark"
+set_env XCURSOR_THEME             "breeze_cursors"
+set_env ICON_THEME                "breeze-dark"
+
+log "ENV in /run/s6/container_environment gesetzt"
+
+# -- 2) Theme-/Config-Files (immer frisch) ------------------------------------
+DEFAULTS="/defaults"
+CONFIG_HOME="/config/.config"
+LOCAL_SHARE="/config/.local/share"
+COLOR_SCHEMES="${LOCAL_SHARE}/color-schemes"
+KDEDEFAULTS="${CONFIG_HOME}/kdedefaults"
+
+mkdir -p "${CONFIG_HOME}/qt5ct" \
+         "${CONFIG_HOME}/qt6ct" \
+         "${CONFIG_HOME}/openbox" \
+         "${KDEDEFAULTS}" \
+         "${COLOR_SCHEMES}" \
+         "${LOCAL_SHARE}/krusader"
+
+LOCK="/config/.krusader-firstrun.done"
+
+# 2a) User-geschuetzt: nur First-Run
+if [[ ! -f "${LOCK}" ]]; then
+    log "First-run – seeding user-editable defaults"
+    [[ ! -e "${CONFIG_HOME}/krusaderrc"      ]] && cp -a "${DEFAULTS}/krusaderrc"      "${CONFIG_HOME}/krusaderrc"
+    [[ ! -e "${CONFIG_HOME}/katerc"          ]] && cp -a "${DEFAULTS}/katerc"          "${CONFIG_HOME}/katerc"
+    [[ ! -e "${LOCAL_SHARE}/krusader/useractions.xml" ]] && cp -a "${DEFAULTS}/useractions.xml" "${LOCAL_SHARE}/krusader/useractions.xml"
+    touch "${LOCK}"
+fi
+
+# 2b) Theme-Infrastruktur: jeden Start frisch
+log "Theme-Infrastruktur (re)deploy"
+cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
+cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
+[[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]] && \
+    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${COLOR_SCHEMES}/BreezeDark.colors"
+[[ -f "${DEFAULTS}/qt5ct.conf" ]] && {
+    cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt5ct/qt5ct.conf"
+    cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt6ct/qt6ct.conf"
+}
+
+# 2c) openbox/autostart IMMER ueberschreiben (init-kasmvnc-config tut's nur
+#     beim First-Run, und unser Inhalt aendert sich noch oefter).
+cp -af "${DEFAULTS}/autostart" "${CONFIG_HOME}/openbox/autostart"
+chmod 0755 "${CONFIG_HOME}/openbox/autostart"
+
+# -- 3) Sprache & Theme-Switch (env-driven, idempotent) -----------------------
+/usr/local/bin/krusader-language.sh "${KRUSADER_LANG:-de}" || log "language hook failed"
+
+case "${KRUSADER_THEME:-dark}" in
+    dark)
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/'                                "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^Name=.*/Name=Breeze Dark/'                                             "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breezedark.desktop/'  "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/' "${CONFIG_HOME}/krusaderrc" || true
+        ;;
+    light)
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/'                               "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^Name=.*/Name=Breeze Light/'                                            "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breeze.desktop/'      "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/' "${CONFIG_HOME}/krusaderrc" || true
+        ;;
+esac
+
+# Permissions
+chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
+
+log "init-krusader done"
+exit 0
