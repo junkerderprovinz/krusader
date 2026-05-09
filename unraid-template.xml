@@ -7,7 +7,7 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://forums.unraid.net/topic/REPLACE_WITH_FORUM_THREAD/</Support>
+  <Support>https://github.com/junkerderprovinz/krusader/issues</Support>
   <Project>https://github.com/junkerderprovinz/krusader</Project>
   <Overview>
     Krusader for Unraid – community edition, built on KasmVNC for a smooth,
@@ -33,6 +33,9 @@
     • Default WebUI port is 3000 (HTTP). 3001 (HTTPS) is also exposed if you&#xD;
       prefer self-signed TLS.&#xD;
     • PUID/PGID default to 99/100 (nobody/users on Unraid).&#xD;
+    • Auth: leave "KasmVNC Username" and "Password" EMPTY to run without&#xD;
+      login. Set both to enable HTTP-basic auth on the WebUI. Recommended&#xD;
+      whenever the container is reachable from anything beyond your LAN.&#xD;
   </Overview>
   <Category>Tools: Productivity:</Category>
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
@@ -92,12 +95,12 @@
   <!-- ========================================================
        KASMVNC SECURITY
        ======================================================== -->
-  <Config Name="KasmVNC Username" Target="CUSTOM_USER" Default="abc" Mode=""
-          Description="HTTP-basic-auth username for the KasmVNC web UI. Default 'abc'."
-          Type="Variable" Display="always" Required="false" Mask="false">abc</Config>
+  <Config Name="KasmVNC Username" Target="CUSTOM_USER" Default="" Mode=""
+          Description="Optional. Username for HTTP-basic-auth on the WebUI. Leave EMPTY together with the password for no login. Set both fields to enable login (recommended outside trusted LANs)."
+          Type="Variable" Display="always" Required="false" Mask="false"/>
 
   <Config Name="KasmVNC Password" Target="PASSWORD" Default="" Mode=""
-          Description="HTTP-basic-auth password for the KasmVNC web UI. STRONGLY recommended if exposed beyond LAN. Leave empty for no auth."
+          Description="Optional. Password for HTTP-basic-auth on the WebUI. Leave EMPTY together with the username for no login. STRONGLY recommended whenever the container is reachable from outside your LAN."
           Type="Variable" Display="always" Required="false" Mask="true"/>
 
   <!-- ========================================================
