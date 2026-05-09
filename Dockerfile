@@ -168,7 +168,9 @@ RUN set -eux; \
 COPY rootfs/ /
 
 # Berechtigungen für init-scripts
-RUN chmod +x /etc/cont-init.d/*.sh /usr/local/bin/krusader-*.sh
+RUN chmod +x /usr/local/bin/krusader-*.sh \
+             /etc/s6-overlay/s6-rc.d/init-krusader/run \
+             /defaults/autostart
 
 # ---------------------------------------------------------------------------
 # Standard-ENV (durch Unraid-Template überschreibbar)
