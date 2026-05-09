@@ -44,7 +44,7 @@
   <ExtraParams>--restart=unless-stopped --shm-size=1gb</ExtraParams>
   <PostArgs/>
   <CPUset/>
-  <DateInstalled/>
+  <DateInstalled>1778363620</DateInstalled>
   <DonateText/>
   <DonateLink/>
   <Requires/>

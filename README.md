@@ -83,10 +83,8 @@ What's included beyond bare Krusader:
 
 ### Step 1 — Install the template
 
-The repository ships two templates:
-
-- `unraid-template.xml` — production install (`Krusader`, ports 3000/3001)
-- `_dev/unraid-template-test.xml` — sandbox install (`Krusader-Test`, ports 3030/3031, separate appdata) — useful when you already have another Krusader running
+The repository ships one template: `unraid-template.xml` — production install
+(`Krusader`, ports 3000/3001).
 
 Pull the template directly into Unraid's user-template folder via the
 Unraid console / SSH:
@@ -96,8 +94,6 @@ mkdir -p /boot/config/plugins/dockerMan/templates-user && \
 curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
   https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml
 ```
-
-(For the sandbox container, swap the URL and filename for `_dev/unraid-template-test.xml` / `my-Krusader-Test.xml`.)
 
 ### Step 2 — Add the container
 
