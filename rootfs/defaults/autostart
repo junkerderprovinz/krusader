@@ -6,19 +6,28 @@
 # (durch init-kasmvnc-config). Bei jedem weiteren Start ueberschreibt
 # init-krusader dieses File, damit unsere ENV/Theme-Aenderungen ankommen.
 #
-# Hier setzen wir alle Theme-ENV ZUSAETZLICH zur s6-Container-ENV — so
-# garantiert auch bei nicht-with-contenv-Aufrufpfaden korrekt.
+# Theme-ENV werden primaer ueber /run/s6/container_environment gesetzt.
+# Hier exportieren wir sie nochmal als Fallback, damit Krusader sie auch
+# erhaelt, wenn das Skript ueber Pfade gestartet wird, die with-contenv
+# umgehen.
 # -----------------------------------------------------------------------------
 
-# --- Qt-Theme ----------------------------------------------------------------
-export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-qt5ct}"
+# --- KDE-Plattform aktivieren (Hauptmechanismus) -----------------------------
+# Dies laedt das libkdeplatformtheme.so aus plasma-integration → KDE-Apps
+# wie Krusader/Kate lesen kdeglobals und KDE-Color-Schemes nativ.
+export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-kde}"
+export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-KDE}"
+export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-KDE}"
+export DESKTOP_SESSION="${DESKTOP_SESSION:-plasma}"
+
+# --- Qt-Style + Color-Scheme -------------------------------------------------
 export QT_STYLE_OVERRIDE="${QT_STYLE_OVERRIDE:-Breeze}"
 export QT_AUTO_SCREEN_SCALE_FACTOR="${QT_AUTO_SCREEN_SCALE_FACTOR:-1}"
-export KDE_COLOR_SCHEME_PATH="${KDE_COLOR_SCHEME_PATH:-$HOME/.local/share/color-schemes/BreezeDark.colors}"
+export KDE_COLOR_SCHEME_PATH="${KDE_COLOR_SCHEME_PATH:-/usr/share/color-schemes/BreezeDark.colors}"
 
-# Fallback auf System-Schema, falls User-File noch nicht da ist
-if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f /usr/share/color-schemes/BreezeDark.colors ]]; then
-    export KDE_COLOR_SCHEME_PATH=/usr/share/color-schemes/BreezeDark.colors
+# Fallback-Suchpfad
+if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f "$HOME/.local/share/color-schemes/BreezeDark.colors" ]]; then
+    export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/BreezeDark.colors"
 fi
 
 # --- GTK-Apps & Cursor -------------------------------------------------------
@@ -32,6 +41,7 @@ export LC_ALL="${LC_ALL:-de_DE.UTF-8}"
 
 # --- Diagnose-Log ------------------------------------------------------------
 echo "[krusader-autostart] QT_QPA_PLATFORMTHEME=$QT_QPA_PLATFORMTHEME" >&2
+echo "[krusader-autostart] XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP" >&2
 echo "[krusader-autostart] QT_STYLE_OVERRIDE=$QT_STYLE_OVERRIDE" >&2
 echo "[krusader-autostart] KDE_COLOR_SCHEME_PATH=$KDE_COLOR_SCHEME_PATH" >&2
 echo "[krusader-autostart] GTK_THEME=$GTK_THEME" >&2

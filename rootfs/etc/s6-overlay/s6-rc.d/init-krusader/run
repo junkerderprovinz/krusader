@@ -5,13 +5,21 @@
 # Laeuft als s6-Init-Skript NACH init-kasmvnc-config (wo /defaults/autostart
 # in /config/.config/openbox/autostart kopiert wird).
 #
-# Aufgaben:
-#   1. ENV via /run/s6/container_environment/* setzen, damit ALLE folgenden
-#      s6-Services (insbesondere svc-de = startwm.sh = openbox = krusader)
-#      die Variablen erhalten. Das ist der offizielle linuxserver-Mechanismus.
-#   2. openbox/autostart sicher mit unserem Krusader-Launcher ueberschreiben
-#      (init-kasmvnc-config kopiert nur, wenn nicht vorhanden — wir zwingen).
-#   3. KDE/Qt-Theme-Files bei jedem Start frisch nach /config/ ausrollen.
+# WARUM SO KOMPLEX:
+# Krusader ist eine KDE-Frameworks-App. KDE-Apps benutzen die "KColorScheme"-
+# Engine, die nur funktioniert, wenn:
+#   (a) das Qt-Plattform-Theme-Plugin "kde" geladen wird
+#       (geliefert vom Paket plasma-integration, libkdeplatformtheme.so)
+#   (b) die Color-Scheme-Datei im offiziellen KDE-Format unter dem Standard-
+#       Suchpfad liegt (~/.local/share/color-schemes/ oder
+#       /usr/share/color-schemes/)
+#   (c) kdeglobals den ColorScheme-Namen referenziert
+#   (d) XDG_CURRENT_DESKTOP=KDE gesetzt ist, sonst greift das KDE-Plugin nicht
+#
+# qt5ct funktioniert NICHT mit KDE-.colors-Files — qt5ct hat ein anderes
+# Format (single-line active_colors=#aarrggbb,...) und liefert bei einer
+# KDE-Datei eine leere weisse Default-Palette zurueck. Genau das hat zur
+# hellen UI mit Linien-Optik gefuehrt.
 # -----------------------------------------------------------------------------
 set -e
 
@@ -26,29 +34,47 @@ set_env() {
     printf "%s" "$2" > "/run/s6/container_environment/$1"
 }
 
-set_env QT_QPA_PLATFORMTHEME      "qt5ct"
+# *** KERN-FIX: KDE-Plattform-Theme-Plugin aktivieren ***
+# QT_QPA_PLATFORMTHEME=kde + XDG_CURRENT_DESKTOP=KDE laed das Plugin
+# libkdeplatformtheme.so aus plasma-integration. Das Plugin liest dann
+# kdeglobals direkt UND kennt das KDE-.colors-Format.
+set_env QT_QPA_PLATFORMTHEME      "kde"
+set_env XDG_CURRENT_DESKTOP       "KDE"
+set_env XDG_SESSION_DESKTOP       "KDE"
+set_env DESKTOP_SESSION           "plasma"
+
+# QT_STYLE_OVERRIDE=Breeze sorgt dafuer, dass auch Qt-Apps OHNE KDE-Plugin
+# (hypothetisch) den Breeze-Style verwenden.
 set_env QT_STYLE_OVERRIDE         "Breeze"
 set_env QT_AUTO_SCREEN_SCALE_FACTOR "1"
-set_env KDE_COLOR_SCHEME_PATH     "/config/.local/share/color-schemes/BreezeDark.colors"
+
+# Pfad zum Color-Scheme — KDE-Plugin findet es ueber kdeglobals,
+# Variable als zusaetzlicher Hint.
+set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/BreezeDark.colors"
+
+# GTK + Cursor + Icons (fuer GTK-Dialoge, die Krusader z.B. fuer Datei-
+# Operationen oeffnet).
 set_env GTK_THEME                 "Breeze-Dark"
 set_env XCURSOR_THEME             "breeze_cursors"
 set_env ICON_THEME                "breeze-dark"
 
-log "ENV in /run/s6/container_environment gesetzt"
+log "ENV in /run/s6/container_environment gesetzt (KDE-Plugin-Mode)"
 
 # -- 2) Theme-/Config-Files (immer frisch) ------------------------------------
 DEFAULTS="/defaults"
 CONFIG_HOME="/config/.config"
 LOCAL_SHARE="/config/.local/share"
-COLOR_SCHEMES="${LOCAL_SHARE}/color-schemes"
+USER_COLOR_SCHEMES="${LOCAL_SHARE}/color-schemes"
+SYSTEM_COLOR_SCHEMES="/usr/share/color-schemes"
 KDEDEFAULTS="${CONFIG_HOME}/kdedefaults"
 
 mkdir -p "${CONFIG_HOME}/qt5ct" \
          "${CONFIG_HOME}/qt6ct" \
          "${CONFIG_HOME}/openbox" \
          "${KDEDEFAULTS}" \
-         "${COLOR_SCHEMES}" \
-         "${LOCAL_SHARE}/krusader"
+         "${USER_COLOR_SCHEMES}" \
+         "${LOCAL_SHARE}/krusader" \
+         "${SYSTEM_COLOR_SCHEMES}"
 
 LOCK="/config/.krusader-firstrun.done"
 
@@ -65,15 +91,31 @@ fi
 log "Theme-Infrastruktur (re)deploy"
 cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
 cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
-[[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]] && \
-    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${COLOR_SCHEMES}/BreezeDark.colors"
-[[ -f "${DEFAULTS}/qt5ct.conf" ]] && {
+
+# Color-Scheme an BEIDE Pfade ausrollen — User UND System.
+# KDE-Plugin sucht in dieser Reihenfolge:
+#   1. ~/.local/share/color-schemes/<Name>.colors
+#   2. /usr/share/color-schemes/<Name>.colors
+if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
+    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${USER_COLOR_SCHEMES}/BreezeDark.colors"
+    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${SYSTEM_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null || true
+fi
+
+# qt5ct/qt6ct nur als Fallback — wir setzen QT_QPA_PLATFORMTHEME=kde, aber
+# falls das Plugin mal nicht laedt (z.B. fehlendes plasma-integration in
+# einer abgespeckten Variante), greift qt5ct mit eigenem Format.
+if [[ -f "${DEFAULTS}/qt5ct.conf" ]]; then
     cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt5ct/qt5ct.conf"
     cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt6ct/qt6ct.conf"
-}
+fi
+# qt5ct-eigenes Color-Scheme-Format (anders als KDE!)
+mkdir -p "${CONFIG_HOME}/qt5ct/colors" "${CONFIG_HOME}/qt6ct/colors"
+if [[ -f "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" ]]; then
+    cp -af "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" "${CONFIG_HOME}/qt5ct/colors/BreezeDark.conf"
+    cp -af "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" "${CONFIG_HOME}/qt6ct/colors/BreezeDark.conf"
+fi
 
-# 2c) openbox/autostart IMMER ueberschreiben (init-kasmvnc-config tut's nur
-#     beim First-Run, und unser Inhalt aendert sich noch oefter).
+# 2c) openbox/autostart IMMER ueberschreiben
 cp -af "${DEFAULTS}/autostart" "${CONFIG_HOME}/openbox/autostart"
 chmod 0755 "${CONFIG_HOME}/openbox/autostart"
 
@@ -97,6 +139,15 @@ esac
 
 # Permissions
 chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
+
+# -- 4) Diagnose-Output -------------------------------------------------------
+log "=== Diagnose ==="
+log "ColorScheme in kdeglobals: $(grep -E '^ColorScheme=' "${CONFIG_HOME}/kdeglobals" | head -n 1)"
+log "BreezeDark.colors in user scheme dir: $(ls -la "${USER_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null | awk '{print $5}') bytes"
+log "BreezeDark.colors in system scheme dir: $(ls -la "${SYSTEM_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null | awk '{print $5}') bytes"
+log "kde-plattform-plugin: $(find /usr/lib -name 'libkdeplatformtheme.so' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
+log "breeze-style-plugin:  $(find /usr/lib -name 'breeze.so' -path '*styles*' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
+log "fc-list count:        $(fc-list 2>/dev/null | wc -l)"
 
 log "init-krusader done"
 exit 0
