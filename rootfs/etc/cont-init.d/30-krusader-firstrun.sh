@@ -2,15 +2,21 @@
 # -----------------------------------------------------------------------------
 # 30-krusader-firstrun
 # -----------------------------------------------------------------------------
-# Runs once per container start, BEFORE KasmVNC/Krusader start. Tasks:
-#   1. On first run, copy skeleton configs from /defaults/ to /config/.config/
-#      and /config/.local/share/krusader/ if they don't exist yet.
-#   2. Apply current KRUSADER_LANG and KRUSADER_THEME from ENV (every start),
-#      so users can switch via the Unraid template at any time.
+# Laeuft VOR KasmVNC/Krusader-Start. Drei klar getrennte Phasen:
 #
-# We never overwrite user-modified files – everything is "copy if missing"
-# plus targeted in-place edits to a couple of well-known keys for the live
-# language/theme switch.
+#   A) USER-GESCHUETZT (nur First-Run, "copy if missing"):
+#      Konfigurationen, die der User editieren koennen muss
+#      -> krusaderrc, katerc, useractions.xml
+#
+#   B) IMMER FRISCH (jeder Start, "copy & overwrite"):
+#      Theme-Infrastruktur, die wir komplett kontrollieren wollen
+#      -> kdeglobals, color-schemes/*, qt5ct/qt6ct, autostart
+#      Wenn der User selbst Theme-Tweaks macht, ueberlebt das via
+#      eigene Files in ~/.config/krusaderrc[Colors] oder eigenen
+#      qt5ct-Override-Files.
+#
+#   C) ENV-DRIVEN APPLY (jeder Start):
+#      KRUSADER_LANG / KRUSADER_THEME aus dem Unraid-Template anwenden.
 # -----------------------------------------------------------------------------
 set -e
 
@@ -21,7 +27,12 @@ COLOR_SCHEMES="/config/.local/share/color-schemes"
 DEFAULTS="/defaults"
 LOCK="/config/.krusader-firstrun.done"
 
-mkdir -p "${CONFIG_HOME}" "${LOCAL_SHARE}/krusader" "${KDEDEFAULTS}" "${COLOR_SCHEMES}"
+mkdir -p "${CONFIG_HOME}" \
+         "${LOCAL_SHARE}/krusader" \
+         "${KDEDEFAULTS}" \
+         "${COLOR_SCHEMES}" \
+         "${CONFIG_HOME}/qt5ct" \
+         "${CONFIG_HOME}/qt6ct"
 
 log() { echo "[krusader-firstrun] $*"; }
 
@@ -29,86 +40,93 @@ copy_if_missing() {
     local src="$1" dst="$2"
     if [[ ! -e "${dst}" ]]; then
         cp -a "${src}" "${dst}"
-        log "Default angelegt / default created: ${dst}"
-    else
-        log "Vorhandene Config beibehalten / keeping existing: ${dst}"
+        log "Default angelegt: ${dst}"
     fi
 }
 
-# -- 1) First-Run-Setup -------------------------------------------------------
+copy_force() {
+    local src="$1" dst="$2"
+    if [[ -e "${src}" ]]; then
+        cp -af "${src}" "${dst}"
+        log "Theme-File aktualisiert: ${dst}"
+    fi
+}
+
+# -- A) User-geschuetzt: nur beim allerersten Start ---------------------------
 if [[ ! -f "${LOCK}" ]]; then
-    log "First-run – seeding default configs..."
-    copy_if_missing "${DEFAULTS}/kdeglobals"      "${CONFIG_HOME}/kdeglobals"
+    log "First-run – seeding user-editable defaults..."
     copy_if_missing "${DEFAULTS}/krusaderrc"      "${CONFIG_HOME}/krusaderrc"
     copy_if_missing "${DEFAULTS}/katerc"          "${CONFIG_HOME}/katerc"
     copy_if_missing "${DEFAULTS}/useractions.xml" "${LOCAL_SHARE}/krusader/useractions.xml"
-    # KDE color-scheme XML (Krusader/Qt liest diesen Pfad direkt)
-    if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
-        copy_if_missing "${DEFAULTS}/color-schemes/BreezeDark.colors" \
-                        "${COLOR_SCHEMES}/BreezeDark.colors"
-    fi
-    # qt5ct/qt6ct – Brueckenkonfig fuer Breeze Dark ohne Plasma-Stack
-    if [[ -f "${DEFAULTS}/qt5ct.conf" ]]; then
-        mkdir -p "${CONFIG_HOME}/qt5ct" "${CONFIG_HOME}/qt6ct"
-        copy_if_missing "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt5ct/qt5ct.conf"
-        copy_if_missing "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt6ct/qt6ct.conf"
-    fi
     touch "${LOCK}"
     log "First-run seeding done."
 fi
 
-# -- 1b) Dark-Mode Hardening (jeden Start) ------------------------------------
-# Krusader 2.x auf KasmVNC ohne vollständigen Plasma-Stack liest kdeglobals
-# nur unzuverlässig. Wir spiegeln daher die Color-Scheme-Werte zusätzlich nach
-# ~/.config/kdedefaults/kdeglobals und stellen die *.colors-Datei bereit.
-if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" && ! -f "${COLOR_SCHEMES}/BreezeDark.colors" ]]; then
-    cp -a "${DEFAULTS}/color-schemes/BreezeDark.colors" "${COLOR_SCHEMES}/BreezeDark.colors"
-    log "BreezeDark.colors nach \${COLOR_SCHEMES} kopiert"
-fi
-if [[ -f "${CONFIG_HOME}/kdeglobals" ]]; then
-    cp -a "${CONFIG_HOME}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"
+# -- B) Theme-Infrastruktur: JEDER Start, immer frisch ------------------------
+# Diese Files sind die Lifeline fuer Dark-Mode. Wenn wir sie nicht ueber-
+# schreiben, klebt der User auf dem ersten kaputten Stand. User-Anpassungen
+# am Theme gehen ueber den Unraid-Template-Switch KRUSADER_THEME, nicht
+# ueber Direkt-Edits an diesen Files.
+log "Theme-Infrastruktur (re)deploy..."
+copy_force "${DEFAULTS}/kdeglobals" "${CONFIG_HOME}/kdeglobals"
+copy_force "${DEFAULTS}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"
+
+if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
+    copy_force "${DEFAULTS}/color-schemes/BreezeDark.colors" \
+               "${COLOR_SCHEMES}/BreezeDark.colors"
 fi
 
-# /etc/profile.d/zz-krusader-theme.sh: Qt-ENV-Variablen für GUI-Sessions
-# (KasmVNC startet Krusader über /defaults/autostart, das die Profile-Snippets
-# lädt).
+if [[ -f "${DEFAULTS}/qt5ct.conf" ]]; then
+    copy_force "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt5ct/qt5ct.conf"
+    copy_force "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt6ct/qt6ct.conf"
+fi
+
+# /etc/profile.d-Snippet als zusaetzliche Sicherheitsleine fuer alle
+# Login-Shells (Konsole im Krusader, SSH, ...). Der primaere Mechanismus
+# bleibt aber /defaults/autostart, das die ENV direkt setzt.
 cat > /etc/profile.d/zz-krusader-theme.sh <<'EOF'
-# Auto-generated by 30-krusader-firstrun.sh – Krusader Dark-Mode Hardening
+# Auto-generated – Krusader Dark-Mode Hardening
 export QT_STYLE_OVERRIDE=Breeze
 export QT_QPA_PLATFORMTHEME=qt5ct
 export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/BreezeDark.colors"
+export GTK_THEME=Breeze-Dark
 EOF
 chmod 0644 /etc/profile.d/zz-krusader-theme.sh
 
-# -- 2) Apply language (idempotent, every boot) -------------------------------
+# -- C) Env-driven Apply ------------------------------------------------------
+
+# Sprache (idempotent)
 /usr/local/bin/krusader-language.sh "${KRUSADER_LANG:-de}" || log "language hook failed (non-fatal)"
 
-# -- 3) Apply theme -----------------------------------------------------------
+# Theme-Switch dark/light – ueberschreibt die kdeglobals-Werte gezielt.
 case "${KRUSADER_THEME:-dark}" in
     dark)
-        if [[ -f "${CONFIG_HOME}/kdeglobals" ]]; then
-            sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/'                                "${CONFIG_HOME}/kdeglobals" || true
-            sed -i 's/^Name=.*/Name=Breeze Dark/'                                             "${CONFIG_HOME}/kdeglobals" || true
-            sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breezedark.desktop/'  "${CONFIG_HOME}/kdeglobals" || true
-        fi
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/'                                "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^Name=.*/Name=Breeze Dark/'                                             "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breezedark.desktop/'  "${CONFIG_HOME}/kdeglobals" || true
+        # auch in krusaderrc[Colors]
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/' "${CONFIG_HOME}/krusaderrc" || true
+        # qt5ct ColorScheme-Pfad erzwingen
+        sed -i "s|^color_scheme_path=.*|color_scheme_path=/config/.local/share/color-schemes/BreezeDark.colors|" "${CONFIG_HOME}/qt5ct/qt5ct.conf" 2>/dev/null || true
+        sed -i "s|^color_scheme_path=.*|color_scheme_path=/config/.local/share/color-schemes/BreezeDark.colors|" "${CONFIG_HOME}/qt6ct/qt6ct.conf" 2>/dev/null || true
+        log "Theme: dark angewendet."
         ;;
     light)
-        if [[ -f "${CONFIG_HOME}/kdeglobals" ]]; then
-            sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/'                               "${CONFIG_HOME}/kdeglobals" || true
-            sed -i 's/^Name=.*/Name=Breeze Light/'                                            "${CONFIG_HOME}/kdeglobals" || true
-            sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breeze.desktop/'      "${CONFIG_HOME}/kdeglobals" || true
-        fi
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/'                               "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^Name=.*/Name=Breeze Light/'                                            "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breeze.desktop/'      "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/' "${CONFIG_HOME}/krusaderrc" || true
+        sed -i "s|^color_scheme_path=.*|color_scheme_path=/usr/share/color-schemes/BreezeLight.colors|" "${CONFIG_HOME}/qt5ct/qt5ct.conf" 2>/dev/null || true
+        sed -i "s|^color_scheme_path=.*|color_scheme_path=/usr/share/color-schemes/BreezeLight.colors|" "${CONFIG_HOME}/qt6ct/qt6ct.conf" 2>/dev/null || true
+        log "Theme: light angewendet."
         ;;
     *)
-        log "Unknown KRUSADER_THEME='${KRUSADER_THEME}', leaving as-is."
+        log "Unbekanntes KRUSADER_THEME='${KRUSADER_THEME}', kein Switch."
         ;;
 esac
 
-# -- 4) Permissions -----------------------------------------------------------
-# /config gehört üblicherweise dem abby-User (UID/GID via PUID/PGID gemappt).
-# Das Baseimage erledigt das später noch einmal – wir setzen hier nur unsere
-# Default-Files konsistent.
+# Permissions
 chown -R abc:abc /config 2>/dev/null || true
 
-log "Setup hook complete – proceeding with KasmVNC/Krusader startup."
+log "Setup-Hook fertig – proceeding with KasmVNC/Krusader startup."
 exit 0

@@ -4,13 +4,13 @@
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
 </a>
 
-<p align="center">
-  <a href="https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/build.yml?branch=main&label=build&style=flat-square" alt="Build"></a>
-  <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/image-ghcr.io-1d99f3?style=flat-square" alt="Image"></a>
-  <a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/web%20stack-KasmVNC-3daee9?style=flat-square" alt="KasmVNC"></a>
-  <a href="#4-languages"><img src="https://img.shields.io/badge/languages-25-3daee9?style=flat-square" alt="Languages"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"></a>
-</p>
+<table width="100%" align="center"><tr>
+<td width="20%" align="center"><a href="https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/build.yml?branch=main&label=build&style=for-the-badge" alt="Build"></a></td>
+<td width="20%" align="center"><a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/image-ghcr.io-1d99f3?style=for-the-badge" alt="Image"></a></td>
+<td width="20%" align="center"><a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/web%20stack-KasmVNC-3daee9?style=for-the-badge" alt="KasmVNC"></a></td>
+<td width="20%" align="center"><a href="#4-languages"><img src="https://img.shields.io/badge/languages-25-3daee9?style=for-the-badge" alt="Languages"></a></td>
+<td width="20%" align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-yellow?style=for-the-badge" alt="License"></a></td>
+</tr></table>
 
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
