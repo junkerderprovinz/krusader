@@ -18,11 +18,14 @@ BANNER_PNG = REPO / ".github/assets/krusader-banner.png"
 
 # ---- Breeze Dark palette ----
 # Official KDE Breeze Dark colour roles
-BREEZE_BG_DARK = "#232629"      # banner background — official Breeze window bg
+# Banner background = formerly the logo's frame grey (light Breeze grey).
+# Logo frame bars   = formerly the dark window background (Breeze dark grey).
+# Result: logo sits darker on a lighter grey backdrop — stronger dark-mode feel.
+BREEZE_BG_DARK = "#bdc3c7"      # banner background — light Breeze grey (was logo frame)
 BREEZE_FRAME_DARK = "#1b1e20"   # darkest detail (was very dark navy #232341)
-BREEZE_FRAME_MID = "#bdc3c7"    # frame top/bottom bars — Breeze light grey (was #bebed2)
-BREEZE_ACCENT = "#3daee9"       # primary Breeze accent blue (was #9696ff lavender)
-BREEZE_ACCENT_DARK = "#2980b9"  # secondary Breeze blue, darker (was #323264 deep navy)
+BREEZE_FRAME_MID = "#232629"    # frame top/bottom bars — Breeze dark grey (swapped in)
+BREEZE_ACCENT = "#2980b9"       # primary panel blue — darker Breeze accent (was #9696ff)
+BREEZE_ACCENT_DARK = "#1d6794"  # secondary darker Breeze blue (was #323264 deep navy)
 BREEZE_FG = "#fcfcfc"           # foreground / cursor highlight (was #ffffff)
 
 COLOR_MAP = {
