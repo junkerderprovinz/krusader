@@ -105,6 +105,18 @@ RUN set -eux; \
 # das, was tatsächlich existiert. So sind wir robust gegen Renamings in
 # zukünftigen Ubuntu-Releases.
 # ---------------------------------------------------------------------------
+# Trick: locale-gen per dpkg-trigger ausschalten, sonst ruft jedes der
+# folgenden language-pack-* Pakete locale-gen ueber ALLE bisher aktivierten
+# Locales auf (quadratische Explosion → 50min+ Build-Zeit). Wir generieren
+# die Locales spaeter EINMAL gezielt.
+RUN set -eux; \
+    # locale-gen-Hook neutralisieren
+    if [ -x /usr/sbin/locale-gen ]; then \
+        mv /usr/sbin/locale-gen /usr/sbin/locale-gen.real; \
+        printf '#!/bin/sh\nexit 0\n' > /usr/sbin/locale-gen; \
+        chmod +x /usr/sbin/locale-gen; \
+    fi
+
 RUN set -eux; \
     WANT=" \
         hunspell-de-de hunspell-en-us hunspell-en-gb \
@@ -163,18 +175,22 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # ---------------------------------------------------------------------------
-# Locales generieren
+# Locales generieren (EINMAL, gezielt fuer unsere 35 Locales)
 # ---------------------------------------------------------------------------
 RUN set -eux; \
-    # 30 UTF-8 Locales aktivieren – passend zu den oben installierten
-    # language-pack-<code> Paketen.
+    # locale-gen-Hook reaktivieren
+    if [ -f /usr/sbin/locale-gen.real ]; then \
+        mv -f /usr/sbin/locale-gen.real /usr/sbin/locale-gen; \
+    fi; \
+    # /etc/locale.gen frisch schreiben — nur unsere gewuenschten Locales
+    : > /etc/locale.gen; \
     for L in \
         de_DE en_US en_GB fr_FR es_ES it_IT pt_PT pt_BR \
         nl_NL da_DK sv_SE nb_NO fi_FI is_IS ga_IE ca_ES eu_ES \
         pl_PL cs_CZ sk_SK hu_HU ro_RO sl_SI hr_HR sr_RS bg_BG \
         uk_UA ru_RU el_GR tr_TR he_IL ar_SA \
         ja_JP ko_KR zh_CN zh_TW; do \
-      sed -i -E "s/^# *(${L}\.UTF-8)/\1/" /etc/locale.gen; \
+      echo "${L}.UTF-8 UTF-8" >> /etc/locale.gen; \
     done; \
     locale-gen
 
