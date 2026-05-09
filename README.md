@@ -1,18 +1,38 @@
-# Krusader for Unraid
+<h1 align="center">Krusader for Unraid</h1>
 
 <a href="https://krusader.org">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
 </a>
 
-[![Build & Push](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml)
-[![Lint](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml)
-[![Image: ghcr.io/junkerderprovinz/krusader](https://img.shields.io/badge/image-ghcr.io%2Fjunkerderprovinz%2Fkrusader-blue)](https://ghcr.io/junkerderprovinz/krusader)
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](LICENSE)
+<table width="100%" align="center"><tr>
+<td align="center" width="25%">
 
-A modern, plug-and-play Docker image for **Krusader** on Unraid. Twin-pane file
+[![Build & Push](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml)
+
+</td>
+<td align="center" width="25%">
+
+[![Lint](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml/badge.svg)](https://github.com/junkerderprovinz/krusader/actions/workflows/lint.yml)
+
+</td>
+<td align="center" width="25%">
+
+[![Image](https://img.shields.io/badge/image-ghcr.io%2Fjunkerderprovinz%2Fkrusader-blue)](https://ghcr.io/junkerderprovinz/krusader)
+
+</td>
+<td align="center" width="25%">
+
+[![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](LICENSE)
+
+</td>
+</tr></table>
+
+<p align="center">
+A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
 management in your browser, powered by KasmVNC, with Breeze Dark, Kate as
 external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
+</p>
 
 ---
 
