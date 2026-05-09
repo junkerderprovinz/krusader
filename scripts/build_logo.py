@@ -50,7 +50,7 @@ ICON_PNG.write_bytes(icon_bytes)
 print(f"wrote {ICON_PNG} ({ICON_PNG.stat().st_size} bytes)")
 
 # ---- Render banner (1600x400) ----
-W, H = 1600, 400
+W, H = 1600, 500
 target_h = int(H * 0.72)
 logo_png = cairosvg.svg2png(url=str(SVG_OUT), output_height=target_h * 2)
 logo = Image.open(BytesIO(logo_png)).convert("RGBA")
