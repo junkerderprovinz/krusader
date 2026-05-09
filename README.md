@@ -1,13 +1,10 @@
 # Krusader for Unraid
-#### Twin-pane file management for your home server — in any browser, in your language.
-
-
 <div align="center">
 
 <a href="https://krusader.org">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader for Unraid" width="100%">
 </a>
-
+#### Twin-pane file management for your home server — in any browser, in your language.
 
 
 <br>
