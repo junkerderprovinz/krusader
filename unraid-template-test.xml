@@ -19,7 +19,7 @@
     • Kate as Krusader's external editor&#xD;
     • RAR support: right-click → "Extract RAR here" / "to subfolder"&#xD;
     • 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO&#xD;
-    • Selectable UI language: 35 languages incl. German, English (US/UK),&#xD;
+    • Selectable UI language: 25 languages incl. German, English,&#xD;
       French, Spanish, Italian, Portuguese (PT/BR), Dutch, Catalan, Basque,&#xD;
       Irish, Danish, Swedish, Norwegian, Finnish, Icelandic, Polish, Czech,&#xD;
       Slovak, Hungarian, Romanian, Slovenian, Croatian, Serbian, Bulgarian,&#xD;
@@ -80,8 +80,8 @@
        first '|' is the pre-selected default.
   -->
   <Config Name="UI Language (KRUSADER_LANG)" Target="KRUSADER_LANG"
-          Default="de|en|en_GB|fr|es|it|pt|pt_BR|nl|ca|eu|ga|da|sv|nb|fi|is|pl|cs|sk|hu|ro|sl|hr|sr|bg|uk|ru|el|tr|he|ar|ja|ko|zh|zh_TW|system" Mode=""
-          Description="Language for the Krusader / Kate UI. 35 codes available: de, en, en_GB, fr, es, it, pt, pt_BR, nl, ca, eu, ga, da, sv, nb, fi, is, pl, cs, sk, hu, ro, sl, hr, sr, bg, uk, ru, el, tr, he, ar, ja, ko, zh, zh_TW. Use 'system' for the container default. Re-applied on every container start."
+          Default="de|en|fr|es|it|pt|nl|ca|eu|ga|da|sv|nb|fi|is|pl|cs|sk|hu|ro|sl|hr|sr|bg|uk|ru|el|tr|he|ar|ja|ko|zh|system" Mode=""
+          Description="Language for the Krusader / Kate UI. 25 codes available: de, en, fr, es, it, pt, nl, ca, eu, ga, da, sv, nb, fi, is, pl, cs, sk, hu, ro, sl, hr, sr, bg, uk, ru, el, tr, he, ar, ja, ko, zh. Use 'system' for the container default. Re-applied on every container start."
           Type="Variable" Display="always" Required="false" Mask="false">de</Config>
 
   <Config Name="Theme (KRUSADER_THEME)" Target="KRUSADER_THEME"
