@@ -66,8 +66,15 @@ RUN set -eux; \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
-        # Qt-Theme-Bridge – sorgt dafür, dass Krusader/Kate Breeze Dark
-        # auch ohne vollständigen Plasma-Stack zuverlässig anwenden.
+        # Qt-Theme-Bridge fuer KDE-Apps:
+        # plasma-integration liefert das offizielle 'kde' Qt-Platformtheme-
+        # Plugin (libkdeplatformtheme.so). Damit liest Krusader/Kate die
+        # KDE-Color-Schemes (BreezeDark.colors) NATIV — qt5ct kann diese
+        # KDE-Files nicht parsen (Format-Mismatch) und liefert eine leere
+        # weisse Default-Palette zurueck. Genau dieser Fehler hat zuvor
+        # zur hellen UI mit Linien-Optik gefuehrt.
+        plasma-integration kde-config-gtk-style \
+        # qt5ct/qt6ct trotzdem als Fallback fuer Nicht-KDE-Qt-Apps
         qt5ct qt6ct \
         # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
         hunspell \
