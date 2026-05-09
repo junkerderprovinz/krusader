@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>Krusader</Name>
+  <Beta>false</Beta>
   <Repository>ghcr.io/junkerderprovinz/krusader:latest</Repository>
   <Registry>https://ghcr.io/junkerderprovinz/krusader</Registry>
   <Network>bridge</Network>
-  <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
+  <ReadMe>https://github.com/junkerderprovinz/krusader/blob/main/README.md</ReadMe>
   <Support>https://github.com/junkerderprovinz/krusader/issues</Support>
   <Project>https://github.com/junkerderprovinz/krusader</Project>
   <Overview>
@@ -42,23 +43,6 @@
   <TemplateURL>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
   <ExtraParams>--restart=unless-stopped --shm-size=1gb</ExtraParams>
-  <PostArgs/>
-  <CPUset/>
-  <DateInstalled>1778363620</DateInstalled>
-  <DonateText/>
-  <DonateLink/>
-  <Requires/>
-  <MinVer>6.12.0</MinVer>
-  <Date>2026-05-09</Date>
-  <Changes>
-### 2026-05-09
-- Initial Community Apps release&#xD;
-- Breeze Dark by default via native KDE platform theme&#xD;
-- 25 UI languages, dropdown-selectable&#xD;
-- RAR support (extract here / to subfolder), 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO&#xD;
-- Kate pre-wired as external editor&#xD;
-- Optional KasmVNC HTTP-basic-auth&#xD;
-  </Changes>
 
   <!-- ========================================================
        PORTS

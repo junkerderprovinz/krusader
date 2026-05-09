@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Maintainer>
-  <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
+<CommunityApplications>
   <Profile>
     Krusader for Unraid – community edition built on KasmVNC.
     A snappy, hardware-accelerated Krusader file manager with Breeze Dark theme,
     Kate as external editor, RAR support and 25 selectable UI languages.
+    Maintained by junkerderprovinz. Support via GitHub issues.
   </Profile>
+  <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
   <WebPage>https://github.com/junkerderprovinz/krusader</WebPage>
-</Maintainer>
+</CommunityApplications>
