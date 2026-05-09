@@ -16,7 +16,7 @@
 #   * KDE i18n language packs for every selectable language
 #
 # Repository:  https://github.com/junkerderprovinz/krusader
-# License:     GPL-3.0
+# License:     MIT (this wrapper)  –  Krusader upstream is GPL-3.0
 #
 ARG BASE_TAG=ubuntunoble
 
@@ -26,7 +26,7 @@ LABEL maintainer="junkerderprovinz"
 LABEL org.opencontainers.image.title="krusader"
 LABEL org.opencontainers.image.description="Krusader für Unraid mit KasmVNC, Dark Mode, Kate-Editor, RAR-Support und Multi-Language-UI"
 LABEL org.opencontainers.image.source="https://github.com/junkerderprovinz/krusader"
-LABEL org.opencontainers.image.licenses="GPL-3.0"
+LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
 # Title shown in browser tab / KasmVNC top bar
@@ -66,6 +66,9 @@ RUN set -eux; \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
+        # Qt-Theme-Bridge – sorgt dafür, dass Krusader/Kate Breeze Dark
+        # auch ohne vollständigen Plasma-Stack zuverlässig anwenden.
+        qt5ct qt6ct \
         # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
         hunspell \
         fonts-noto fonts-noto-cjk fonts-noto-color-emoji \
@@ -178,7 +181,9 @@ ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     LANG=de_DE.UTF-8 \
     LANGUAGE=de_DE:de:en \
-    LC_ALL=de_DE.UTF-8
+    LC_ALL=de_DE.UTF-8 \
+    QT_QPA_PLATFORMTHEME=qt5ct \
+    QT_STYLE_OVERRIDE=Breeze
 
 # Ports werden vom Baseimage freigegeben (3000/HTTP, 3001/HTTPS).
 # Der Entrypoint kommt vom Baseimage – KasmVNC wird automatisch gestartet
