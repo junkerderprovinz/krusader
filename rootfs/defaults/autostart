@@ -1,7 +1,39 @@
 #!/usr/bin/env bash
-# KasmVNC autostart – wird vom Baseimage als der "User-App"-Befehl
-# ausgeführt, sobald der Desktop bereit ist.
+# -----------------------------------------------------------------------------
+# KasmVNC autostart – wird vom Baseimage als der "User-App"-Befehl ausgefuehrt,
+# sobald der Desktop bereit ist.
 #
-# Wir starten Krusader unter dbus-launch, damit alle KIO-Slaves
-# (krarc, file, smb, …) korrekt funktionieren.
+# WICHTIG: Hier MUESSEN die Qt/KDE-Theme-ENV-Variablen gesetzt werden.
+# /etc/profile.d/* greift nicht, weil dbus-launch keine Login-Shell startet.
+# -----------------------------------------------------------------------------
+
+# --- Qt-Theme-Bridge ---------------------------------------------------------
+# qt5ct/qt6ct lesen ihre Konfig aus ~/.config/qt5ct/qt5ct.conf bzw. qt6ct/.
+# Das verbindet Qt-Apps (Krusader, Kate, Konsole) mit Breeze Dark, auch ohne
+# vollstaendigen Plasma-Stack.
+export QT_QPA_PLATFORMTHEME=qt5ct
+export QT_STYLE_OVERRIDE=Breeze
+
+# --- KDE-Color-Scheme erzwingen ---------------------------------------------
+# Eindeutiger Pfad zur BreezeDark.colors-Datei. Krusader/Qt nimmt diesen Pfad
+# direkt, ohne im Plasma-Lookup nach dem Schema-Namen zu suchen.
+export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/BreezeDark.colors"
+
+# Falls das User-Color-Scheme noch nicht existiert, fallen wir auf das
+# System-Schema zurueck (das immer da ist, paketiert via kde-style-breeze).
+if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f /usr/share/color-schemes/BreezeDark.colors ]]; then
+    export KDE_COLOR_SCHEME_PATH=/usr/share/color-schemes/BreezeDark.colors
+fi
+
+# --- GTK-Apps (Dialog-Fallback, falls Krusader xdg-dialogs nutzt) -----------
+export GTK_THEME=Breeze-Dark
+
+# --- Locale aus Container-ENV uebernehmen -----------------------------------
+# Wird von /etc/cont-init.d/30-krusader-firstrun.sh gesetzt.
+export LANG="${LANG:-de_DE.UTF-8}"
+export LANGUAGE="${LANGUAGE:-de_DE:de:en}"
+export LC_ALL="${LC_ALL:-de_DE.UTF-8}"
+
+# --- Start ------------------------------------------------------------------
+# dbus-launch braucht's fuer KIO-Slaves (krarc, file, smb, ...).
 exec dbus-launch --exit-with-session krusader
