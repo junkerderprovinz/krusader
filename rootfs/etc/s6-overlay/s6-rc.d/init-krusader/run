@@ -119,6 +119,15 @@ fi
 cp -af "${DEFAULTS}/autostart" "${CONFIG_HOME}/openbox/autostart"
 chmod 0755 "${CONFIG_HOME}/openbox/autostart"
 
+# 2d) openbox rc.xml ueberschreiben — entfernt den LinuxServer-baseimage-Patch
+# der jedes Fenster (auch Dialoge wie "Datei loeschen?") maximiert oeffnet.
+# Wir wollen, dass Dialoge in ihrer natuerlichen / zuletzt verwendeten Groesse
+# erscheinen, nicht bildschirmfuellend.
+if [[ -f "${DEFAULTS}/openbox-rc.xml" ]]; then
+    install -m 0644 "${DEFAULTS}/openbox-rc.xml" /etc/xdg/openbox/rc.xml
+    log "openbox rc.xml overridden (no force-maximize for dialogs)"
+fi
+
 # -- 3) Sprache & Theme-Switch (env-driven, idempotent) -----------------------
 /usr/local/bin/krusader-language.sh "${KRUSADER_LANG:-de}" || log "language hook failed"
 
