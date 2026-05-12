@@ -28,9 +28,16 @@ fallback_extractor=true
 [Startup]
 Show splashscreen=false
 Start To Tray=false
+# Save last position, size and panel settings -> Window-Geometrie persistieren
 Remember Position=true
+# Save component settings on exit -> Statusleiste/Toolbar/Menubar-State
+# beim Schliessen persistieren. Ohne diesen Schluessel ignoriert Krusader
+# Aenderungen an View > Show Statusbar / Show Toolbar etc. nach dem Neustart.
+User Save Settings=true
+Show statusbar=true
 Show Cmd Line=true
 Show Function Keys=true
+Show Terminal Emulator=false
 
 [Private]
 RememberPos=true
