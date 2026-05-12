@@ -87,6 +87,43 @@ if [[ ! -f "${LOCK}" ]]; then
     touch "${LOCK}"
 fi
 
+# 2a-bis) Idempotenter Key-Injector fuer krusaderrc.
+# Krusader generiert beim allerersten Programmstart selbst eine krusaderrc,
+# bevor unser First-Run-cp greifen kann (Race auf den ersten WebUI-Open).
+# Damit fehlen kritische Keys (Statusleiste/Fenstergroesse persistieren),
+# auch nach Image-Update. Wir injizieren sie hier idempotent — bestehende
+# User-Werte werden NICHT ueberschrieben.
+ensure_ini_key() {
+    local file="$1" section="$2" key="$3" value="$4"
+    [[ -f "$file" ]] || return 0
+    # Section vorhanden?
+    if ! grep -qE "^\[${section}\]" "$file"; then
+        printf '\n[%s]\n%s=%s\n' "$section" "$key" "$value" >> "$file"
+        return 0
+    fi
+    # Key in Section vorhanden?
+    if awk -v s="[${section}]" -v k="$key" '
+        $0==s {in_s=1; next}
+        /^\[/ && in_s {in_s=0}
+        in_s && $0 ~ "^"k"=" {found=1; exit}
+        END {exit !found}
+    ' "$file"; then
+        return 0
+    fi
+    # Key fehlt -> direkt nach Section-Header einfuegen
+    sed -i "/^\[${section}\]/a ${key}=${value}" "$file"
+}
+
+if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Remember Position"   "true"
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "User Save Settings"  "true"
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show splashscreen"   "false"
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show statusbar"      "true"
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Cmd Line"       "true"
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Function Keys"  "true"
+    log "krusaderrc: Startup-Keys idempotent gesichert"
+fi
+
 # 2b) Theme-Infrastruktur: jeden Start frisch
 log "Theme-Infrastruktur (re)deploy"
 cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
