@@ -92,7 +92,7 @@ Unraid console / SSH:
 ```bash
 mkdir -p /boot/config/plugins/dockerMan/templates-user && \
 curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
-  https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml
+  https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml
 ```
 
 ### Step 2 — Add the container
