@@ -40,7 +40,7 @@
   </Overview>
   <Category>Tools: Productivity:</Category>
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
   <ExtraParams>--restart=unless-stopped --shm-size=1gb</ExtraParams>
 
