@@ -21,8 +21,6 @@ external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
 
----
-
 ## Table of Contents
 
 1. [What is this?](#1-what-is-this)
@@ -36,8 +34,6 @@ from the Unraid template, no SSH or config-file editing required.
 9. [Troubleshooting](#9-troubleshooting)
 10. [Architecture](#10-architecture)
 11. [Contributing / License](#11-contributing--license)
-
----
 
 ## 1. What is this?
 
@@ -76,8 +72,6 @@ What's included beyond bare Krusader:
 | Language dropdown | ✅ (25) | ❌ | ❌ | ❌ |
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
-
----
 
 ## 2. Quick Start on Unraid
 
@@ -140,8 +134,6 @@ docker run -d \
 > template sets it for you. Once Community Applications has accepted this
 > image, it will also be installable via **Apps** → search `Krusader`.
 
----
-
 ## 3. Configuration
 
 | Variable | Default | Description |
@@ -162,8 +154,6 @@ docker run -d \
 |---|---|---|---|---|
 | `3000` | KasmVNC HTTP |  | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3001` | KasmVNC HTTPS *(self-signed)* |  | `/storage` | Files to manage — default host `/mnt` |
-
----
 
 ## 4. Languages
 
@@ -187,8 +177,6 @@ is instant after a restart.
 > with at least one `|` as a native `<select>` dropdown. The cont-init hook
 > re-applies the language on every start.
 
----
-
 ## 5. Right-Click Actions
 
 Krusader's *UserActions* are pre-loaded with five extras:
@@ -203,8 +191,6 @@ Krusader's *UserActions* are pre-loaded with five extras:
 
 Edit them via *Krusader → Settings → Configure UserActions*, or directly at
 `/config/.local/share/krusader/useractions.xml`.
-
----
 
 ## 6. Customisation & Persistence
 
@@ -232,8 +218,6 @@ them freely.
 The base image also supports `/config/custom-cont-init.d/` for your own
 init scripts — see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
 
----
-
 ## 7. Building Locally
 
 ```bash
@@ -254,8 +238,6 @@ docker run --rm -it \
   krusader:dev
 ```
 
----
-
 ## 8. Updating
 
 ```bash
@@ -269,8 +251,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 
 > The image is rebuilt **weekly** via GitHub Actions for upstream KasmVNC,
 > Ubuntu and KDE patches.
-
----
 
 ## 9. Troubleshooting
 
@@ -331,8 +311,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
   credentials.
 </details>
 
----
-
 ## 10. Architecture
 
 ```
@@ -349,8 +327,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
-
----
 
 ## 11. Contributing / License
 
@@ -382,3 +358,9 @@ xmllint --noout unraid-template.xml ca_profile.xml
 - [**KasmVNC**](https://github.com/kasmtech/KasmVNC) — for finally fixing remote-desktop-in-a-browser
 - [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
 - Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
+
+## Support this project
+
+If this template saves you a setup hassle or a debug night, consider buying me a coffee:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/junkerderprovinz)
