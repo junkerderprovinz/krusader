@@ -8,7 +8,7 @@
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
   <ReadMe>https://github.com/junkerderprovinz/krusader/blob/main/README.md</ReadMe>
-  <Support>https://github.com/junkerderprovinz/krusader/issues</Support>
+  <Support>https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/</Support>
   <Project>https://github.com/junkerderprovinz/krusader</Project>
   <Overview>
     Krusader for Unraid – community edition, built on KasmVNC for a smooth,
