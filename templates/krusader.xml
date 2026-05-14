@@ -11,7 +11,8 @@
   <Support>https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/</Support>
   <Project>https://github.com/junkerderprovinz/krusader</Project>
   <Overview>
-    Krusader for Unraid – community edition, built on KasmVNC for a smooth,
+    Krusader file manager with native Dark Mode (Breeze Dark) – built on
+    KasmVNC for a smooth,
     hardware-accelerated web desktop. Far snappier than the noVNC-based
     Krusader containers (binhex / jlesage / ich777).&#xD;
     &#xD;
