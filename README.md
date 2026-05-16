@@ -24,6 +24,7 @@ from the Unraid template, no SSH or config-file editing required.
 ## Table of Contents
 
 1. [What is this?](#1-what-is-this)
+   - [Screenshots](#screenshots)
 2. [Quick Start on Unraid](#2-quick-start-on-unraid)
 3. [Configuration](#3-configuration)
 4. [Languages](#4-languages)
@@ -72,6 +73,23 @@ What's included beyond bare Krusader:
 | Language dropdown | ✅ (25) | ❌ | ❌ | ❌ |
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
+
+## Screenshots
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
+  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
+</p>
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-1.jpg" alt="Krusader configurator — Startup settings" width="90%">
+  <br><em>Configurator → Startup: 'Save last position, size and settings' is pre-enabled.</em>
+</p>
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-3.jpg" alt="Krusader configurator — Colors" width="90%">
+  <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
+</p>
 
 ## 2. Quick Start on Unraid
 
@@ -254,6 +272,10 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 
 ## 9. Troubleshooting
 
+> For deeper, **non-trivial** known issues (UI state not persisted across
+> Quit, Kate close-button freeze, template language picker ignored) and the
+> matching fix roadmap, see [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
+
 <details>
 <summary><b>WebUI is black / desktop never appears</b></summary>
 
@@ -363,4 +385,4 @@ xmllint --noout unraid-template.xml ca_profile.xml
 
 If this template saves you a setup hassle or a debug night, consider buying me a coffee:
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/junkerderprovinz)
+[<img src=".github/assets/button-buy-me-a-coffee.png" width="220" alt="Buy me a coffee"/>](https://buymeacoffee.com/junkerderprovinz)
