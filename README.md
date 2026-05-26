@@ -206,9 +206,12 @@ Krusader's *UserActions* are pre-loaded with five extras:
 |---|---|
 | **Extract RAR here** | `unrar x -o+` into the current directory |
 | **Extract RAR to subfolder** | Same, but into a folder named after the archive |
-| **Extract 7z here** | `7z x` into the current directory |
 | **Open with Kate** | Opens the selected file(s) in Kate |
 | **Open Konsole here** | New Konsole tab in the current directory |
+
+> For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in
+> right-click menu — it is already installed and avoids a duplicate
+> "Extract" entry in the context menu.
 
 Edit them via *Krusader → Settings → Configure UserActions*, or directly at
 `/config/.local/share/krusader/useractions.xml`.
@@ -335,6 +338,19 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 
 - Open in a private window once — your browser may have cached old
   credentials.
+</details>
+
+<details>
+<summary><b>Container fails to start — "mkdir /etc/localtime: file exists"</b></summary>
+
+You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g.
+from an old template version). The LSIO base image manages `/etc/localtime`
+internally as a symlink; a bind-mount on top causes the conflict.
+
+**Fix:** Remove the `/etc/localtime` path mapping from your container
+settings and use the `TZ` environment variable instead (e.g. `TZ=Europe/Vienna`).
+The `TZ` variable is the correct and supported way to set the timezone in
+LSIO-based containers.
 </details>
 
 ## 10. Architecture
