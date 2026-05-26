@@ -649,14 +649,12 @@
 </menu>
 
 <applications>
-  <!-- Bug #3 fix: Krusader starts maximised so the viewport is filled on every
-       container restart, even without ksmserver to restore saved geometry. -->
+  <!-- Krusader: always start maximised to fill the KasmVNC viewport. -->
   <application class="krusader">
     <maximized>yes</maximized>
   </application>
 
-  <!-- Bug #2 fix (partial): Kate must NOT fill the full viewport on launch.
-       The window-X freeze is resolved separately by ksmserver (Bug #1 fix). -->
+  <!-- Kate: open at a reasonable size, not fullscreen. -->
   <application class="kate">
     <maximized>no</maximized>
     <position force="no">

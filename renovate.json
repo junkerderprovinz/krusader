@@ -13,7 +13,7 @@
   "prConcurrentLimit": 6,
   "packageRules": [
     {
-      "description": "LinuxServer KasmVNC base image — minor/patch auto-merge, major manual",
+      "description": "LinuxServer KasmVNC base image — group and label all updates, manual review required",
       "matchPackageNames": ["ghcr.io/linuxserver/baseimage-kasmvnc"],
       "groupName": "LSIO KasmVNC base",
       "commitMessageTopic": "LSIO KasmVNC base",
