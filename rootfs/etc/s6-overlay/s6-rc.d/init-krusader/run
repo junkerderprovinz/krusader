@@ -168,6 +168,21 @@ fi
 # -- 3) Sprache & Theme-Switch (env-driven, idempotent) -----------------------
 /usr/local/bin/krusader-language.sh "${KRUSADER_LANG:-de}" || log "language hook failed"
 
+# Propagate locale into s6 container environment so every process
+# (krusader, kate, KIO workers) inherits the correct LANG/LC_ALL.
+# krusader-language.sh writes the values to a profile snippet; we read
+# them back here and push them via set_env so they override the static
+# Docker-ENV defaults (e.g. LANG=de_DE.UTF-8).
+if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
+    _L=$(grep  '^export LANG='     /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
+    _A=$(grep  '^export LC_ALL='   /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
+    _C=$(grep  '^export LANGUAGE=' /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
+    [[ -n "$_L" ]] && set_env LANG     "$_L"
+    [[ -n "$_A" ]] && set_env LC_ALL   "$_A"
+    [[ -n "$_C" ]] && set_env LANGUAGE "$_C"
+    log "Locale -> s6 env: LANG=${_L:-unchanged}"
+fi
+
 case "${KRUSADER_THEME:-dark}" in
     dark)
         sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/'                                "${CONFIG_HOME}/kdeglobals" || true

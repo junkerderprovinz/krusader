@@ -78,6 +78,11 @@ RUN set -eux; \
         # weisse Default-Palette zurueck. Genau dieser Fehler hat zuvor
         # zur hellen UI mit Linien-Optik gefuehrt.
         plasma-integration kde-config-gtk-style \
+        # KDE Session Manager — ksmserver persistiert Fenstergeometrie und
+        # UI-Zustand (Bugs #1/#2). Ist Teil von plasma-workspace (~150 MB).
+        # ksmserver registriert sich als org.kde.ksmserver auf dem D-Bus und
+        # sendet saveYourself an alle KMainWindow-Apps beim Beenden.
+        plasma-workspace \
         # qt5ct/qt6ct trotzdem als Fallback fuer Nicht-KDE-Qt-Apps
         qt5ct qt6ct \
         # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
@@ -208,6 +213,7 @@ COPY rootfs/ /
 
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
+             /usr/local/bin/krusader-session \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
              /defaults/autostart
 

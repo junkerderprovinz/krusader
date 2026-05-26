@@ -649,6 +649,26 @@
 </menu>
 
 <applications>
+  <!-- Bug #3 fix: Krusader starts maximised so the viewport is filled on every
+       container restart, even without ksmserver to restore saved geometry. -->
+  <application class="krusader">
+    <maximized>yes</maximized>
+  </application>
+
+  <!-- Bug #2 fix (partial): Kate must NOT fill the full viewport on launch.
+       The window-X freeze is resolved separately by ksmserver (Bug #1 fix). -->
+  <application class="kate">
+    <maximized>no</maximized>
+    <position force="no">
+      <x>center</x>
+      <y>center</y>
+    </position>
+    <size>
+      <width>1100</width>
+      <height>750</height>
+    </size>
+  </application>
+
 <!--
   # this is an example with comments through out. use these to make your
   # own rules, but without the comments of course.

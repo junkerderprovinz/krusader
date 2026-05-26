@@ -34,10 +34,11 @@ fi
 export GTK_THEME="${GTK_THEME:-Breeze-Dark}"
 export XCURSOR_THEME="${XCURSOR_THEME:-breeze_cursors}"
 
-# --- Locale (vom Container-ENV) ---------------------------------------------
-export LANG="${LANG:-de_DE.UTF-8}"
-export LANGUAGE="${LANGUAGE:-de_DE:de:en}"
-export LC_ALL="${LC_ALL:-de_DE.UTF-8}"
+# --- Locale (vom Container-ENV, gesetzt durch init-krusader/krusader-language.sh) ---
+# Fallback nur wenn die Propagation aus dem s6-Env komplett ausbleibt.
+export LANG="${LANG:-en_US.UTF-8}"
+export LANGUAGE="${LANGUAGE:-en_US:en}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
 
 # --- Diagnose-Log ------------------------------------------------------------
 echo "[krusader-autostart] QT_QPA_PLATFORMTHEME=$QT_QPA_PLATFORMTHEME" >&2
@@ -45,8 +46,10 @@ echo "[krusader-autostart] XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP" >&2
 echo "[krusader-autostart] QT_STYLE_OVERRIDE=$QT_STYLE_OVERRIDE" >&2
 echo "[krusader-autostart] KDE_COLOR_SCHEME_PATH=$KDE_COLOR_SCHEME_PATH" >&2
 echo "[krusader-autostart] GTK_THEME=$GTK_THEME" >&2
+echo "[krusader-autostart] LANG=$LANG" >&2
 
 # --- Start -------------------------------------------------------------------
 # dbus-launch fuer KIO-Slaves (krarc, file, smb, ...).
-# exec garantiert dass Krusader die ENV erbt.
-exec dbus-launch --exit-with-session krusader
+# krusader-session startet ksmserver VOR krusader im selben D-Bus-Kontext,
+# damit KDE-State-Persistenz (Bug #1) und Kate-Close-Events (Bug #2) funktionieren.
+exec dbus-launch --exit-with-session krusader-session
