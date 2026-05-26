@@ -21,20 +21,14 @@
       "labels": ["base-image"]
     },
     {
-      "description": "GitHub Actions: auto-merge minor/patch/digest",
+      "description": "GitHub Actions: auto-merge all updates (major/minor/patch/digest). No CI runs on PRs, so platformAutomerge merges as soon as the PR is open.",
       "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchUpdateTypes": ["major", "minor", "patch", "digest"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
+      "platformAutomerge": true,
       "commitMessagePrefix": "ci:",
       "labels": ["github-actions"]
-    },
-    {
-      "description": "GitHub Actions major: manual PRs",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["major"],
-      "commitMessagePrefix": "ci:",
-      "labels": ["github-actions", "major-update"]
     }
   ],
   "customManagers": [

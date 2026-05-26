@@ -57,7 +57,7 @@ RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         # File-Manager + Editor
-        krusader kate konsole ark \
+        krusader kate konsole ark krename \
         # Theme / Icons
         breeze breeze-icon-theme kde-style-breeze \
         # Archiv-Tools (wichtig für Krusader)
