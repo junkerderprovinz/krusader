@@ -54,6 +54,8 @@ What's included beyond bare Krusader:
   switch to light with one variable
 - **Kate** wired up as Krusader's external editor, also Breeze Dark, with
   spell-check
+- **krename** — KDE's batch-rename dialog bundled; rename hundreds of files
+  at once using regex, counters, case transforms and metadata patterns
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE,
   RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **25 UI languages** picked from a dropdown in the Unraid template
@@ -69,6 +71,7 @@ What's included beyond bare Krusader:
 | File upload via WebUI | ✅ | ❌ | ❌ | ❌ |
 | Breeze Dark default | ✅ | ❌ | ❌ | ❌ |
 | Kate as editor | ✅ | ❌ | ❌ | ❌ |
+| Batch rename (krename) | ✅ | ❌ | ❌ | ❌ |
 | RAR right-click | ✅ | ❌ | ❌ | ❌ |
 | Language dropdown | ✅ (25) | ❌ | ❌ | ❌ |
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
@@ -272,9 +275,10 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 
 ## 9. Troubleshooting
 
-> For deeper, **non-trivial** known issues (UI state not persisted across
-> Quit, Kate close-button freeze, template language picker ignored) and the
-> matching fix roadmap, see [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
+> The bugs documented in [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) (UI state
+> not persisted, Kate window-X freeze, Krusader window size, language picker)
+> were **fixed in v1.1.0**. That file is kept as a reference for the root causes
+> and the ksmserver architecture.
 
 <details>
 <summary><b>WebUI is black / desktop never appears</b></summary>
@@ -341,11 +345,14 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │  s6-overlay v3 init                                       │  │
 │  │   ↓                                                       │  │
-│  │  /etc/cont-init.d/30-krusader-firstrun.sh                 │  │
+│  │  s6-rc.d/init-krusader/run                                │  │
 │  │   ↓ seeds /config from /defaults  (first run only)        │  │
-│  │   ↓ runs krusader-language.sh  (every run)                │  │
+│  │   ↓ sets theme, locale → s6 container environment         │  │
 │  │   ↓                                                       │  │
-│  │  KasmVNC ← /defaults/autostart → dbus-launch krusader     │  │
+│  │  KasmVNC ← /defaults/autostart                            │  │
+│  │              → dbus-launch krusader-session               │  │
+│  │                 → ksmserver (KDE session manager)         │  │
+│  │                 → krusader                                │  │
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
