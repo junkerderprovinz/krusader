@@ -206,9 +206,8 @@ RUN set -eux; \
 # ---------------------------------------------------------------------------
 # Skeleton-Configs + s6-overlay init scripts
 # ---------------------------------------------------------------------------
-# Das LinuxServer-Baseimage benutzt s6-overlay v3. Init-Scripts unter
-# /etc/cont-init.d/ werden in alphabetischer Reihenfolge VOR den Services
-# ausgeführt – ideal für unser First-Run-Setup.
+# Das LinuxServer-Baseimage benutzt s6-overlay v3. Init-Scripts liegen unter
+# /etc/s6-overlay/s6-rc.d/ und werden vor den Services ausgeführt.
 COPY rootfs/ /
 
 # Berechtigungen für init-scripts

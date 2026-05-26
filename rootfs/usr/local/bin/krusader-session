@@ -13,6 +13,7 @@
 # -----------------------------------------------------------------------------
 
 if command -v ksmserver >/dev/null 2>&1; then
+    echo "[krusader-session] starting ksmserver for D-Bus session management" >&2
     ksmserver --no-lockscreen 2>/dev/null &
     # Give ksmserver time to register on the session bus before krusader starts.
     sleep 0.5
