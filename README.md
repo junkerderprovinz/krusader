@@ -15,12 +15,28 @@
   <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="36"></a>
 </p>
 
+<br>
+
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
 management in your browser, powered by KasmVNC, with Breeze Dark, Kate as
 external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
+
+<br>
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
+  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
+</p>
+
+<br>
+
+<details>
+<summary><b>How does this image compare to alternatives?</b></summary>
+
+<br>
 
 | | **This image** | binhex | jlesage | ich777 |
 |---|:---:|:---:|:---:|:---:|
@@ -36,10 +52,9 @@ from the Unraid template, no SSH or config-file editing required.
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
 
-<p align="center">
-  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
-  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
-</p>
+</details>
+
+<br>
 
 ## Quick Start
 
@@ -79,6 +94,8 @@ docker run -d \
 
 </details>
 
+<br>
+
 ## Configuration
 
 | Variable | Default | Description |
@@ -97,6 +114,8 @@ docker run -d \
 |---|---|---|---|---|
 | `3000` | KasmVNC HTTP | | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3001` | KasmVNC HTTPS *(self-signed)* | | `/storage` | Files to manage — default host `/mnt` |
+
+<br>
 
 ## Architecture
 
@@ -117,6 +136,8 @@ docker run -d \
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+<br>
 
 ## Support this project
 
