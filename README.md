@@ -1,8 +1,8 @@
-<h1 align="center">Krusader for Unraid</h1>
-
 <a href="https://krusader.org">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
 </a>
+
+<br>
 
 <p align="center">
   <a href="https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/build.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions&logoColor=white" alt="Build" height="36"></a>&nbsp;
@@ -231,8 +231,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 ## Troubleshooting
 
-> The bugs documented in [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) (UI state not persisted, Kate window-X freeze, Krusader window size, language picker) were **fixed in v1.1.0**.
-
 <details>
 <summary><b>WebUI is black / desktop never appears</b></summary>
 
@@ -300,10 +298,14 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
   <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
 </p>
 
+<br>
+
 <p align="center">
   <img src=".github/assets/screenshots/krusader-1.jpg" alt="Krusader configurator — Startup settings" width="90%">
   <br><em>Configurator → Startup: 'Save last position, size and settings' is pre-enabled.</em>
 </p>
+
+<br>
 
 <p align="center">
   <img src=".github/assets/screenshots/krusader-3.jpg" alt="Krusader configurator — Colors" width="90%">
