@@ -22,7 +22,6 @@ external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
 
-
 ## Table of Contents
 
 1. [What is this?](#1-what-is-this)
@@ -37,7 +36,6 @@ from the Unraid template, no SSH or config-file editing required.
 9. [Troubleshooting](#9-troubleshooting)
 10. [Architecture](#10-architecture)
 11. [Contributing / License](#11-contributing--license)
-
 
 ## 1. What is this?
 
@@ -80,7 +78,6 @@ What's included beyond bare Krusader:
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
 
-
 ## Screenshots
 
 <p align="center">
@@ -98,9 +95,7 @@ What's included beyond bare Krusader:
   <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
 </p>
 
-
 ## 2. Quick Start on Unraid
-
 
 ### Step 1 — Install the template
 
@@ -116,13 +111,11 @@ curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
   https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml
 ```
 
-
 ### Step 2 — Add the container
 
 In the Unraid Web UI: **Docker** tab → **Add Container** → in the
 **Template** dropdown, pick **Krusader** under *User templates*. All fields
 are pre-filled.
-
 
 ### Step 3 — Adjust paths and start
 
@@ -138,11 +131,9 @@ The defaults work out of the box, but you may want to tweak:
 Hit **Apply**. The first start takes 30–60 seconds while the container
 seeds its config and KasmVNC generates a self-signed certificate.
 
-
 ### Step 4 — Open the WebUI
 
 `http://<unraid-ip>:3000/` (HTTP) or `https://<unraid-ip>:3001/` (HTTPS, self-signed).
-
 
 ### Plain Docker (no Unraid)
 
@@ -165,7 +156,6 @@ docker run -d \
 > template sets it for you. Once Community Applications has accepted this
 > image, it will also be installable via **Apps** → search `Krusader`.
 
-
 ## 3. Configuration
 
 | Variable | Default | Description |
@@ -180,14 +170,12 @@ docker run -d \
 | `TITLE` | `Krusader` | Browser tab / KasmVNC top-bar title |
 | `UMASK` | `022` | File-creation mask |
 
-
 ### Ports & Volumes
 
 | Port | Purpose |  | Volume | Purpose |
 |---|---|---|---|---|
 | `3000` | KasmVNC HTTP |  | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3001` | KasmVNC HTTPS *(self-signed)* |  | `/storage` | Files to manage — default host `/mnt` |
-
 
 ## 4. Languages
 
@@ -211,7 +199,6 @@ is instant after a restart.
 > with at least one `|` as a native `<select>` dropdown. The cont-init hook
 > re-applies the language on every start.
 
-
 ## 5. Right-Click Actions
 
 Krusader's *UserActions* are pre-loaded with five extras:
@@ -229,7 +216,6 @@ Krusader's *UserActions* are pre-loaded with five extras:
 
 Edit them via *Krusader → Settings → Configure UserActions*, or directly at
 `/config/.local/share/krusader/useractions.xml`.
-
 
 ## 6. Customisation & Persistence
 
@@ -257,7 +243,6 @@ them freely.
 The base image also supports `/config/custom-cont-init.d/` for your own
 init scripts — see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
 
-
 ## 7. Building Locally
 
 ```bash
@@ -278,7 +263,6 @@ docker run --rm -it \
   krusader:dev
 ```
 
-
 ## 8. Updating
 
 ```bash
@@ -292,7 +276,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your
 
 > The image is rebuilt **weekly** via GitHub Actions for upstream KasmVNC,
 > Ubuntu and KDE patches.
-
 
 ## 9. Troubleshooting
 
@@ -371,7 +354,6 @@ The `TZ` variable is the correct and supported way to set the timezone in
 LSIO-based containers.
 </details>
 
-
 ## 10. Architecture
 
 ```
@@ -391,7 +373,6 @@ LSIO-based containers.
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
-
 
 ## 11. Contributing / License
 
@@ -416,7 +397,6 @@ docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable rootfs/etc/cont-init.d
 xmllint --noout unraid-template.xml ca_profile.xml
 ```
 
-
 ### Credits
 
 - [**Krusader**](https://krusader.org) — KDE community, the actual file manager
@@ -424,7 +404,6 @@ xmllint --noout unraid-template.xml ca_profile.xml
 - [**KasmVNC**](https://github.com/kasmtech/KasmVNC) — for finally fixing remote-desktop-in-a-browser
 - [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
 - Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
-
 
 ## Support this project
 
