@@ -26,18 +26,6 @@ from the Unraid template, no SSH or config-file editing required.
 
 <br>
 
-<p align="center">
-  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
-  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
-</p>
-
-<br>
-
-<details>
-<summary><b>What is this? — Features &amp; comparison</b></summary>
-
-<br>
-
 This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-kasmvnc`](https://github.com/linuxserver/docker-baseimage-kasmvnc), so it benefits from LSIO's hardware-accelerated KasmVNC stack and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
 
 What's included beyond bare Krusader:
@@ -64,8 +52,6 @@ What's included beyond bare Krusader:
 | Language dropdown | ✅ (25) | ❌ | ❌ | ❌ |
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
-
-</details>
 
 <br>
 
@@ -308,6 +294,11 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 <br>
 
 ## Screenshots
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
+  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
+</p>
 
 <p align="center">
   <img src=".github/assets/screenshots/krusader-1.jpg" alt="Krusader configurator — Startup settings" width="90%">
