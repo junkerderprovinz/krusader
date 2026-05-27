@@ -1,3 +1,5 @@
+<h1 align="center">Krusader for Unraid</h1>
+
 <a href="https://krusader.org">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
 </a>
