@@ -34,9 +34,22 @@ from the Unraid template, no SSH or config-file editing required.
 <br>
 
 <details>
-<summary><b>How does this image compare to alternatives?</b></summary>
+<summary><b>What is this? — Features &amp; comparison</b></summary>
 
 <br>
+
+This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-kasmvnc`](https://github.com/linuxserver/docker-baseimage-kasmvnc), so it benefits from LSIO's hardware-accelerated KasmVNC stack and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
+
+What's included beyond bare Krusader:
+
+- **KasmVNC** instead of noVNC — hardware-accelerated rendering, real browser clipboard, native file upload and download, high-DPI ready
+- **Breeze Dark** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
+- **Kate** wired up as Krusader's external editor, also Breeze Dark, with spell-check
+- **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
+- **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
+- **25 UI languages** picked from a dropdown in the Unraid template
+- **Update-safe configs** — first-run-only seeding, your customisations in `/config` survive every `docker pull`
+- **Multi-arch** — amd64 and arm64
 
 | | **This image** | binhex | jlesage | ich777 |
 |---|:---:|:---:|:---:|:---:|
@@ -58,7 +71,11 @@ from the Unraid template, no SSH or config-file editing required.
 
 ## Quick Start
 
-**Step 1 — Install the template** via Unraid console / SSH:
+### Step 1 — Install the template
+
+The repository ships one template: `unraid-template.xml` — production install (`Krusader`, ports 3000/3001).
+
+Pull the template directly into Unraid's user-template folder via the Unraid console / SSH:
 
 ```bash
 mkdir -p /boot/config/plugins/dockerMan/templates-user && \
@@ -66,9 +83,24 @@ curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
   https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml
 ```
 
-**Step 2 — Add the container:** Docker tab → **Add Container** → Template dropdown → **Krusader** (User templates). Adjust `/storage` path, language and theme if needed, then hit **Apply**. First start takes 30–60 s.
+### Step 2 — Add the container
 
-**Step 3 — Open the WebUI:** `http://<unraid-ip>:3000/` or `https://<unraid-ip>:3001/` (HTTPS, self-signed).
+In the Unraid Web UI: **Docker** tab → **Add Container** → in the **Template** dropdown, pick **Krusader** under *User templates*. All fields are pre-filled.
+
+### Step 3 — Adjust paths and start
+
+The defaults work out of the box, but you may want to tweak:
+
+- **Storage (`/storage`)** — defaults to `/mnt`, which exposes all shares and disks. Restrict to e.g. `/mnt/user` if you want.
+- **UI Language** — dropdown, default `de`.
+- **Theme** — `dark` or `light`.
+- **KasmVNC Password** — leave empty for LAN-only, set anything for exposure beyond the LAN.
+
+Hit **Apply**. The first start takes 30–60 seconds while the container seeds its config and KasmVNC generates a self-signed certificate.
+
+### Step 4 — Open the WebUI
+
+`http://<unraid-ip>:3000/` (HTTP) or `https://<unraid-ip>:3001/` (HTTPS, self-signed).
 
 > Once Community Applications has accepted this image it will also be installable via **Apps** → search `Krusader`.
 
@@ -90,7 +122,7 @@ docker run -d \
   ghcr.io/junkerderprovinz/krusader:latest
 ```
 
-`--shm-size=1gb` is required for smooth KDE rendering.
+**`--shm-size=1gb`** is required for smooth KDE rendering. The Unraid template sets it for you.
 
 </details>
 
@@ -117,44 +149,7 @@ docker run -d \
 
 <br>
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble              │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │  s6-overlay v3 init                                       │  │
-│  │   ↓                                                       │  │
-│  │  s6-rc.d/init-krusader/run                                │  │
-│  │   ↓ seeds /config from /defaults  (first run only)        │  │
-│  │   ↓ sets theme, locale → s6 container environment         │  │
-│  │   ↓                                                       │  │
-│  │  KasmVNC ← /defaults/autostart                            │  │
-│  │              → dbus-launch krusader-session               │  │
-│  │                 → ksmserver (KDE session manager)         │  │
-│  │                 → krusader                                │  │
-│  └───────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-<br>
-
-## Support this project
-
-If this template saves you a setup hassle or a debug night, consider buying me a coffee:
-
-<p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz">
-    <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
-  </a>
-</p>
-
----
-
-<details>
-<summary><b>Languages · Right-Click Actions · Customisation · Building · Updating · Troubleshooting · License</b></summary>
-
-### Languages
+## Languages
 
 The Unraid template ships a **dropdown** with **25 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
 
@@ -167,9 +162,13 @@ The Unraid template ships a **dropdown** with **25 UI languages** (German defaul
 | **Asia / CJK** | 🇯🇵 `ja` 日本語 · 🇰🇷 `ko` 한국어 · 🇨🇳 `zh` 中文 |
 | **Fallback** | `system` — use the container's default locale |
 
-*Set via `KRUSADER_LANG` or the Unraid dropdown. Unraid renders any `<Default>a|b|c</Default>` value with at least one `|` as a native `<select>` dropdown.*
+*Default: `de` (Deutsch). Set via `KRUSADER_LANG` or the Unraid dropdown.*
 
-### Right-Click Actions
+> **How it works:** Unraid renders any `<Default>a|b|c</Default>` value with at least one `|` as a native `<select>` dropdown. The cont-init hook re-applies the language on every start.
+
+<br>
+
+## Right-Click Actions
 
 Krusader's *UserActions* are pre-loaded with extras:
 
@@ -180,9 +179,13 @@ Krusader's *UserActions* are pre-loaded with extras:
 | **Open with Kate** | Opens the selected file(s) in Kate |
 | **Open Konsole here** | New Konsole tab in the current directory |
 
-For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in right-click menu — it is already installed and avoids a duplicate entry. Edit actions via *Krusader → Settings → Configure UserActions* or directly at `/config/.local/share/krusader/useractions.xml`.
+> For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in right-click menu — it is already installed and avoids a duplicate "Extract" entry in the context menu.
 
-### Customisation & Persistence
+Edit them via *Krusader → Settings → Configure UserActions*, or directly at `/config/.local/share/krusader/useractions.xml`.
+
+<br>
+
+## Customisation & Persistence
 
 On the **first start only**, the container seeds defaults from `/defaults/` into `/config/`:
 
@@ -196,11 +199,15 @@ On the **first start only**, the container seeds defaults from `/defaults/` into
     └── useractions.xml     # right-click actions
 ```
 
-A marker file `/config/.krusader-firstrun.done` prevents subsequent starts from overwriting your customisations. Delete it and restart to re-seed defaults.
+A marker file `/config/.krusader-firstrun.done` is written so subsequent container starts **never overwrite your customisations**. To re-seed defaults, delete the marker and restart.
 
-`KRUSADER_LANG` and `KRUSADER_THEME` are re-applied on **every** start, so you can flip them freely. The base image also supports `/config/custom-cont-init.d/` for your own init scripts — see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
+The two env-driven knobs (`KRUSADER_LANG`, `KRUSADER_THEME`) are re-applied on **every** start via a `cont-init.d` hook, so you can flip them freely.
 
-### Building Locally
+The base image also supports `/config/custom-cont-init.d/` for your own init scripts — see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
+
+<br>
+
+## Building Locally
 
 ```bash
 git clone https://github.com/junkerderprovinz/krusader.git
@@ -220,7 +227,9 @@ docker run --rm -it \
   krusader:dev
 ```
 
-### Updating
+<br>
+
+## Updating
 
 ```bash
 docker pull ghcr.io/junkerderprovinz/krusader:latest
@@ -228,9 +237,13 @@ docker stop krusader && docker rm krusader
 # re-create with the same template / docker run args
 ```
 
-On Unraid: **Docker** tab → click the container → **Force Update**. Your `/config` is untouched. The image is rebuilt **weekly** via GitHub Actions for upstream KasmVNC, Ubuntu and KDE patches.
+On Unraid: **Docker** tab → click the container → **Force Update**. Your `/config` is untouched.
 
-### Troubleshooting
+> The image is rebuilt **weekly** via GitHub Actions for upstream KasmVNC, Ubuntu and KDE patches.
+
+<br>
+
+## Troubleshooting
 
 > The bugs documented in [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) (UI state not persisted, Kate window-X freeze, Krusader window size, language picker) were **fixed in v1.1.0**.
 
@@ -262,7 +275,8 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 <summary><b>Language change doesn't take effect</b></summary>
 
 - Restart the container — language is applied at start, not live
-- Check the env value matches a code from the Languages table above
+- Check the env value matches a code from the [Languages](#languages) table
+- The script writes `/etc/profile.d/zz-krusader-lang.sh` and updates `kdeglobals[Translations]`
 </details>
 
 <details>
@@ -288,10 +302,12 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from an old template version). The LSIO base image manages `/etc/localtime` internally as a symlink; a bind-mount on top causes the conflict.
 
-**Fix:** Remove the `/etc/localtime` path mapping and use the `TZ` environment variable instead (e.g. `TZ=Europe/Vienna`).
+**Fix:** Remove the `/etc/localtime` path mapping from your container settings and use the `TZ` environment variable instead (e.g. `TZ=Europe/Vienna`). The `TZ` variable is the correct and supported way to set the timezone in LSIO-based containers.
 </details>
 
-### Screenshots
+<br>
+
+## Screenshots
 
 <p align="center">
   <img src=".github/assets/screenshots/krusader-1.jpg" alt="Krusader configurator — Startup settings" width="90%">
@@ -303,11 +319,38 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
   <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
 </p>
 
-### Contributing / License
+<br>
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble              │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  s6-overlay v3 init                                       │  │
+│  │   ↓                                                       │  │
+│  │  s6-rc.d/init-krusader/run                                │  │
+│  │   ↓ seeds /config from /defaults  (first run only)        │  │
+│  │   ↓ sets theme, locale → s6 container environment         │  │
+│  │   ↓                                                       │  │
+│  │  KasmVNC ← /defaults/autostart                            │  │
+│  │              → dbus-launch krusader-session               │  │
+│  │                 → ksmserver (KDE session manager)         │  │
+│  │                 → krusader                                │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+<br>
+
+## Contributing / License
 
 Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/issues>.
 
-This **wrapper repository** (Dockerfile, `rootfs/`, scripts, templates, README and artwork) is licensed under the [MIT License](LICENSE). **Krusader itself** and bundled KDE / Qt / KasmVNC / unrar / LSIO components retain their upstream licenses (GPL-2.0+, GPL-3.0+, LGPL-2.1+, unrar non-free). When you run, redistribute or rebuild the image you must comply with **all** of those licenses.
+**Licensing — dual:**
+
+- This **wrapper repository** (Dockerfile, `rootfs/`, scripts, Unraid templates, README and banner/icon artwork) is licensed under the [MIT License](LICENSE).
+- **Krusader itself** and the bundled KDE / Qt / KasmVNC / unrar / LSIO base-image components retain their upstream licenses (mostly GPL-2.0+ / GPL-3.0+ / LGPL-2.1+, plus unrar's non-free terms). When you run, redistribute or rebuild the resulting container image, you must comply with **all** of those licenses, not only with this wrapper's MIT license. See the `LICENSE` file for the full notice.
 
 ```bash
 # Run lints locally (CI runs them too)
@@ -324,4 +367,14 @@ xmllint --noout unraid-template.xml ca_profile.xml
 - [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
 - Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
 
-</details>
+<br>
+
+## Support this project
+
+If this template saves you a setup hassle or a debug night, consider buying me a coffee:
+
+<p align="center">
+  <a href="https://buymeacoffee.com/junkerderprovinz">
+    <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
+  </a>
+</p>
