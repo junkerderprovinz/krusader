@@ -25,6 +25,12 @@ set -e
 
 log() { echo "[init-krusader] $*"; }
 
+# Init-Log-Banner (Junker der Provinz brand + container title)
+/usr/local/bin/print-banner.sh \
+    "Krusader for Unraid" \
+    "Breeze Dark · KasmVNC · KDE" \
+    2>/dev/null || true
+
 # -- 1) ENV-Propagation via s6 ------------------------------------------------
 # /run/s6/container_environment/<NAME>=<VALUE> ist der offizielle Weg, ENV in
 # alle s6-Services zu injizieren. Jedes File = eine Variable.
