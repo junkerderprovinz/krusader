@@ -210,9 +210,15 @@ RUN set -eux; \
 # /etc/s6-overlay/s6-rc.d/ und werden vor den Services ausgeführt.
 COPY rootfs/ /
 
+# Init-Log-Banner: single source at .github/assets/banner-raw.txt (CR stripped
+# so the figlet renders cleanly regardless of the editor's line endings).
+COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
+RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt
+
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
+             /usr/local/bin/print-banner.sh \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
              /defaults/autostart
 
