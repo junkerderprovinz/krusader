@@ -10,10 +10,9 @@
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Image-ghcr.io-1d99f3?style=for-the-badge&logo=docker&logoColor=white" alt="Image" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-success?style=for-the-badge&logo=linux&logoColor=white" alt="Arch" height="36"></a>&nbsp;
   <a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/Web-KasmVNC-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="KasmVNC" height="36"></a>&nbsp;
-  <a href="#languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
+  <a href="#4-languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>&nbsp;
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="36"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
 </p>
 
 <br>
@@ -26,6 +25,33 @@ from the Unraid template, no SSH or config-file editing required.
 </p>
 
 <br>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/junkerderprovinz">
+    <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
+  </a>
+</p>
+
+<br>
+
+## Table of Contents
+
+1. [Overview](#1-overview)
+2. [Quick Start](#2-quick-start)
+3. [Configuration](#3-configuration)
+4. [Languages](#4-languages)
+5. [Right-Click Actions](#5-right-click-actions)
+6. [Customisation & Persistence](#6-customisation--persistence)
+7. [Building Locally](#7-building-locally)
+8. [Updating](#8-updating)
+9. [Troubleshooting](#9-troubleshooting)
+10. [Screenshots](#10-screenshots)
+11. [Architecture](#11-architecture)
+12. [Contributing / License](#12-contributing--license)
+
+<br>
+
+## 1. Overview
 
 This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-kasmvnc`](https://github.com/linuxserver/docker-baseimage-kasmvnc), so it benefits from LSIO's hardware-accelerated KasmVNC stack and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
 
@@ -56,7 +82,7 @@ What's included beyond bare Krusader:
 
 <br>
 
-## Quick Start
+## 2. Quick Start
 
 ### Step 1 — Install the template
 
@@ -115,14 +141,14 @@ docker run -d \
 
 <br>
 
-## Configuration
+## 3. Configuration
 
 | Variable | Default | Description |
 |---|---|---|
 | `PUID` | `99` | User ID — Unraid's *nobody* |
 | `PGID` | `100` | Group ID — Unraid's *users* |
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
-| `KRUSADER_LANG` | `de` | UI language — see [Languages](#languages) |
+| `KRUSADER_LANG` | `de` | UI language — see [Languages](#4-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Breeze Dark) or `light` (Breeze) |
 | `CUSTOM_USER` | `abc` | KasmVNC HTTP-basic-auth username |
 | `PASSWORD` | *(empty)* | KasmVNC password — **set this if exposed beyond LAN** |
@@ -136,7 +162,7 @@ docker run -d \
 
 <br>
 
-## Languages
+## 4. Languages
 
 The Unraid template ships a **dropdown** with **25 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
 
@@ -155,7 +181,7 @@ The Unraid template ships a **dropdown** with **25 UI languages** (German defaul
 
 <br>
 
-## Right-Click Actions
+## 5. Right-Click Actions
 
 Krusader's *UserActions* are pre-loaded with extras:
 
@@ -172,7 +198,7 @@ Edit them via *Krusader → Settings → Configure UserActions*, or directly at 
 
 <br>
 
-## Customisation & Persistence
+## 6. Customisation & Persistence
 
 On the **first start only**, the container seeds defaults from `/defaults/` into `/config/`:
 
@@ -194,7 +220,7 @@ The base image also supports `/config/custom-cont-init.d/` for your own init scr
 
 <br>
 
-## Building Locally
+## 7. Building Locally
 
 ```bash
 git clone https://github.com/junkerderprovinz/krusader.git
@@ -216,7 +242,7 @@ docker run --rm -it \
 
 <br>
 
-## Updating
+## 8. Updating
 
 ```bash
 docker pull ghcr.io/junkerderprovinz/krusader:latest
@@ -230,7 +256,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 <br>
 
-## Troubleshooting
+## 9. Troubleshooting
 
 <details>
 <summary><b>WebUI is black / desktop never appears</b></summary>
@@ -260,7 +286,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 <summary><b>Language change doesn't take effect</b></summary>
 
 - Restart the container — language is applied at start, not live
-- Check the env value matches a code from the [Languages](#languages) table
+- Check the env value matches a code from the [Languages](#4-languages) table
 - The script writes `/etc/profile.d/zz-krusader-lang.sh` and updates `kdeglobals[Translations]`
 </details>
 
@@ -292,7 +318,7 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 
 <br>
 
-## Screenshots
+## 10. Screenshots
 
 <p align="center">
   <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
@@ -315,7 +341,7 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 
 <br>
 
-## Architecture
+## 11. Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -337,7 +363,7 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 
 <br>
 
-## Contributing / License
+## 12. Contributing / License
 
 Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/issues>.
 
@@ -360,15 +386,3 @@ xmllint --noout unraid-template.xml ca_profile.xml
 - [**KasmVNC**](https://github.com/kasmtech/KasmVNC) — for finally fixing remote-desktop-in-a-browser
 - [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
 - Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
-
-<br>
-
-## Support this project
-
-If this template saves you a setup hassle or a debug night, consider buying me a coffee:
-
-<p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz">
-    <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
-  </a>
-</p>
