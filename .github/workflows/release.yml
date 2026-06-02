@@ -1,26 +1,67 @@
 name: Release
 
-# Creates a GitHub Release with auto-generated changelog whenever a semver
-# tag is pushed. The changelog is built from merged PRs and commits since
-# the previous tag (GitHub's built-in release notes generator).
+# Create a GitHub Release whenever a semver tag (vX.Y.Z) is pushed.
+# The release body is taken from .github/release-notes/<tag>.md if present,
+# otherwise it falls back to auto-generated notes.
 
 on:
   push:
-    tags: [ 'v*.*.*' ]
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.1.3)"
+        required: true
+
+permissions:
+  contents: write
 
 jobs:
   release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Create GitHub Release
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for release notes file
+        id: notes
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          NOTES_FILE=".github/release-notes/${TAG}.md"
+          if [ -f "${NOTES_FILE}" ]; then
+            echo "Using release notes from ${NOTES_FILE}"
+            echo "notes_file=${NOTES_FILE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No release notes file at ${NOTES_FILE}; will auto-generate."
+            echo "notes_file=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release (with notes file)
+        if: steps.notes.outputs.notes_file != ''
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          body_path: ${{ steps.notes.outputs.notes_file }}
+          generate_release_notes: false
+          make_latest: true
+
+      - name: Create GitHub Release (auto-generated fallback)
+        if: steps.notes.outputs.notes_file == ''
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
           generate_release_notes: true
           make_latest: true
