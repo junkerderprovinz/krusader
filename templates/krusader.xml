@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <ReadMe>https://github.com/junkerderprovinz/krusader/blob/main/README.md</ReadMe>
   <Support>https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/</Support>
-  <Project>https://github.com/junkerderprovinz/krusader</Project>
+  <Project>https://krusader.org</Project>
   <Overview>
     Krusader file manager with native Dark Mode (Breeze Dark) – built on
     KasmVNC for a smooth,
@@ -38,6 +38,8 @@
     • Auth: leave "KasmVNC Username" and "Password" EMPTY to run without&#xD;
       login. Set both to enable HTTP-basic auth on the WebUI. Recommended&#xD;
       whenever the container is reachable from anything beyond your LAN.&#xD;
+    &#xD;
+    Source on GitHub: https://github.com/junkerderprovinz/krusader&#xD;
   </Overview>
   <Category>Tools: Productivity:</Category>
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
