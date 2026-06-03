@@ -91,13 +91,3 @@ jobs:
 
       - name: Image digest
         run: echo "Image digest = ${{ steps.meta.outputs.digest }}"
-
-      # Mirror the repo README onto the Docker Hub page (only when mirroring is on).
-      - name: Sync README to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          readme-filepath: ./README.md
