@@ -3,6 +3,9 @@ name: Build & Push
 # -----------------------------------------------------------------------------
 # Builds the Krusader-on-KasmVNC image and pushes it to:
 #   * GitHub Container Registry  (ghcr.io/junkerderprovinz/krusader)
+#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/krusader)
+#     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
+#       secret are set together; until then the build stays GHCR-only.
 #
 # Triggers:
 #   * Push to main           → tags: latest, sha-<short>
@@ -46,11 +49,23 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Docker Hub mirror — active only once DOCKERHUB_USERNAME (variable) and
+      # DOCKERHUB_TOKEN (secret) are set together. Until then this step is
+      # skipped and the build stays GHCR-only, so CI is unaffected.
+      - name: Login to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -76,3 +91,13 @@ jobs:
 
       - name: Image digest
         run: echo "Image digest = ${{ steps.meta.outputs.digest }}"
+
+      # Mirror the repo README onto the Docker Hub page (only when mirroring is on).
+      - name: Sync README to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          readme-filepath: ./README.md
