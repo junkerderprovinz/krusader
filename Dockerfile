@@ -218,24 +218,23 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt
 # ---------------------------------------------------------------------------
 # Browser-tab favicon (issue #12)
 # ---------------------------------------------------------------------------
-# The KasmVNC web UI ships dark Kasm-logo favicons (368_kasm_logo_only_*.png)
-# that disappear on a dark browser tab. Overwrite every favicon the web client
-# actually references (the <link rel="icon" … .png> entries in index.html) with
-# the Krusader icon — it has light blue panes + a white cursor and stays visible
-# on both light and dark tabs. Done at build time so it tracks whatever filenames
-# the base image references, and fails the build loudly if KasmVNC ever changes
-# that scheme (so CI / the weekly rebuild surfaces the regression).
+# The KasmVNC web UI ships dark Kasm-logo favicons
+# (app/images/icons/368_kasm_logo_only_*.png, referenced by index.html) that
+# disappear on a dark browser tab. Overwrite the whole set with the Krusader icon
+# — light blue panes + a white cursor stay visible on both light and dark tabs.
+# Done at build time; fails the build loudly if the set is gone (KasmVNC changed
+# the scheme), so CI / the weekly rebuild surfaces the regression. A glob (no pipe,
+# no command substitution) keeps hadolint + shellcheck clean.
 COPY .github/assets/icon.png /usr/local/share/krusader-icon.png
 RUN set -eux; \
-    www=/usr/share/kasmvnc/www; \
-    refs="$(grep -ioE 'href=[^ >]*icons/[^ >]+\.png' "$www/index.html" | sed -E 's/^href=//' | sort -u)"; \
-    [ -n "$refs" ] || { echo "ERROR: no favicon <link> refs in index.html — KasmVNC layout changed, update the favicon override"; exit 1; }; \
+    icons=/usr/share/kasmvnc/www/app/images/icons; \
     n=0; \
-    for rel in $refs; do \
-        dest="$www/$rel"; \
-        if [ -f "$dest" ]; then cp /usr/local/share/krusader-icon.png "$dest"; n=$((n + 1)); fi; \
+    for dest in "$icons"/368_kasm_logo_only_*.png; do \
+        [ -f "$dest" ] || continue; \
+        cp /usr/local/share/krusader-icon.png "$dest"; \
+        n=$((n + 1)); \
     done; \
-    [ "$n" -gt 0 ] || { echo "ERROR: referenced favicon files not found on disk"; exit 1; }; \
+    [ "$n" -gt 0 ] || { echo "ERROR: no KasmVNC favicons matched (368_kasm_logo_only_*.png) — base layout changed, update the favicon override"; exit 1; }; \
     echo "krusader: overwrote $n web-UI favicon file(s) with the Krusader icon"
 
 # Berechtigungen für init-scripts
