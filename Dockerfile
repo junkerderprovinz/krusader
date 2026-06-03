@@ -218,24 +218,33 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt
 # ---------------------------------------------------------------------------
 # Browser-tab favicon (issue #12)
 # ---------------------------------------------------------------------------
-# The KasmVNC web UI ships dark Kasm-logo favicons
-# (app/images/icons/368_kasm_logo_only_*.png, referenced by index.html) that
-# disappear on a dark browser tab. Overwrite the whole set with the Krusader icon
-# — light blue panes + a white cursor stay visible on both light and dark tabs.
-# Done at build time; fails the build loudly if the set is gone (KasmVNC changed
-# the scheme), so CI / the weekly rebuild surfaces the regression. A glob (no pipe,
-# no command substitution) keeps hadolint + shellcheck clean.
-COPY .github/assets/icon.png /usr/local/share/krusader-icon.png
+# The web UI is served by the "kclient" wrapper (Node) on top of KasmVNC. The
+# browser tab favicon is its /favicon.ico — the page has no working <link rel=icon>
+# (only an apple-touch-icon that 404s), so the browser falls back to /favicon.ico,
+# i.e. the file /kclient/public/favicon.ico. v1.1.3 wrongly overwrote the INNER
+# KasmVNC client icons (app/images/icons/368_*), which the tab never loads — so
+# nothing changed. v1.1.4 overwrites the real kclient favicon.ico (+ the kclient
+# app icon.png, served at /public/icon.png, + the inner client icons for good
+# measure). The build fails loudly if the kclient favicon is gone (layout changed),
+# so CI / the weekly rebuild surfaces the regression.
+COPY .github/assets/icon.png    /usr/local/share/krusader-icon.png
+COPY .github/assets/favicon.ico /usr/local/share/krusader-favicon.ico
 RUN set -eux; \
-    icons=/usr/share/kasmvnc/www/app/images/icons; \
+    fav=/kclient/public/favicon.ico; \
+    [ -f "$fav" ] || { echo "ERROR: $fav missing — kclient layout changed, update the favicon override"; exit 1; }; \
+    cp /usr/local/share/krusader-favicon.ico "$fav"; \
+    echo "krusader: overwrote tab favicon $fav"; \
+    if [ -f /kclient/public/icon.png ]; then \
+        cp /usr/local/share/krusader-icon.png /kclient/public/icon.png; \
+        echo "krusader: overwrote /kclient/public/icon.png"; \
+    fi; \
     n=0; \
-    for dest in "$icons"/368_kasm_logo_only_*.png; do \
+    for dest in /usr/share/kasmvnc/www/app/images/icons/368_kasm_logo_only_*.png; do \
         [ -f "$dest" ] || continue; \
         cp /usr/local/share/krusader-icon.png "$dest"; \
         n=$((n + 1)); \
     done; \
-    [ "$n" -gt 0 ] || { echo "ERROR: no KasmVNC favicons matched (368_kasm_logo_only_*.png) — base layout changed, update the favicon override"; exit 1; }; \
-    echo "krusader: overwrote $n web-UI favicon file(s) with the Krusader icon"
+    echo "krusader: also overwrote $n inner KasmVNC client icon(s)"
 
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
