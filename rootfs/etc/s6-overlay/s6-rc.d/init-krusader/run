@@ -128,16 +128,16 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Cmd Line"       "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Function Keys"  "true"
     log "krusaderrc: Startup-Keys idempotent gesichert"
-    # User decision: "save settings on exit" OFF. It needs a clean exit (which
-    # docker stop never gives krusader), so View-menu toggles for the statusbar /
-    # command line were lost on restart. Forcing "User Save Settings" off un-greys
-    # the Startup checkboxes, so Show Cmd Line / Show Function Keys become fixed,
-    # persistent values the user sets there. The statusbar has no Startup checkbox
-    # in the UI, so default it to hidden here (a View-menu toggle still shows it
-    # for the current session). Both override the ensure_ini_key seeds above.
-    sed -i 's|^User Save Settings=.*|User Save Settings=false|' "${CONFIG_HOME}/krusaderrc"
+    # Hide statusbar + command line by default. IMPORTANT: krusader only
+    # RESPECTS the Show statusbar / Show Cmd Line settings when "User Save
+    # Settings" is ON (with it OFF it ignores them and shows the bars). So keep
+    # it ON and FORCE the two bars off here. The container never gives krusader
+    # a clean exit, so save-on-exit can't re-enable them; these forced values
+    # win on every start, so the bars stay hidden.
+    sed -i 's|^User Save Settings=.*|User Save Settings=true|'  "${CONFIG_HOME}/krusaderrc"
     sed -i 's|^Show statusbar=.*|Show statusbar=false|'         "${CONFIG_HOME}/krusaderrc"
-    log "krusaderrc: User Save Settings=false (checkboxes editable), statusbar default hidden"
+    sed -i 's|^Show Cmd Line=.*|Show Cmd Line=false|'           "${CONFIG_HOME}/krusaderrc"
+    log "krusaderrc: statusbar + command line forced hidden (User Save Settings=true)"
 fi
 
 # 2b) Theme-Infrastruktur: jeden Start frisch
