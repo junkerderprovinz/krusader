@@ -11,13 +11,13 @@
   <Support>https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/</Support>
   <Project>https://krusader.org</Project>
   <Overview>
-    Krusader file manager with native Dark Mode (Breeze Dark) – built on
+    Krusader file manager with native Dark Mode (Dark Mode) – built on
     KasmVNC for a smooth,
     hardware-accelerated web desktop. Far snappier than the noVNC-based
     Krusader containers (binhex / jlesage / ich777).&#xD;
     &#xD;
     What's pre-configured:&#xD;
-    • Breeze Dark theme for Krusader, Kate and KDE&#xD;
+    • Dark Mode theme for Krusader, Kate and KDE&#xD;
     • Kate as Krusader's external editor&#xD;
     • RAR support: right-click → "Extract RAR here" / "to subfolder"&#xD;
     • 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO&#xD;
@@ -83,7 +83,7 @@
 
   <Config Name="Theme (KRUSADER_THEME)" Target="KRUSADER_THEME"
           Default="dark|light" Mode=""
-          Description="Color scheme. 'dark' = Breeze Dark, 'light' = Breeze."
+          Description="Color scheme. 'dark' = Dark Mode, 'light' = Breeze."
           Type="Variable" Display="always" Required="false" Mask="false">dark</Config>
 
   <!-- ========================================================

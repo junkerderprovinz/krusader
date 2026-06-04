@@ -10,7 +10,7 @@
 #   * Krusader (twin-pane file manager)
 #   * Kate (KDE editor) – also wired up as Krusader's default editor
 #   * Full archive support including RAR (unrar), 7z, ARJ, ACE, LHA …
-#   * Pre-configured Breeze Dark theme (Krusader, Kate, KDE)
+#   * Pre-configured Dark Mode theme (Krusader, Kate, KDE)
 #   * Right-click "Extract RAR here", "Open with Kate", "Open Konsole here"
 #   * Selectable UI language via KRUSADER_LANG (de, en, fr, es, it, …)
 #   * KDE i18n language packs for every selectable language
@@ -73,7 +73,7 @@ RUN set -eux; \
         # Qt-Theme-Bridge fuer KDE-Apps:
         # plasma-integration liefert das offizielle 'kde' Qt-Platformtheme-
         # Plugin (libkdeplatformtheme.so). Damit liest Krusader/Kate die
-        # KDE-Color-Schemes (BreezeDark.colors) NATIV — qt5ct kann diese
+        # KDE-Color-Schemes (DarkMode.colors) NATIV — qt5ct kann diese
         # KDE-Files nicht parsen (Format-Mismatch) und liefert eine leere
         # weisse Default-Palette zurueck. Genau dieser Fehler hat zuvor
         # zur hellen UI mit Linien-Optik gefuehrt.
