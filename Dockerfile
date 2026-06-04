@@ -246,6 +246,27 @@ RUN set -eux; \
     done; \
     echo "krusader: also overwrote $n inner KasmVNC client icon(s)"
 
+# ---------------------------------------------------------------------------
+# Monochrome MediaButton icon (the "show available devices" button in the
+# panel status bar)
+# ---------------------------------------------------------------------------
+# Krusader's MediaButton uses the "system-file-manager" icon (a blue Breeze
+# icon) for its own button — NOT the generic "folder" icon. So this targets
+# ONLY that button and leaves the file-list folder icons (folder /
+# inode-directory) untouched. The replacement is a monochrome SVG carrying
+# Breeze's ".ColorScheme-Text" class, so KDE/KIconEngine recolours it to the
+# status bar's text colour (ideally dark on the light/active bar, light on the
+# dark/inactive bar) instead of fixed blue.
+COPY .github/assets/system-file-manager-mono.svg /usr/local/share/system-file-manager-mono.svg
+RUN set -eux; \
+    src=/usr/local/share/system-file-manager-mono.svg; \
+    n=0; \
+    for d in /usr/share/icons/breeze-dark/apps/*/; do \
+        if [ -e "${d}system-file-manager.svg" ]; then cp "$src" "${d}system-file-manager.svg"; n=$((n + 1)); fi; \
+    done; \
+    echo "krusader: replaced $n breeze-dark system-file-manager icon(s) with monochrome"; \
+    gtk-update-icon-cache -f -t /usr/share/icons/breeze-dark 2>/dev/null || true
+
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
