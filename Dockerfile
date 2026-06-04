@@ -246,6 +246,29 @@ RUN set -eux; \
     done; \
     echo "krusader: also overwrote $n inner KasmVNC client icon(s)"
 
+# ---------------------------------------------------------------------------
+# Monochrome folder icon (panel bars + list show blue Breeze folders)
+# ---------------------------------------------------------------------------
+# The folder icon in the panel's free-space / origin bar is the colourful Breeze
+# blue folder. A monochrome SVG carrying Breeze's ".ColorScheme-Text" stylesheet
+# class is recoloured by KDE/KIconEngine to the *text colour* of the widget that
+# draws it — so the folder follows the bar (ideally dark on the light/active bar,
+# light on the dark/inactive bar) instead of fixed blue. NOTE: this overrides the
+# generic "folder" / "inode-directory" icons, so file-list folders become
+# monochrome too — the bar icon shares the same icon name and cannot be targeted
+# separately via the icon theme.
+COPY .github/assets/folder-mono.svg /usr/local/share/folder-mono.svg
+RUN set -eux; \
+    src=/usr/local/share/folder-mono.svg; \
+    n=0; \
+    for d in /usr/share/icons/breeze-dark/places/*/; do \
+        for name in folder inode-directory folder-open; do \
+            if [ -e "${d}${name}.svg" ]; then cp "$src" "${d}${name}.svg"; n=$((n + 1)); fi; \
+        done; \
+    done; \
+    echo "krusader: replaced $n breeze-dark folder icon(s) with monochrome"; \
+    gtk-update-icon-cache -f -t /usr/share/icons/breeze-dark 2>/dev/null || true
+
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
