@@ -3,12 +3,12 @@
 # UND /config/.config/kdedefaults/kdeglobals ausgerollt.
 #
 # Das libkdeplatformtheme.so (aus plasma-integration) liest dieses File
-# direkt und erkennt darueber den ColorScheme-Namen "BreezeDark", den es
-# dann in /usr/share/color-schemes/BreezeDark.colors aufloest.
+# direkt und erkennt darueber den ColorScheme-Namen "DarkMode", den es
+# dann in /usr/share/color-schemes/DarkMode.colors aufloest.
 
 [General]
-ColorScheme=BreezeDark
-Name=Breeze Dark
+ColorScheme=DarkMode
+Name=Dark Mode
 shadeSortColumn=true
 AccentColor=255,255,255
 accentColorFromWallpaper=false
@@ -20,7 +20,7 @@ smallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0
 toolBarFont=Noto Sans,10,-1,5,50,0,0,0,0,0
 
 [KDE]
-ColorScheme=BreezeDark
+ColorScheme=DarkMode
 LookAndFeelPackage=org.kde.breezedark.desktop
 SingleClick=false
 contrast=4

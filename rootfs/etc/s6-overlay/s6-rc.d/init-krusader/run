@@ -28,7 +28,7 @@ log() { echo "[init-krusader] $*"; }
 # Init-Log-Banner (Junker der Provinz brand + container title)
 /usr/local/bin/print-banner.sh \
     "Krusader for Unraid" \
-    "Breeze Dark · KasmVNC · KDE" \
+    "Dark Mode · KasmVNC · KDE" \
     2>/dev/null || true
 
 # -- 1) ENV-Propagation via s6 ------------------------------------------------
@@ -56,7 +56,7 @@ set_env QT_AUTO_SCREEN_SCALE_FACTOR "1"
 
 # Pfad zum Color-Scheme — KDE-Plugin findet es ueber kdeglobals,
 # Variable als zusaetzlicher Hint.
-set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/BreezeDark.colors"
+set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/DarkMode.colors"
 
 # GTK + Cursor + Icons (fuer GTK-Dialoge, die Krusader z.B. fuer Datei-
 # Operationen oeffnet).
@@ -145,29 +145,29 @@ log "Theme-Infrastruktur (re)deploy"
 cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
 cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
 
-# Merge the colour sections from BreezeDark.colors INTO kdeglobals. KColorScheme
+# Merge the colour sections from DarkMode.colors INTO kdeglobals. KColorScheme
 # (plasma-integration + the Breeze widget style) builds the Qt palette and the
 # View focus/hover decoration — i.e. the file-panel frame — from kdeglobals'
-# [Colors:*] groups. Our kdeglobals had none, so KColorScheme fell back to the
-# built-in Breeze defaults (blue #3daee9): the focus/hover frame stayed blue even
-# though the separate .colors scheme was de-blued (the .colors file alone is not
-# read for the palette). Merge the de-blued [ColorEffects:*]/[Colors:*] groups
-# here so the palette + frame follow the scheme. (Dark scheme.)
-if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
-    _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${DEFAULTS}/color-schemes/BreezeDark.colors")"
+# [Colors:*] groups. A separate .colors file alone is NOT read for the palette,
+# so without this merge KColorScheme falls back to the built-in Breeze defaults
+# (blue accent) instead of our scheme. Merge the [ColorEffects:*]/[Colors:*]
+# groups here so the Qt palette + panel frame follow the Dark Mode (Carbon
+# greyscale) scheme.
+if [[ -f "${DEFAULTS}/color-schemes/DarkMode.colors" ]]; then
+    _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${DEFAULTS}/color-schemes/DarkMode.colors")"
     for _kg in "${CONFIG_HOME}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"; do
         printf '\n%s\n' "${_colors}" >> "${_kg}"
     done
-    log "kdeglobals: [Colors:*] aus BreezeDark.colors gemergt (Palette/Rahmen-Quelle)"
+    log "kdeglobals: [Colors:*] aus DarkMode.colors gemergt (Palette/Rahmen-Quelle)"
 fi
 
 # Color-Scheme an BEIDE Pfade ausrollen — User UND System.
 # KDE-Plugin sucht in dieser Reihenfolge:
 #   1. ~/.local/share/color-schemes/<Name>.colors
 #   2. /usr/share/color-schemes/<Name>.colors
-if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
-    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${USER_COLOR_SCHEMES}/BreezeDark.colors"
-    cp -af "${DEFAULTS}/color-schemes/BreezeDark.colors" "${SYSTEM_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null || true
+if [[ -f "${DEFAULTS}/color-schemes/DarkMode.colors" ]]; then
+    cp -af "${DEFAULTS}/color-schemes/DarkMode.colors" "${USER_COLOR_SCHEMES}/DarkMode.colors"
+    cp -af "${DEFAULTS}/color-schemes/DarkMode.colors" "${SYSTEM_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null || true
 fi
 
 # qt5ct/qt6ct nur als Fallback — wir setzen QT_QPA_PLATFORMTHEME=kde, aber
@@ -179,9 +179,18 @@ if [[ -f "${DEFAULTS}/qt5ct.conf" ]]; then
 fi
 # qt5ct-eigenes Color-Scheme-Format (anders als KDE!)
 mkdir -p "${CONFIG_HOME}/qt5ct/colors" "${CONFIG_HOME}/qt6ct/colors"
-if [[ -f "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" ]]; then
-    cp -af "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" "${CONFIG_HOME}/qt5ct/colors/BreezeDark.conf"
-    cp -af "${DEFAULTS}/qt5ct-colors/BreezeDark.conf" "${CONFIG_HOME}/qt6ct/colors/BreezeDark.conf"
+if [[ -f "${DEFAULTS}/qt5ct-colors/DarkMode.conf" ]]; then
+    cp -af "${DEFAULTS}/qt5ct-colors/DarkMode.conf" "${CONFIG_HOME}/qt5ct/colors/DarkMode.conf"
+    cp -af "${DEFAULTS}/qt5ct-colors/DarkMode.conf" "${CONFIG_HOME}/qt6ct/colors/DarkMode.conf"
+fi
+
+# Kate editor "Dark Mode" syntax theme (Carbon greyscale). KTextEditor reads
+# custom themes from $XDG_DATA_HOME/org.kde.syntax-highlighting/themes/; katerc
+# selects it via "Color Theme=Dark Mode".
+if [[ -f "${DEFAULTS}/syntax-themes/DarkMode.theme" ]]; then
+    mkdir -p "${LOCAL_SHARE}/org.kde.syntax-highlighting/themes"
+    cp -af "${DEFAULTS}/syntax-themes/DarkMode.theme" "${LOCAL_SHARE}/org.kde.syntax-highlighting/themes/DarkMode.theme"
+    log "Kate Dark Mode syntax theme deployed"
 fi
 
 # 2c) openbox/autostart IMMER ueberschreiben
@@ -217,10 +226,10 @@ fi
 
 case "${KRUSADER_THEME:-dark}" in
     dark)
-        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/'                                "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^Name=.*/Name=Breeze Dark/'                                             "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^ColorScheme=.*/ColorScheme=DarkMode/'                                "${CONFIG_HOME}/kdeglobals" || true
+        sed -i 's/^Name=.*/Name=Dark Mode/'                                             "${CONFIG_HOME}/kdeglobals" || true
         sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breezedark.desktop/'  "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeDark/' "${CONFIG_HOME}/krusaderrc" || true
+        sed -i 's/^ColorScheme=.*/ColorScheme=DarkMode/' "${CONFIG_HOME}/krusaderrc" || true
         ;;
     light)
         sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/'                               "${CONFIG_HOME}/kdeglobals" || true
@@ -236,8 +245,8 @@ chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 # -- 4) Diagnose-Output -------------------------------------------------------
 log "=== Diagnose ==="
 log "ColorScheme in kdeglobals: $(grep -E '^ColorScheme=' "${CONFIG_HOME}/kdeglobals" | head -n 1)"
-log "BreezeDark.colors in user scheme dir: $(ls -la "${USER_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null | awk '{print $5}') bytes"
-log "BreezeDark.colors in system scheme dir: $(ls -la "${SYSTEM_COLOR_SCHEMES}/BreezeDark.colors" 2>/dev/null | awk '{print $5}') bytes"
+log "DarkMode.colors in user scheme dir: $(ls -la "${USER_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null | awk '{print $5}') bytes"
+log "DarkMode.colors in system scheme dir: $(ls -la "${SYSTEM_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null | awk '{print $5}') bytes"
 log "kde-plattform-plugin: $(find /usr/lib -name 'libkdeplatformtheme.so' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "breeze-style-plugin:  $(find /usr/lib -name 'breeze.so' -path '*styles*' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "fc-list count:        $(fc-list 2>/dev/null | wc -l)"

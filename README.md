@@ -19,7 +19,7 @@
 
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
-management in your browser, powered by KasmVNC, with Breeze Dark, Kate as
+management in your browser, powered by KasmVNC, with Dark Mode, Kate as
 external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
@@ -59,8 +59,8 @@ This image packages [Krusader](https://krusader.org) — KDE's twin-pane file ma
 What's included beyond bare Krusader:
 
 - **KasmVNC** instead of noVNC — hardware-accelerated rendering, real browser clipboard, native file upload and download, high-DPI ready
-- **Breeze Dark** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
-- **Kate** wired up as Krusader's external editor, also Breeze Dark, with spell-check
+- **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
+- **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
 - **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **25 UI languages** picked from a dropdown in the Unraid template
@@ -73,7 +73,7 @@ What's included beyond bare Krusader:
 | HW-accelerated rendering | ✅ | ❌ | ❌ | ❌ |
 | Browser clipboard | ✅ | ⚠️ | ⚠️ | ⚠️ |
 | File upload via WebUI | ✅ | ❌ | ❌ | ❌ |
-| Breeze Dark default | ✅ | ❌ | ❌ | ❌ |
+| Dark Mode default | ✅ | ❌ | ❌ | ❌ |
 | Kate as editor | ✅ | ❌ | ❌ | ❌ |
 | Batch rename (krename) | ✅ | ❌ | ❌ | ❌ |
 | RAR right-click | ✅ | ❌ | ❌ | ❌ |
@@ -150,7 +150,7 @@ docker run -d \
 | `PGID` | `100` | Group ID — Unraid's *users* |
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language — see [Languages](#4-languages) |
-| `KRUSADER_THEME` | `dark` | `dark` (Breeze Dark) or `light` (Breeze) |
+| `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
 | `CUSTOM_USER` | `abc` | KasmVNC HTTP-basic-auth username |
 | `PASSWORD` | *(empty)* | KasmVNC password — **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / KasmVNC top-bar title |
@@ -206,9 +206,9 @@ On the **first start only**, the container seeds defaults from `/defaults/` into
 ```
 /config/
 ├── .config/
-│   ├── kdeglobals          # KDE color scheme + Breeze Dark
+│   ├── kdeglobals          # KDE color scheme + Dark Mode
 │   ├── krusaderrc          # Editor=kate, theme, panel layout
-│   └── katerc              # Kate Breeze Dark
+│   └── katerc              # Kate Dark Mode
 └── .local/share/krusader/
     └── useractions.xml     # right-click actions
 ```
@@ -322,8 +322,8 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 ## 10. Screenshots
 
 <p align="center">
-  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Breeze Dark theme" width="90%">
-  <br><em>Twin-pane file manager — Breeze Dark, F-key shortcuts, in-browser via KasmVNC.</em>
+  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
+  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
 </p>
 
 <br>

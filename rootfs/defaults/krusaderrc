@@ -44,7 +44,7 @@ RememberPos=true
 
 [Colors]
 # Achtung: hier ohne Leerzeichen schreiben – KDE matcht den Datei-Basename
-# /usr/share/color-schemes/BreezeDark.colors. "Breeze Dark" wuerde NICHT
+# /usr/share/color-schemes/DarkMode.colors. "Dark Mode" wuerde NICHT
 # gefunden und Krusader fiele auf System-Default (hell) zurueck.
 KDEDefault=false
-ColorScheme=BreezeDark
+ColorScheme=DarkMode

@@ -1,4 +1,4 @@
-# Default Kate-Settings (Breeze Dark, sinnvolle Editor-Defaults)
+# Default Kate-Settings (Dark Mode, sinnvolle Editor-Defaults)
 # Wird beim ersten Start nach /config/.config/katerc kopiert.
 
 [General]
@@ -27,8 +27,8 @@ Trailing Spaces=0
 
 [KTextEditor Renderer]
 Auto Color Theme Selection=true
-Color Theme=Breeze Dark
-Schema=Breeze Dark
+Color Theme=Dark Mode
+Schema=Dark Mode
 Animate Bracket Matching=true
 Show Indentation Lines=true
 Show Whole Bracket Expression=true

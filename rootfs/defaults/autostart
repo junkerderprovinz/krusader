@@ -23,11 +23,11 @@ export DESKTOP_SESSION="${DESKTOP_SESSION:-plasma}"
 # --- Qt-Style + Color-Scheme -------------------------------------------------
 export QT_STYLE_OVERRIDE="${QT_STYLE_OVERRIDE:-Breeze}"
 export QT_AUTO_SCREEN_SCALE_FACTOR="${QT_AUTO_SCREEN_SCALE_FACTOR:-1}"
-export KDE_COLOR_SCHEME_PATH="${KDE_COLOR_SCHEME_PATH:-/usr/share/color-schemes/BreezeDark.colors}"
+export KDE_COLOR_SCHEME_PATH="${KDE_COLOR_SCHEME_PATH:-/usr/share/color-schemes/DarkMode.colors}"
 
 # Fallback-Suchpfad
-if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f "$HOME/.local/share/color-schemes/BreezeDark.colors" ]]; then
-    export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/BreezeDark.colors"
+if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f "$HOME/.local/share/color-schemes/DarkMode.colors" ]]; then
+    export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/DarkMode.colors"
 fi
 
 # --- GTK-Apps & Cursor -------------------------------------------------------
