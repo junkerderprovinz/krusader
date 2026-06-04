@@ -128,6 +128,16 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Cmd Line"       "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Function Keys"  "true"
     log "krusaderrc: Startup-Keys idempotent gesichert"
+    # User decision: "save settings on exit" OFF. It needs a clean exit (which
+    # docker stop never gives krusader), so View-menu toggles for the statusbar /
+    # command line were lost on restart. Forcing "User Save Settings" off un-greys
+    # the Startup checkboxes, so Show Cmd Line / Show Function Keys become fixed,
+    # persistent values the user sets there. The statusbar has no Startup checkbox
+    # in the UI, so default it to hidden here (a View-menu toggle still shows it
+    # for the current session). Both override the ensure_ini_key seeds above.
+    sed -i 's|^User Save Settings=.*|User Save Settings=false|' "${CONFIG_HOME}/krusaderrc"
+    sed -i 's|^Show statusbar=.*|Show statusbar=false|'         "${CONFIG_HOME}/krusaderrc"
+    log "krusaderrc: User Save Settings=false (checkboxes editable), statusbar default hidden"
 fi
 
 # 2b) Theme-Infrastruktur: jeden Start frisch
