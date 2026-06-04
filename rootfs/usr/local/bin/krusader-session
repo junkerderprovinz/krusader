@@ -10,6 +10,13 @@
 #
 # If ksmserver is not installed (image built without plasma-workspace) the
 # script falls through and just starts krusader — no regression.
+#
+# Clean shutdown (UI-state persistence): krusader only writes its "Save settings
+# on exit" state (statusbar/toolbar visibility, geometry) when it quits CLEANLY.
+# `docker stop` kills the process before that happens, so a hidden statusbar
+# re-appears on the next start (which re-applies [Startup] Show statusbar=true).
+# To fix this we run krusader in the background and trap the shutdown signal,
+# then quit krusader cleanly (kquitapp) so its exit-save runs before the kill.
 # -----------------------------------------------------------------------------
 
 if command -v ksmserver >/dev/null 2>&1; then
@@ -19,4 +26,20 @@ if command -v ksmserver >/dev/null 2>&1; then
     sleep 0.5
 fi
 
-exec krusader "$@"
+krusader "$@" &
+KR_PID=$!
+
+_save_and_quit() {
+    echo "[krusader-session] shutdown — quitting krusader cleanly so it saves" >&2
+    # Clean quit triggers krusader's aboutToQuit -> "Save settings on exit".
+    kquitapp6 krusader 2>/dev/null \
+        || kquitapp5 krusader 2>/dev/null \
+        || qdbus6 org.kde.krusader /MainApplication quit 2>/dev/null \
+        || qdbus   org.kde.krusader /MainApplication quit 2>/dev/null \
+        || kill -TERM "${KR_PID}" 2>/dev/null
+    wait "${KR_PID}" 2>/dev/null
+    exit 0
+}
+trap _save_and_quit TERM INT HUP
+
+wait "${KR_PID}"
