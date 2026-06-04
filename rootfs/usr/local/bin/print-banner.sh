@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────
 # print-banner.sh <container-name> <subtitle>
-# Einheitlicher Init-Log-Banner für alle Junker-der-Provinz-Container.
-# Layout: ASCII-Banner, dann ZWEI Leerzeilen, dann Titel + Untertitel,
-# abgeschlossen mit einer Trennlinie.
+# Einheitlicher Init-Log-Banner für alle Junker-der-Provinz-Container
 # ─────────────────────────────────────────────────────────────────
 
 CONTAINER="${1:-Container}"
@@ -12,14 +10,20 @@ BANNER_FILE="/usr/local/share/banner.txt"
 SEP="$(printf '─%.0s' $(seq 1 67))"
 
 echo ""
+
 if [ -f "${BANNER_FILE}" ]; then
     cat "${BANNER_FILE}"
+    # The shared banner file has no trailing newline; add blank lines so the
+    # banner gets breathing room before the title block (no leading rule above).
+    echo ""
+    echo ""
 else
+    echo ""
     echo "  Junker der Provinz"
+    echo ""
 fi
-# Zwei Leerzeilen zwischen ASCII und dem unteren Text.
-echo ""
-echo ""
+
+echo "  ${SEP}"
 printf '  %s\n' "${CONTAINER}"
 [ -n "${SUBTITLE}" ] && printf '  %s\n' "${SUBTITLE}"
 echo "  ${SEP}"
