@@ -32,8 +32,9 @@
     Notes:&#xD;
     • The /storage volume defaults to /mnt – this gives Krusader access to all&#xD;
       shares (/mnt/user) and individual disks (/mnt/disk*).&#xD;
-    • Default WebUI port is 3000 (HTTP). 3001 (HTTPS) is also exposed if you&#xD;
-      prefer self-signed TLS.&#xD;
+    • WebUI opens via HTTPS on port 3001 (self-signed cert — accept it once).&#xD;
+      HTTPS is required for clipboard support in the browser. HTTP 3000 is&#xD;
+      also exposed as a fallback.&#xD;
     • PUID/PGID default to 99/100 (nobody/users on Unraid).&#xD;
     • Auth: leave "KasmVNC Username" and "Password" EMPTY to run without&#xD;
       login. Set both to enable HTTP-basic auth on the WebUI. Recommended&#xD;
@@ -42,7 +43,7 @@
     Source on GitHub: https://github.com/junkerderprovinz/krusader&#xD;
   </Overview>
   <Category>Tools: Productivity:</Category>
-  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <WebUI>https://[IP]:[PORT:3001]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/icon.png</Icon>
   <ExtraParams>--restart=unless-stopped --shm-size=1gb</ExtraParams>
@@ -50,13 +51,13 @@
   <!-- ========================================================
        PORTS
        ======================================================== -->
-  <Config Name="WebUI Port (HTTP / KasmVNC)" Target="3000" Default="3000" Mode="tcp"
-          Description="HTTP port of the KasmVNC WebUI. Open in any modern browser."
-          Type="Port" Display="always" Required="true" Mask="false">3000</Config>
-
   <Config Name="WebUI Port (HTTPS / KasmVNC)" Target="3001" Default="3001" Mode="tcp"
-          Description="HTTPS port of the KasmVNC WebUI (self-signed). Optional."
-          Type="Port" Display="always" Required="false" Mask="false">3001</Config>
+          Description="HTTPS port of the KasmVNC WebUI (self-signed cert). This is the default WebUI — HTTPS is required for clipboard support in the browser. Accept the self-signed certificate once."
+          Type="Port" Display="always" Required="true" Mask="false">3001</Config>
+
+  <Config Name="WebUI Port (HTTP / KasmVNC)" Target="3000" Default="3000" Mode="tcp"
+          Description="HTTP port of the KasmVNC WebUI. Optional fallback — the WebUI defaults to HTTPS (3001) because browsers only allow seamless clipboard over HTTPS."
+          Type="Port" Display="always" Required="false" Mask="false">3000</Config>
 
   <!-- ========================================================
        PATHS
