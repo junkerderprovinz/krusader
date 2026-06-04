@@ -649,8 +649,14 @@
 </menu>
 
 <applications>
-  <!-- Krusader: always start maximised to fill the KasmVNC viewport. -->
-  <application class="krusader">
+  <!-- Krusader MAIN window: start maximised to fill the KasmVNC viewport.
+       type="normal" is REQUIRED. Krusader's dialogs (copy/move/overwrite
+       confirmations, KIO prompts) share WM_CLASS=krusader, so a class-only rule
+       force-maximizes them too — and openbox re-applies it on every map, so a
+       manual resize never sticks. Restricting to type="normal" matches only the
+       top-level window; dialogs are type="dialog" and stay at their natural /
+       remembered size. (Regression from v1.1.0 when this rule was first added.) -->
+  <application class="krusader" type="normal">
     <maximized>yes</maximized>
   </application>
 
