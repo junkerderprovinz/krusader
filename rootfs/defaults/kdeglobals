@@ -10,6 +10,8 @@
 ColorScheme=BreezeDark
 Name=Breeze Dark
 shadeSortColumn=true
+AccentColor=255,255,255
+accentColorFromWallpaper=false
 widgetStyle=Breeze
 fixed=Noto Mono,10,-1,5,50,0,0,0,0,0
 font=Noto Sans,10,-1,5,50,0,0,0,0,0
