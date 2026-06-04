@@ -657,6 +657,10 @@
        top-level window; dialogs are type="dialog" and stay at their natural /
        remembered size. (Regression from v1.1.0 when this rule was first added.) -->
   <application class="krusader" type="normal">
+    <!-- <decor>no</decor> hides the openbox title bar (minimise/maximise/close)
+         on the main window for a clean kiosk look — same approach as the
+         jdownloader container. Dialogs (type="dialog") keep their decorations. -->
+    <decor>no</decor>
     <maximized>yes</maximized>
   </application>
 
