@@ -56,7 +56,7 @@ ForegroundVisited=141,141,141
 
 [Colors:Header]
 BackgroundAlternate=22,22,22
-BackgroundNormal=11,11,11
+BackgroundNormal=38,38,38
 DecorationFocus=82,82,82
 DecorationHover=82,82,82
 ForegroundActive=244,244,244
@@ -70,7 +70,7 @@ ForegroundVisited=141,141,141
 
 [Colors:Header][Inactive]
 BackgroundAlternate=30,30,30
-BackgroundNormal=11,11,11
+BackgroundNormal=38,38,38
 DecorationFocus=82,82,82
 DecorationHover=82,82,82
 ForegroundActive=244,244,244
@@ -147,7 +147,7 @@ shadeSortColumn=true
 contrast=4
 
 [WM]
-activeBackground=11,11,11
+activeBackground=38,38,38
 activeBlend=244,244,244
 activeForeground=244,244,244
 inactiveBackground=22,22,22
