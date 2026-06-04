@@ -114,7 +114,7 @@ Hit **Apply**. The first start takes 30–60 seconds while the container seeds i
 
 ### Step 4 — Open the WebUI
 
-`http://<unraid-ip>:3000/` (HTTP) or `https://<unraid-ip>:3001/` (HTTPS, self-signed).
+`https://<unraid-ip>:3001/` (HTTPS, self-signed — accept the certificate once). **Use HTTPS:** browsers only allow seamless clipboard sync over HTTPS, so the template's WebUI button points here. `http://<unraid-ip>:3000/` is an optional fallback without clipboard support.
 
 > Once Community Applications has accepted this image it will also be installable via **Apps** → search `Krusader`.
 
@@ -158,8 +158,8 @@ docker run -d \
 
 | Port | Purpose | | Volume | Purpose |
 |---|---|---|---|---|
-| `3000` | KasmVNC HTTP | | `/config` | Persistent KDE / Krusader / Kate configs |
-| `3001` | KasmVNC HTTPS *(self-signed)* | | `/storage` | Files to manage — default host `/mnt` |
+| `3001` | KasmVNC HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
+| `3000` | KasmVNC HTTP *(optional fallback)* | | `/storage` | Files to manage — default host `/mnt` |
 
 <br>
 
