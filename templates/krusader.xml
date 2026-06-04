@@ -100,10 +100,6 @@
   <!-- ========================================================
        ADVANCED ENV VARIABLES
        ======================================================== -->
-  <Config Name="Title (browser tab)" Target="TITLE" Default="Krusader" Mode=""
-          Description="Title shown in browser tab and KasmVNC top bar."
-          Type="Variable" Display="advanced" Required="false" Mask="false">Krusader</Config>
-
   <Config Name="Timezone (TZ)" Target="TZ" Default="Europe/Vienna" Mode=""
           Description="Container timezone (affects log timestamps and file mtimes). Use this instead of a /etc/localtime bind-mount — the LSIO base image manages /etc/localtime internally via TZ."
           Type="Variable" Display="always" Required="false" Mask="false">Europe/Vienna</Config>
