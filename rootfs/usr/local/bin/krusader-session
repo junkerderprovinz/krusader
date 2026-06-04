@@ -29,22 +29,6 @@ fi
 krusader "$@" &
 KR_PID=$!
 
-# Persist the KDE session periodically. Krusader does NOT save the bottom status
-# bar's visibility itself (upstream design), and `docker stop` kills it before
-# KDE can save on exit — so a status bar the user hides reappears after a
-# restart. ksmserver, however, restores the saved session on the next start
-# (this is what made a manual "File > Quit" persist the hidden bar). Snapshot the
-# session every 30s via D-Bus so the latest UI state survives a hard stop, with
-# no app stylesheet (which would break the panel bar's custom colours).
-if command -v dbus-send >/dev/null 2>&1; then
-    (
-        while sleep 30; do
-            dbus-send --session --dest=org.kde.ksmserver --type=method_call \
-                /KSMServer org.kde.KSMServerInterface.saveCurrentSession >/dev/null 2>&1 || true
-        done
-    ) &
-fi
-
 _save_and_quit() {
     echo "[krusader-session] shutdown — quitting krusader cleanly so it saves" >&2
     # Clean quit triggers krusader's aboutToQuit -> "Save settings on exit".
