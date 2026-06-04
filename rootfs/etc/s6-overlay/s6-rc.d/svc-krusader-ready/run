@@ -1,0 +1,38 @@
+#!/usr/bin/with-contenv bash
+# -----------------------------------------------------------------------------
+# svc-krusader-ready — print a loud "READY" banner to the container log once the
+# WebUI is actually serving, so the user knows the (multi-second) first start has
+# finished and the WebUI is usable. House standard, see the vault note
+# "Style Guide - Docker Container" (every own-image container prints an
+# "<APP> IS READY" log banner alongside the ASCII init banner).
+# -----------------------------------------------------------------------------
+FLAG="/run/krusader-ready.printed"
+
+# /run is tmpfs (wiped on every container start) -> banner prints once per start.
+if [[ -f "${FLAG}" ]]; then
+    exec sleep infinity
+fi
+
+# Wait until the KasmVNC WebUI accepts connections on its internal HTTP port
+# (3000 is always served regardless of the user's HTTPS preference). Capped at
+# ~5 min so we never hang forever.
+for _ in $(seq 1 150); do
+    if (exec 3<>/dev/tcp/127.0.0.1/3000) 2>/dev/null; then
+        exec 3>&- 3<&-
+        break
+    fi
+    sleep 2
+done
+# Small settle so Krusader's window is actually drawn before we announce.
+sleep 4
+
+SEP="$(printf '#%.0s' $(seq 1 70))"
+echo ""
+echo "${SEP}"
+echo "###  KRUSADER IS READY  —  open the WebUI via HTTPS on port 3001  ###"
+echo "${SEP}"
+echo ""
+
+touch "${FLAG}"
+# Longrun: stay up so s6 does not restart us and re-print the banner.
+exec sleep infinity
