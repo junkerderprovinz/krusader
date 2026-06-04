@@ -26,11 +26,7 @@ if command -v ksmserver >/dev/null 2>&1; then
     sleep 0.5
 fi
 
-# -stylesheet collapses the bottom status bar (KrusaderStatus) to height 0.
-# Krusader does not persist that bar's visibility (upstream design), so this is
-# the only way to keep it hidden by default on every start. The rule targets
-# only that one widget class, so the Breeze theme is otherwise untouched.
-krusader -stylesheet /usr/local/share/krusader-hide-statusbar.qss "$@" &
+krusader "$@" &
 KR_PID=$!
 
 _save_and_quit() {
