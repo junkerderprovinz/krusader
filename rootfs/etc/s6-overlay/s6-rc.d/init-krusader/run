@@ -145,6 +145,22 @@ log "Theme-Infrastruktur (re)deploy"
 cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
 cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
 
+# Merge the colour sections from BreezeDark.colors INTO kdeglobals. KColorScheme
+# (plasma-integration + the Breeze widget style) builds the Qt palette and the
+# View focus/hover decoration — i.e. the file-panel frame — from kdeglobals'
+# [Colors:*] groups. Our kdeglobals had none, so KColorScheme fell back to the
+# built-in Breeze defaults (blue #3daee9): the focus/hover frame stayed blue even
+# though the separate .colors scheme was de-blued (the .colors file alone is not
+# read for the palette). Merge the de-blued [ColorEffects:*]/[Colors:*] groups
+# here so the palette + frame follow the scheme. (Dark scheme.)
+if [[ -f "${DEFAULTS}/color-schemes/BreezeDark.colors" ]]; then
+    _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${DEFAULTS}/color-schemes/BreezeDark.colors")"
+    for _kg in "${CONFIG_HOME}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"; do
+        printf '\n%s\n' "${_colors}" >> "${_kg}"
+    done
+    log "kdeglobals: [Colors:*] aus BreezeDark.colors gemergt (Palette/Rahmen-Quelle)"
+fi
+
 # Color-Scheme an BEIDE Pfade ausrollen — User UND System.
 # KDE-Plugin sucht in dieser Reihenfolge:
 #   1. ~/.local/share/color-schemes/<Name>.colors
