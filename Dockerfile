@@ -259,7 +259,7 @@ RUN set -eux; \
 # "folder" icon (a monochrome variant was tried but is hard to see on a light
 # status-bar colour).
 RUN set -eux; \
-    fsrc="$(ls /usr/share/icons/breeze-dark/places/*/folder.svg 2>/dev/null | head -1)"; \
+    fsrc=""; for f in /usr/share/icons/breeze-dark/places/*/folder.svg; do [ -e "$f" ] && { fsrc="$f"; break; }; done; \
     [ -n "$fsrc" ] || { echo "ERROR: breeze-dark folder.svg not found — update the MediaButton icon override"; exit 1; }; \
     n=0; \
     for d in /usr/share/icons/breeze-dark/apps/*/; do \
