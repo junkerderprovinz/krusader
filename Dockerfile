@@ -213,12 +213,11 @@ COPY rootfs/ /
 # Init-Log-Banner: single source at .github/assets/banner-raw.txt (CR stripped
 # so the figlet renders cleanly regardless of the editor's line endings).
 COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
-RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt
-
-# The LinuxServer base prints its OWN brand banner from init-adduser/branding.
-# Empty it so the container log shows only our print-banner.sh banner instead of
-# a messy double banner (this is why the init banner looked "incomplete").
-RUN : > /etc/s6-overlay/s6-rc.d/init-adduser/branding
+# Strip CR so figlet renders cleanly, AND empty the LinuxServer base's OWN brand
+# banner (init-adduser/branding) so the log shows only our print-banner.sh banner
+# instead of a messy double banner (this is why the init banner looked "incomplete").
+RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
+    && : > /etc/s6-overlay/s6-rc.d/init-adduser/branding
 
 # ---------------------------------------------------------------------------
 # Browser-tab favicon (issue #12)
