@@ -26,10 +26,6 @@ if command -v ksmserver >/dev/null 2>&1; then
     sleep 0.5
 fi
 
-# Expose this session's D-Bus address so the shutdown hook (svc-krusader-ready
-# finish) can reach krusader with kquitapp for a clean exit on container stop.
-printf '%s' "${DBUS_SESSION_BUS_ADDRESS:-}" > /tmp/krusader-dbus-address 2>/dev/null || true
-
 krusader "$@" &
 KR_PID=$!
 

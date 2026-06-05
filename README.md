@@ -317,6 +317,14 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 **Fix:** Remove the `/etc/localtime` path mapping from your container settings and use the `TZ` environment variable instead (e.g. `TZ=Europe/Vienna`). The `TZ` variable is the correct and supported way to set the timezone in LSIO-based containers.
 </details>
 
+<details>
+<summary><b>Bottom status bar reappears after a restart (known limitation)</b></summary>
+
+Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Even with `[Startup] Show statusbar=false` in `krusaderrc` the bar is shown again on the next start, and Krusader only saves such UI state on a *clean* exit — which a hard `docker stop` never performs. The container can't force-hide it either: the only reliable mechanism (a Qt application stylesheet) also disables Krusader's **custom status-bar colours**, which are deliberately kept user-configurable.
+
+**Workaround:** hide it per session via **View → Show Statusbar**. The per-panel (upper) status bar with the free-space / device info is unaffected and stays fully configurable.
+</details>
+
 <br>
 
 ## 10. Screenshots
