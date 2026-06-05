@@ -25,10 +25,32 @@ set -e
 
 log() { echo "[init-krusader] $*"; }
 
+# -- Theme selection (KRUSADER_THEME = dark | light) --------------------------
+# Everything that differs between the two themes is derived ONCE here so the
+# whole script stays consistent. dark = our Dark Mode (Carbon greyscale, shipped
+# as DarkMode.colors); light = KDE Breeze Light (shipped by the 'breeze' /
+# 'plasma-workspace' packages at /usr/share/color-schemes/BreezeLight.colors).
+# This MUST drive the palette merge below — merging the dark palette regardless
+# of KRUSADER_THEME is what previously made light mode stay dark.
+case "${KRUSADER_THEME:-dark}" in
+    light)
+        THEME_SCHEME="BreezeLight"; THEME_NAME="Breeze Light"
+        THEME_LNF="org.kde.breeze.desktop"
+        THEME_COLORS="/usr/share/color-schemes/BreezeLight.colors"
+        THEME_GTK="Breeze"; THEME_ICONS="breeze"; THEME_KATE="Breeze Light"
+        ;;
+    *)
+        THEME_SCHEME="DarkMode"; THEME_NAME="Dark Mode"
+        THEME_LNF="org.kde.breezedark.desktop"
+        THEME_COLORS="/defaults/color-schemes/DarkMode.colors"
+        THEME_GTK="Breeze-Dark"; THEME_ICONS="breeze-dark"; THEME_KATE="Dark Mode"
+        ;;
+esac
+
 # Init-Log-Banner (Junker der Provinz brand + container title)
 /usr/local/bin/print-banner.sh \
     "Krusader for Unraid" \
-    "Dark Mode · KasmVNC · KDE" \
+    "${THEME_NAME} · KasmVNC · KDE" \
     2>/dev/null || true
 
 # -- 1) ENV-Propagation via s6 ------------------------------------------------
@@ -56,13 +78,13 @@ set_env QT_AUTO_SCREEN_SCALE_FACTOR "1"
 
 # Pfad zum Color-Scheme — KDE-Plugin findet es ueber kdeglobals,
 # Variable als zusaetzlicher Hint.
-set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/DarkMode.colors"
+set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/${THEME_SCHEME}.colors"
 
 # GTK + Cursor + Icons (fuer GTK-Dialoge, die Krusader z.B. fuer Datei-
 # Operationen oeffnet).
-set_env GTK_THEME                 "Breeze-Dark"
+set_env GTK_THEME                 "${THEME_GTK}"
 set_env XCURSOR_THEME             "breeze_cursors"
-set_env ICON_THEME                "breeze-dark"
+set_env ICON_THEME                "${THEME_ICONS}"
 
 log "ENV in /run/s6/container_environment gesetzt (KDE-Plugin-Mode)"
 
@@ -145,20 +167,20 @@ log "Theme-Infrastruktur (re)deploy"
 cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
 cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
 
-# Merge the colour sections from DarkMode.colors INTO kdeglobals. KColorScheme
+# Merge the colour sections from the SELECTED scheme INTO kdeglobals. KColorScheme
 # (plasma-integration + the Breeze widget style) builds the Qt palette and the
-# View focus/hover decoration — i.e. the file-panel frame — from kdeglobals'
-# [Colors:*] groups. A separate .colors file alone is NOT read for the palette,
-# so without this merge KColorScheme falls back to the built-in Breeze defaults
-# (blue accent) instead of our scheme. Merge the [ColorEffects:*]/[Colors:*]
-# groups here so the Qt palette + panel frame follow the Dark Mode (Carbon
-# greyscale) scheme.
-if [[ -f "${DEFAULTS}/color-schemes/DarkMode.colors" ]]; then
-    _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${DEFAULTS}/color-schemes/DarkMode.colors")"
+# View focus/hover decoration — the file-panel frame — from kdeglobals' [Colors:*]
+# groups; a separate .colors file alone is NOT read for the palette. This MUST be
+# theme-aware: merging the dark palette regardless of KRUSADER_THEME is exactly
+# what made light mode stay dark.
+if [[ -f "${THEME_COLORS}" ]]; then
+    _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${THEME_COLORS}")"
     for _kg in "${CONFIG_HOME}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"; do
         printf '\n%s\n' "${_colors}" >> "${_kg}"
     done
-    log "kdeglobals: [Colors:*] aus DarkMode.colors gemergt (Palette/Rahmen-Quelle)"
+    log "kdeglobals: [Colors:*] merged from ${THEME_COLORS##*/} (palette source)"
+else
+    log "WARNING: palette source ${THEME_COLORS} not found — colours may be wrong"
 fi
 
 # Color-Scheme an BEIDE Pfade ausrollen — User UND System.
@@ -224,20 +246,16 @@ if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
     log "Locale -> s6 env: LANG=${_L:-unchanged}"
 fi
 
-case "${KRUSADER_THEME:-dark}" in
-    dark)
-        sed -i 's/^ColorScheme=.*/ColorScheme=DarkMode/'                                "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^Name=.*/Name=Dark Mode/'                                             "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breezedark.desktop/'  "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^ColorScheme=.*/ColorScheme=DarkMode/' "${CONFIG_HOME}/krusaderrc" || true
-        ;;
-    light)
-        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/'                               "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^Name=.*/Name=Breeze Light/'                                            "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^LookAndFeelPackage=.*/LookAndFeelPackage=org.kde.breeze.desktop/'      "${CONFIG_HOME}/kdeglobals" || true
-        sed -i 's/^ColorScheme=.*/ColorScheme=BreezeLight/' "${CONFIG_HOME}/krusaderrc" || true
-        ;;
-esac
+# Apply the selected scheme name / look-and-feel / Kate theme. The matching
+# [Colors:*] palette was already merged into kdeglobals above.
+sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/kdeglobals" || true
+sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${CONFIG_HOME}/kdeglobals" || true
+sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${CONFIG_HOME}/kdeglobals" || true
+sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/krusaderrc"  || true
+if [[ -f "${CONFIG_HOME}/katerc" ]]; then
+    sed -i "s/^Color Theme=.*/Color Theme=${THEME_KATE}/"          "${CONFIG_HOME}/katerc" || true
+    sed -i "s/^Schema=.*/Schema=${THEME_KATE}/"                    "${CONFIG_HOME}/katerc" || true
+fi
 
 # Permissions
 chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
@@ -245,8 +263,7 @@ chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 # -- 4) Diagnose-Output -------------------------------------------------------
 log "=== Diagnose ==="
 log "ColorScheme in kdeglobals: $(grep -E '^ColorScheme=' "${CONFIG_HOME}/kdeglobals" | head -n 1)"
-log "DarkMode.colors in user scheme dir: $(ls -la "${USER_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null | awk '{print $5}') bytes"
-log "DarkMode.colors in system scheme dir: $(ls -la "${SYSTEM_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null | awk '{print $5}') bytes"
+log "theme=${KRUSADER_THEME:-dark} scheme=${THEME_SCHEME}; palette source ${THEME_COLORS} ($(ls -la "${THEME_COLORS}" 2>/dev/null | awk '{print $5}') bytes)"
 log "kde-plattform-plugin: $(find /usr/lib -name 'libkdeplatformtheme.so' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "breeze-style-plugin:  $(find /usr/lib -name 'breeze.so' -path '*styles*' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "fc-list count:        $(fc-list 2>/dev/null | wc -l)"
