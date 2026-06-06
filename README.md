@@ -330,21 +330,14 @@ Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Ev
 ## 10. Screenshots
 
 <p align="center">
-  <img src=".github/assets/screenshots/krusader-2.jpg" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
+  <img src=".github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
   <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
 </p>
 
 <br>
 
 <p align="center">
-  <img src=".github/assets/screenshots/krusader-1.jpg" alt="Krusader configurator — Startup settings" width="90%">
-  <br><em>Configurator → Startup: 'Save last position, size and settings' is pre-enabled.</em>
-</p>
-
-<br>
-
-<p align="center">
-  <img src=".github/assets/screenshots/krusader-3.jpg" alt="Krusader configurator — Colors" width="90%">
+  <img src=".github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
   <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
 </p>
 
