@@ -87,14 +87,17 @@ What's included beyond bare Krusader:
 
 ### Step 1 — Install the template
 
-The repository ships one template: `unraid-template.xml` — production install (`Krusader`, ports 3000/3001).
+On Unraid: **Apps** → search for **Krusader** → click **Install**. The Community Applications
+template is published from the
+[`unraid-docker-templates`](https://github.com/junkerderprovinz/unraid-docker-templates) feed
+(one feed for all of junkerderprovinz's apps).
 
-Pull the template directly into Unraid's user-template folder via the Unraid console / SSH:
+To load it by hand, pull it into Unraid's user-template folder via the console / SSH:
 
 ```bash
 mkdir -p /boot/config/plugins/dockerMan/templates-user && \
 curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
-  https://raw.githubusercontent.com/junkerderprovinz/krusader/main/templates/krusader.xml
+  https://raw.githubusercontent.com/junkerderprovinz/unraid-docker-templates/main/krusader/krusader.xml
 ```
 
 ### Step 2 — Add the container
