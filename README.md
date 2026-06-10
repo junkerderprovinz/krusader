@@ -11,7 +11,7 @@
   <a href="https://hub.docker.com/r/junkerderprovinz/krusader"><img src="https://img.shields.io/docker/image-size/junkerderprovinz/krusader/latest?style=for-the-badge&logo=docker&logoColor=white&label=Size&color=1d99f3" alt="Image Size" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-success?style=for-the-badge&logo=linux&logoColor=white" alt="Arch" height="36"></a>&nbsp;
   <a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/Web-KasmVNC-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="KasmVNC" height="36"></a>&nbsp;
-  <a href="#4-languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
+  <a href="#5-languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
 </p>
@@ -38,19 +38,18 @@ from the Unraid template, no SSH or config-file editing required.
 ## Table of Contents
 
 1. [Overview](#1-overview)
-2. [Quick Start](#2-quick-start)
-3. [Configuration](#3-configuration)
-4. [Languages](#4-languages)
-5. [Right-Click Actions](#5-right-click-actions)
-6. [Customisation & Persistence](#6-customisation--persistence)
-7. [Building Locally](#7-building-locally)
-8. [Updating](#8-updating)
-9. [Troubleshooting](#9-troubleshooting)
-10. [Screenshots](#10-screenshots)
+2. [Screenshots](#2-screenshots)
+3. [Quick Start](#3-quick-start)
+4. [Configuration](#4-configuration)
+5. [Languages](#5-languages)
+6. [Right-Click Actions](#6-right-click-actions)
+7. [Customisation & Persistence](#7-customisation--persistence)
+8. [Building Locally](#8-building-locally)
+9. [Updating](#9-updating)
+10. [Troubleshooting](#10-troubleshooting)
 11. [Architecture](#11-architecture)
 12. [Contributing / License](#12-contributing--license)
 13. [Support this project](#13-support-this-project)
-
 <br>
 
 ## 1. Overview
@@ -84,7 +83,23 @@ What's included beyond bare Krusader:
 
 <br>
 
-## 2. Quick Start
+## 2. Screenshots
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
+  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
+</p>
+
+<br>
+
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
+  <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
+</p>
+
+<br>
+
+## 3. Quick Start
 
 ### Step 1 — Install the template
 
@@ -146,14 +161,14 @@ docker run -d \
 
 <br>
 
-## 3. Configuration
+## 4. Configuration
 
 | Variable | Default | Description |
 |---|---|---|
 | `PUID` | `99` | User ID — Unraid's *nobody* |
 | `PGID` | `100` | Group ID — Unraid's *users* |
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
-| `KRUSADER_LANG` | `de` | UI language — see [Languages](#4-languages) |
+| `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
 | `CUSTOM_USER` | `abc` | KasmVNC HTTP-basic-auth username |
 | `PASSWORD` | *(empty)* | KasmVNC password — **set this if exposed beyond LAN** |
@@ -167,7 +182,7 @@ docker run -d \
 
 <br>
 
-## 4. Languages
+## 5. Languages
 
 The Unraid template ships a **dropdown** with **25 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
 
@@ -186,7 +201,7 @@ The Unraid template ships a **dropdown** with **25 UI languages** (German defaul
 
 <br>
 
-## 5. Right-Click Actions
+## 6. Right-Click Actions
 
 Krusader's *UserActions* are pre-loaded with extras:
 
@@ -203,7 +218,7 @@ Edit them via *Krusader → Settings → Configure UserActions*, or directly at 
 
 <br>
 
-## 6. Customisation & Persistence
+## 7. Customisation & Persistence
 
 On the **first start only**, the container seeds defaults from `/defaults/` into `/config/`:
 
@@ -225,7 +240,7 @@ The base image also supports `/config/custom-cont-init.d/` for your own init scr
 
 <br>
 
-## 7. Building Locally
+## 8. Building Locally
 
 ```bash
 git clone https://github.com/junkerderprovinz/krusader.git
@@ -247,7 +262,7 @@ docker run --rm -it \
 
 <br>
 
-## 8. Updating
+## 9. Updating
 
 ```bash
 docker pull junkerderprovinz/krusader:latest
@@ -261,7 +276,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 <br>
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 <details>
 <summary><b>WebUI is black / desktop never appears</b></summary>
@@ -291,7 +306,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 <summary><b>Language change doesn't take effect</b></summary>
 
 - Restart the container — language is applied at start, not live
-- Check the env value matches a code from the [Languages](#4-languages) table
+- Check the env value matches a code from the [Languages](#5-languages) table
 - The script writes `/etc/profile.d/zz-krusader-lang.sh` and updates `kdeglobals[Translations]`
 </details>
 
@@ -328,22 +343,6 @@ Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Ev
 
 **Workaround:** hide it per session via **View → Show Statusbar**. The per-panel (upper) status bar with the free-space / device info is unaffected and stays fully configurable.
 </details>
-
-<br>
-
-## 10. Screenshots
-
-<p align="center">
-  <img src=".github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
-  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
-</p>
-
-<br>
-
-<p align="center">
-  <img src=".github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
-  <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
-</p>
 
 <br>
 
