@@ -76,6 +76,55 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
 
+      # Smoke-test gate (amd64): build the image, boot it, and require the KasmVNC
+      # WebUI to respond before anything is pushed. A green Docker build only proves
+      # the image *builds* — this proves the container actually *starts* and serves
+      # the WebUI (catches an s6 / KasmVNC / Krusader boot crash before :latest).
+      # amd64-only on purpose: the KasmVNC desktop is too slow to boot reliably
+      # under arm64 QEMU emulation for a CI gate.
+      - name: Build amd64 image for smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: krusader:smoke-amd64
+          cache-from: type=gha
+
+      - name: Smoke test — amd64 must boot and serve the WebUI
+        run: |
+          set -euo pipefail
+          name=kru-smoke
+          docker run -d --name "$name" --platform linux/amd64 -p 3000:3000 -p 3001:3001 krusader:smoke-amd64
+          up() {
+            # KasmVNC serves HTTPS on 3001 (self-signed) and HTTP on 3000; any HTTP
+            # status (even 401) means the WebUI server is up. 000 = not listening.
+            local c
+            c=$(curl -k -o /dev/null -s -w '%{http_code}' --max-time 5 https://localhost:3001/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            c=$(curl -o /dev/null -s -w '%{http_code}' --max-time 5 http://localhost:3000/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            return 1
+          }
+          for i in $(seq 1 150); do
+            if up; then
+              echo "✅ WebUI responded after ${i}s"
+              docker rm -f "$name" >/dev/null
+              exit 0
+            fi
+            if [ -z "$(docker ps -q --filter "name=$name")" ]; then
+              echo "❌ container exited early — logs:"; docker logs "$name" || true
+              docker rm -f "$name" >/dev/null; exit 1
+            fi
+            sleep 1
+          done
+          echo "❌ WebUI did not respond within 150s — logs:"
+          docker logs "$name" || true
+          docker rm -f "$name" >/dev/null
+          exit 1
+
       - name: Build & push
         uses: docker/build-push-action@v7
         with:

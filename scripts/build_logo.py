@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Recolor the official Krusader SVG to KDE Breeze Dark palette and emit:
    - .github/assets/krusader-logo-breeze.svg  (recoloured master)
-   - .github/assets/icon.png                  (512x512, container/template icon)
-   - .github/assets/krusader-banner.png       (1600x400, README banner)
+   - .github/assets/icon.png                  (512x512, container/CA icon —
+     SOLID white background, never transparent: the CA/Docker UI shows it on a
+     dark page and a dark transparent logo would vanish)
+   - .github/assets/krusader-banner.png       (1600x500, README banner)
 """
 import re
 import cairosvg
@@ -44,12 +46,16 @@ for old, new in COLOR_MAP.items():
 SVG_OUT.write_text(svg_text, encoding="utf-8")
 print(f"wrote {SVG_OUT}")
 
-# ---- Render icon (512x512, transparent background) ----
-icon_bytes = cairosvg.svg2png(url=str(SVG_OUT), output_width=512, output_height=512)
+# ---- Render icon (512x512, SOLID white background — CA icons must never be
+# transparent; the dark Breeze logo would vanish on Unraid's dark UI) ----
+icon_bytes = cairosvg.svg2png(
+    url=str(SVG_OUT), output_width=512, output_height=512,
+    background_color="#ffffff",
+)
 ICON_PNG.write_bytes(icon_bytes)
 print(f"wrote {ICON_PNG} ({ICON_PNG.stat().st_size} bytes)")
 
-# ---- Render banner (1600x400) ----
+# ---- Render banner (1600x500) ----
 W, H = 1600, 500
 target_h = int(H * 0.72)
 logo_png = cairosvg.svg2png(url=str(SVG_OUT), output_height=target_h * 2)
