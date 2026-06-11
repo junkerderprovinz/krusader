@@ -7,7 +7,7 @@
 CONTAINER="${1:-Container}"
 SUBTITLE="${2:-}"
 BANNER_FILE="/usr/local/share/banner.txt"
-SEP="$(printf '─%.0s' $(seq 1 67))"
+SEP="$(printf '─%.0s' {1..67})"
 
 echo ""
 
