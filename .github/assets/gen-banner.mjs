@@ -35,7 +35,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 
 // ---- content + styling -----------------------------------------------------
 const NAME = "krusader"; // lowercase, exactly like the official wordmark
-const CLAIM = "Two panes. One dark knight.";
+const CLAIM = "Drag it. Drop it. In the dark.";
 const NAME_FILL = "#232629"; // Breeze dark grey - the logo's frame colour
 const CLAIM_FILL = "#5a5d5e"; // house claim grey
 const W = 1600, H = 500;
