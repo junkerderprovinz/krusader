@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 # -----------------------------------------------------------------------------
 # svc-krusader-ready — print a loud "READY" banner to the container log once the
 # WebUI is actually serving, so the user knows the (multi-second) first start has
@@ -16,22 +17,32 @@ fi
 # Wait until the KasmVNC WebUI accepts connections on its internal HTTP port
 # (3000 is always served regardless of the user's HTTPS preference). Capped at
 # ~5 min so we never hang forever.
+ready=0
 for _ in $(seq 1 150); do
     if (exec 3<>/dev/tcp/127.0.0.1/3000) 2>/dev/null; then
         exec 3>&- 3<&-
+        ready=1
         break
     fi
     sleep 2
 done
-# Small settle so Krusader's window is actually drawn before we announce.
-sleep 4
 
-SEP="$(printf '#%.0s' $(seq 1 70))"
-echo ""
-echo "${SEP}"
-echo "###  KRUSADER IS READY  —  open the WebUI via HTTPS on port 3001  ###"
-echo "${SEP}"
-echo ""
+SEP="$(printf '#%.0s' {1..70})"
+if [[ "${ready}" -eq 1 ]]; then
+    # Small settle so Krusader's window is actually drawn before we announce.
+    sleep 4
+    echo ""
+    echo "${SEP}"
+    echo "###  KRUSADER IS READY  —  open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}  ###"
+    echo "${SEP}"
+    echo ""
+else
+    echo ""
+    echo "${SEP}"
+    echo "###  WARNING: KRUSADER DID NOT BECOME READY  —  the WebUI never answered within 5 min, check the log above  ###"
+    echo "${SEP}"
+    echo ""
+fi
 
 touch "${FLAG}"
 # Longrun: stay up so s6 does not restart us and re-print the banner.

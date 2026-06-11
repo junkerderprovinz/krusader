@@ -27,7 +27,7 @@ jobs:
           failure-threshold: warning
 
   shellcheck:
-    name: ShellCheck (init scripts)
+    name: ShellCheck (shell scripts)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -35,9 +35,28 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
-          # shellcheck $(git ls-files '*.sh')
-          find rootfs -type f \( -name '*.sh' -o -path '*/cont-init.d/*' \) -print0 | \
-            xargs -0 shellcheck --severity=warning --shell=bash || true
+          # All shell scripts shipped in the image: *.sh, the extensionless
+          # s6-rc.d service scripts (run), the session starter and the openbox
+          # autostart. Shebangs are honored (no forced --shell); the two
+          # with-contenv scripts carry a "shellcheck shell=bash" directive.
+          SCRIPTS=$(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' -o -name 'krusader-session' \))
+
+          if [ -z "${SCRIPTS}" ]; then
+            echo "ERROR: no shell scripts found — the find pattern is broken." >&2
+            exit 1
+          fi
+
+          echo "Checking the following scripts:"
+          echo "${SCRIPTS}"
+          echo "---"
+
+          # -S warning: fail on warnings and up
+          # -x:         follow sourced files
+          # -e SC1091:  allow sourcing files not present at lint time
+          # shellcheck disable=SC2086
+          shellcheck -S warning -x -e SC1091 ${SCRIPTS}
+
+          echo "All scripts passed shellcheck."
 
   xml-validate:
     name: XML Validation

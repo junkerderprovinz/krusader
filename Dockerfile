@@ -103,7 +103,11 @@ RUN set -eux; \
     # Font-Cache JETZT aufbauen, damit Qt/KDE die Fonts beim ersten
     # Container-Start sofort findet. Sonst rendert Krusader die Texte
     # als leere Linien.
-    fc-cache -f -v >/dev/null 2>&1 || true
+    fc-cache -f -v >/dev/null 2>&1 || true; \
+    # apt-Listen nicht in den Layer backen — Phase 2 macht ihr eigenes
+    # apt-get update (frische Listen statt stale Layer-Cache).
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
 # Phase 2: Optionale i18n + Hunspell-Pakete (Build läuft weiter, wenn ein
@@ -127,6 +131,9 @@ RUN set -eux; \
     fi
 
 RUN set -eux; \
+    # Eigenes apt-get update: Phase 1 raeumt seine Listen weg, und mit dem
+    # gha-Layer-Cache waeren mitgeschleppte Listen ohnehin veraltet (stale).
+    apt-get update; \
     WANT=" \
         hunspell-de-de hunspell-en-us hunspell-en-gb \
         hunspell-fr hunspell-es hunspell-it \
@@ -294,3 +301,12 @@ ENV KRUSADER_LANG=de \
 # Ports werden vom Baseimage freigegeben (3000/HTTP, 3001/HTTPS).
 # Der Entrypoint kommt vom Baseimage – KasmVNC wird automatisch gestartet
 # und führt /defaults/autostart aus (siehe rootfs/defaults/autostart).
+
+# ---------------------------------------------------------------------------
+# Healthcheck: WebUI (KasmVNC/kclient) antwortet auf dem HTTPS-Port.
+# curl kommt aus dem Baseimage (baseimage-ubuntu installiert es im Runtime-
+# Layer). Jeder HTTP-Statuscode zaehlt als "up" — nur "000" (keine Antwort /
+# Verbindung verweigert) markiert den Container als unhealthy.
+# ---------------------------------------------------------------------------
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD c=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 5 https://127.0.0.1:${CUSTOM_HTTPS_PORT:-3001}/); [ "$c" != "000" ] || exit 1
