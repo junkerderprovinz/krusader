@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.24
+# syntax=docker/dockerfile:1.25
 #
 # Krusader for Unraid – community edition (KasmVNC)
 # -------------------------------------------------
