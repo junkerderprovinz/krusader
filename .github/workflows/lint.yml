@@ -12,7 +12,7 @@ jobs:
     name: Hadolint (Dockerfile)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
@@ -30,7 +30,7 @@ jobs:
     name: ShellCheck (shell scripts)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run shellcheck
         run: |
           sudo apt-get update
@@ -62,7 +62,7 @@ jobs:
     name: XML Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Validate XML files
         run: |
           sudo apt-get update
