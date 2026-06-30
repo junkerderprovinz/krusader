@@ -159,6 +159,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+          short-description: "Krusader twin-pane file manager for Unraid, in your browser via KasmVNC, dark mode."
           enable-url-completion: true
 
       - name: Image digest
