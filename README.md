@@ -84,14 +84,14 @@ What's included beyond bare Krusader:
 ## 2. Screenshots
 
 <p align="center">
-  <img src=".github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
+  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
   <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
 </p>
 
 <br>
 
 <p align="center">
-  <img src=".github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
+  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
   <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
 </p>
 
