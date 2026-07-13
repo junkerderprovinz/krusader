@@ -202,6 +202,12 @@ RUN set -eux; \
     if [ -f /usr/sbin/locale-gen.real ]; then \
         mv -f /usr/sbin/locale-gen.real /usr/sbin/locale-gen; \
     fi; \
+    # Ubuntus language-pack-* Pakete registrieren unter
+    # /var/lib/locales/supported.d/ ALLE Regionalvarianten (de_AT, de_CH,
+    # de_LI, ...), und locale-gen liest diese Dateien ZUSAETZLICH zu
+    # /etc/locale.gen. Leeren, damit wirklich nur die kuratierte Liste
+    # unten generiert wird — eine Locale pro Sprache haelt das Image schlank.
+    rm -f /var/lib/locales/supported.d/*; \
     # /etc/locale.gen frisch schreiben — nur unsere gewuenschten Locales
     : > /etc/locale.gen; \
     for L in \
