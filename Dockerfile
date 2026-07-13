@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.25
 #
-# Krusader for Unraid – community edition (KasmVNC)
-# -------------------------------------------------
-# Built on the LinuxServer KasmVNC base image, which provides a modern,
-# hardware-accelerated, web-native Linux desktop. Far smoother and more
-# responsive than the legacy noVNC stack used by jlesage / binhex / ich777.
+# Krusader for Unraid – community edition (Selkies)
+# --------------------------------------------------
+# Built on the LinuxServer Selkies base image (successor of their EOL KasmVNC
+# packaging): X11 + openbox as before, streamed via a hybrid VNC/H.264 pipeline
+# with a modern web client. Far smoother than the legacy noVNC stacks.
 #
 # Features added on top of the base image:
 #   * Krusader (twin-pane file manager)
@@ -20,17 +20,21 @@
 #
 ARG BASE_TAG=ubuntunoble
 
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:${BASE_TAG}
+# Flavor tag deliberately pinned (never :latest) — the Selkies base makes
+# breaking changes between versions by design; bump BASE_TAG consciously.
+FROM ghcr.io/linuxserver/baseimage-selkies:${BASE_TAG}
 
 LABEL maintainer="junkerderprovinz"
 LABEL org.opencontainers.image.title="krusader"
-LABEL org.opencontainers.image.description="Krusader für Unraid mit KasmVNC, Dark Mode, Kate-Editor, RAR-Support und Multi-Language-UI"
+LABEL org.opencontainers.image.description="Krusader für Unraid mit Selkies-Web-Desktop, Dark Mode, Kate-Editor, RAR-Support und Multi-Language-UI"
 LABEL org.opencontainers.image.source="https://github.com/junkerderprovinz/krusader"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
-# Title shown in browser tab / KasmVNC top bar
-ENV TITLE="Krusader"
+# TITLE feeds the PWA manifest; SELKIES_UI_TITLE is the visible tab/sidebar
+# title of the Selkies web client — both must be set on this base.
+ENV TITLE="Krusader" \
+    SELKIES_UI_TITLE="Krusader"
 
 # ---------------------------------------------------------------------------
 # Pakete installieren
@@ -227,35 +231,19 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
     && : > /etc/s6-overlay/s6-rc.d/init-adduser/branding
 
 # ---------------------------------------------------------------------------
-# Browser-tab favicon (issue #12)
+# Browser-tab favicon / branding (issue #12, radically simpler on Selkies)
 # ---------------------------------------------------------------------------
-# The web UI is served by the "kclient" wrapper (Node) on top of KasmVNC. The
-# browser tab favicon is its /favicon.ico — the page has no working <link rel=icon>
-# (only an apple-touch-icon that 404s), so the browser falls back to /favicon.ico,
-# i.e. the file /kclient/public/favicon.ico. v1.1.3 wrongly overwrote the INNER
-# KasmVNC client icons (app/images/icons/368_*), which the tab never loads — so
-# nothing changed. v1.1.4 overwrites the real kclient favicon.ico (+ the kclient
-# app icon.png, served at /public/icon.png, + the inner client icons for good
-# measure). The build fails loudly if the kclient favicon is gone (layout changed),
-# so CI / the weekly rebuild surfaces the regression.
-COPY .github/assets/icon.png    /usr/local/share/krusader-icon.png
-COPY .github/assets/favicon.ico /usr/local/share/krusader-favicon.ico
+# Selkies has ONE branding path: /usr/share/selkies/www/icon.png. The base's
+# init-nginx copies it on every container start to web/favicon.ico, web/icon.png
+# and references it from the generated manifest.json — no more multi-path
+# kclient surgery. The build fails loudly if the path is gone (base layout
+# changed), so CI / the weekly rebuild surfaces the regression.
+COPY .github/assets/icon.png /usr/local/share/krusader-icon.png
 RUN set -eux; \
-    fav=/kclient/public/favicon.ico; \
-    [ -f "$fav" ] || { echo "ERROR: $fav missing — kclient layout changed, update the favicon override"; exit 1; }; \
-    cp /usr/local/share/krusader-favicon.ico "$fav"; \
-    echo "krusader: overwrote tab favicon $fav"; \
-    if [ -f /kclient/public/icon.png ]; then \
-        cp /usr/local/share/krusader-icon.png /kclient/public/icon.png; \
-        echo "krusader: overwrote /kclient/public/icon.png"; \
-    fi; \
-    n=0; \
-    for dest in /usr/share/kasmvnc/www/app/images/icons/368_kasm_logo_only_*.png; do \
-        [ -f "$dest" ] || continue; \
-        cp /usr/local/share/krusader-icon.png "$dest"; \
-        n=$((n + 1)); \
-    done; \
-    echo "krusader: also overwrote $n inner KasmVNC client icon(s)"
+    dst=/usr/share/selkies/www/icon.png; \
+    [ -f "$dst" ] || { echo "ERROR: $dst missing — selkies base layout changed, update the branding override"; exit 1; }; \
+    cp /usr/local/share/krusader-icon.png "$dst"; \
+    echo "krusader: branded selkies icon at $dst"
 
 # ---------------------------------------------------------------------------
 # MediaButton icon = the regular folder icon (match the file list)
@@ -288,8 +276,8 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # ---------------------------------------------------------------------------
 # KRUSADER_LANG  – UI-Sprache: ISO-Code (de, en, fr, …) oder "system"
 # KRUSADER_THEME – dark | light
-# CUSTOM_PORT    – HTTP-Port  (KasmVNC-Standard 3000)
-# CUSTOM_HTTPS_PORT – HTTPS-Port (KasmVNC-Standard 3001)
+# CUSTOM_PORT    – HTTP-Port  (Selkies-Standard 3000)
+# CUSTOM_HTTPS_PORT – HTTPS-Port (Selkies-Standard 3001)
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     LANG=de_DE.UTF-8 \
@@ -299,11 +287,11 @@ ENV KRUSADER_LANG=de \
     QT_STYLE_OVERRIDE=Breeze
 
 # Ports werden vom Baseimage freigegeben (3000/HTTP, 3001/HTTPS).
-# Der Entrypoint kommt vom Baseimage – KasmVNC wird automatisch gestartet
+# Der Entrypoint kommt vom Baseimage – Selkies wird automatisch gestartet
 # und führt /defaults/autostart aus (siehe rootfs/defaults/autostart).
 
 # ---------------------------------------------------------------------------
-# Healthcheck: WebUI (KasmVNC/kclient) antwortet auf dem HTTPS-Port.
+# Healthcheck: WebUI (Selkies/nginx) antwortet auf dem HTTPS-Port.
 # curl kommt aus dem Baseimage (baseimage-ubuntu installiert es im Runtime-
 # Layer). Jeder HTTP-Statuscode zaehlt als "up" — nur "000" (keine Antwort /
 # Verbindung verweigert) markiert den Container als unhealthy.

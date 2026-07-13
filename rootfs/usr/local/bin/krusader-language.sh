@@ -10,7 +10,9 @@
 # Mechanism:
 #   * Set kdeglobals[Translations].Language=<code>
 #   * Export LANG / LANGUAGE / LC_ALL via /config/.profile.d snippet
-#     (KasmVNC's startwm.sh sources /etc/profile.d → which sources us)
+#     (NUR Uebergabemedium: init-krusader liest das Snippet zurueck und pusht
+#     die Werte via set_env ins s6-Container-Env; Selkies' startwm.sh sourced
+#     KEINE Profile - nicht auf Shell-Sourcing verlassen)
 #   * Persist a hint file for the s6-overlay env layer
 # -----------------------------------------------------------------------------
 set -e

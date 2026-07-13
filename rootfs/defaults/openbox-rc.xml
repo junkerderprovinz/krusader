@@ -309,7 +309,7 @@
     </action>
   </keybind>
 
-  <!-- Toggle window decorations (handy in KasmVNC sessions) -->
+  <!-- Toggle window decorations (handy in Selkies sessions) -->
   <keybind key="C-S-d">
     <action name="ToggleDecorations"/>
   </keybind>
@@ -649,7 +649,7 @@
 </menu>
 
 <applications>
-  <!-- Krusader MAIN window: start maximised to fill the KasmVNC viewport.
+  <!-- Krusader MAIN window: start maximised to fill the Selkies viewport.
        type="normal" is REQUIRED. Krusader's dialogs (copy/move/overwrite
        confirmations, KIO prompts) share WM_CLASS=krusader, so a class-only rule
        force-maximizes them too — and openbox re-applies it on every map, so a
