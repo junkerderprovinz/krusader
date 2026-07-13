@@ -69,7 +69,9 @@ RUN set -eux; \
         # Theme / Icons
         breeze breeze-icon-theme kde-style-breeze \
         # Archiv-Tools (wichtig für Krusader)
-        unrar p7zip-full p7zip-rar \
+        # p7zip-rar existiert ab resolute nicht mehr — der RAR-Codec fuers
+        # neue 7zip heisst dort 7zip-rar (p7zip-full bleibt als Uebergangspaket).
+        unrar p7zip-full 7zip-rar \
         zip unzip bzip2 lzma xz-utils \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
