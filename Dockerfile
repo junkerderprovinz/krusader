@@ -18,7 +18,11 @@
 # Repository:  https://github.com/junkerderprovinz/krusader
 # License:     MIT (this wrapper)  –  Krusader upstream is GPL-3.0
 #
-ARG BASE_TAG=ubuntunoble
+# ubunturesolute (26.04) statt noble: liefert Krusader 2.9.0 (KF6), das den
+# Statusbar-Persistenz-Bug aus Issue #16 doppelt fixt (Zustand wird ~1 s nach
+# dem Umschalten via KXmlGui-AutoSave gespeichert; zusaetzlich speichert der
+# SIGTERM-Handler seit 2.9.0 die Session bei docker stop). noble = 2.8.1 = Bug.
+ARG BASE_TAG=ubunturesolute
 
 # Flavor tag deliberately pinned (never :latest) — the Selkies base makes
 # breaking changes between versions by design; bump BASE_TAG consciously.
