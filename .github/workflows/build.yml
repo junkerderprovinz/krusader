@@ -16,7 +16,7 @@ name: Build & Push
 
 on:
   push:
-    branches: [ main, 'feat/selkies' ]   # feat/selkies -> :selkies-preview (Migrations-Boxtest)
+    branches: [ main ]
     tags: [ 'v*.*.*' ]
   schedule:
     - cron: '0 4 * * 0'
@@ -74,7 +74,6 @@ jobs:
             type=semver,pattern={{major}}
             type=schedule,pattern=weekly
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=selkies-preview,enable=${{ github.ref == 'refs/heads/feat/selkies' }}
             type=sha,format=short
 
       # Smoke-test gate (amd64): build the image, boot it, and require the KasmVNC
