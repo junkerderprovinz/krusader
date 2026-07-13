@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# Krusader autostart fuer linuxserver/baseimage-kasmvnc
+# Krusader autostart fuer linuxserver/baseimage-selkies
 # -----------------------------------------------------------------------------
 # Wird beim ersten Start nach /config/.config/openbox/autostart kopiert
-# (durch init-kasmvnc-config). Bei jedem weiteren Start ueberschreibt
+# (durch init-selkies-config). Bei jedem weiteren Start ueberschreibt
 # init-krusader dieses File, damit unsere ENV/Theme-Aenderungen ankommen.
 #
 # Theme-ENV werden primaer ueber /run/s6/container_environment gesetzt.
@@ -49,7 +49,10 @@ echo "[krusader-autostart] GTK_THEME=$GTK_THEME" >&2
 echo "[krusader-autostart] LANG=$LANG" >&2
 
 # --- Start -------------------------------------------------------------------
-# dbus-launch fuer KIO-Slaves (krarc, file, smb, ...).
+# dbus-launch fuer KIO-Slaves (krarc, file, smb, ...). Auf der Selkies-Base
+# wrappt startwm.sh openbox bereits in dbus-launch (aeusserer Session-Bus);
+# unser innerer Bus ist damit verschachtelt - bewusst beibehalten (bewaehrt),
+# Boxtest beobachtet Doppel-kded/KIO-Effekte.
 # krusader-session startet ksmserver VOR krusader im selben D-Bus-Kontext,
 # damit KDE-State-Persistenz (Bug #1) und Kate-Close-Events (Bug #2) funktionieren.
 exec dbus-launch --exit-with-session krusader-session
