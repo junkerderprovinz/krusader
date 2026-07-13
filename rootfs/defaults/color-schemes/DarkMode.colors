@@ -83,10 +83,15 @@ ForegroundPositive=141,141,141
 ForegroundVisited=141,141,141
 
 [Colors:Selection]
-BackgroundAlternate=82,82,82
-BackgroundNormal=82,82,82
-DecorationFocus=82,82,82
-DecorationHover=82,82,82
+# Selection accent: IBM Carbon Green 60 (#198038) with near-white text. This
+# colours the file-list selection (Krusader uses the KDE Highlight/HighlightedText
+# from this scheme), and via the same palette Kate's selection + menu highlights,
+# for one friendly green accent across the container. ForegroundNormal stays
+# near-white so selected text is readable on the green bar.
+BackgroundAlternate=25,128,56
+BackgroundNormal=25,128,56
+DecorationFocus=25,128,56
+DecorationHover=25,128,56
 ForegroundActive=244,244,244
 ForegroundInactive=111,111,111
 ForegroundLink=244,244,244
