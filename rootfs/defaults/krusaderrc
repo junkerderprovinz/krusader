@@ -48,3 +48,10 @@ RememberPos=true
 # gefunden und Krusader fiele auf System-Default (hell) zurueck.
 KDEDefault=false
 ColorScheme=DarkMode
+# Active panel status line: green (Carbon #198038) + white text. Read directly
+# by Krusader's ListPanelFrame (getColor, group [Colors]) INDEPENDENT of the
+# "KDE Default" colour switch, so these apply on top of the KDE dark scheme.
+# Only the ACTIVE panel is green; the inactive panel keeps the neutral default
+# (a clear active/inactive cue). KConfig QColor format is "r,g,b".
+Statusbar Background Active=25,128,56
+Statusbar Foreground Active=244,244,244

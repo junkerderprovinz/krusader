@@ -8,7 +8,7 @@
   <a href="https://hub.docker.com/r/junkerderprovinz/krusader"><img src="https://img.shields.io/docker/pulls/junkerderprovinz/krusader?style=for-the-badge&logo=docker&logoColor=white&label=Pulls&color=1d99f3" alt="Docker Pulls" height="36"></a>&nbsp;
   <a href="https://hub.docker.com/r/junkerderprovinz/krusader"><img src="https://img.shields.io/docker/image-size/junkerderprovinz/krusader/latest?style=for-the-badge&logo=docker&logoColor=white&label=Size&color=1d99f3" alt="Image Size" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-success?style=for-the-badge&logo=linux&logoColor=white" alt="Arch" height="36"></a>&nbsp;
-  <a href="https://github.com/kasmtech/KasmVNC"><img src="https://img.shields.io/badge/Web-KasmVNC-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="KasmVNC" height="36"></a>&nbsp;
+  <a href="https://github.com/selkies-project/selkies"><img src="https://img.shields.io/badge/Web-Selkies-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="Selkies" height="36"></a>&nbsp;
   <a href="#5-languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
@@ -18,7 +18,7 @@
 
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
-management in your browser, powered by KasmVNC, with Dark Mode, Kate as
+management in your browser, powered by Selkies, with Dark Mode, Kate as
 external editor, full archive support and 25 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
@@ -52,11 +52,11 @@ from the Unraid template, no SSH or config-file editing required.
 
 ## 1. Overview
 
-This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-kasmvnc`](https://github.com/linuxserver/docker-baseimage-kasmvnc), so it benefits from LSIO's hardware-accelerated KasmVNC stack and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
+This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (a hybrid VNC/H.264 pipeline) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
 
 What's included beyond bare Krusader:
 
-- **KasmVNC** instead of noVNC — hardware-accelerated rendering, real browser clipboard, native file upload and download, high-DPI ready
+- **Selkies** instead of noVNC — a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
 - **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
 - **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
@@ -67,7 +67,7 @@ What's included beyond bare Krusader:
 
 | | **This image** | binhex | jlesage | ich777 |
 |---|:---:|:---:|:---:|:---:|
-| Web stack | **KasmVNC** | noVNC | noVNC | noVNC |
+| Web stack | **Selkies** | noVNC | noVNC | noVNC |
 | HW-accelerated rendering | ✅ | ❌ | ❌ | ❌ |
 | Browser clipboard | ✅ | ⚠️ | ⚠️ | ⚠️ |
 | File upload via WebUI | ✅ | ❌ | ❌ | ❌ |
@@ -85,7 +85,7 @@ What's included beyond bare Krusader:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
-  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via KasmVNC.</em>
+  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via Selkies.</em>
 </p>
 
 <br>
@@ -125,9 +125,9 @@ The defaults work out of the box, but you may want to tweak:
 - **Storage (`/storage`)** — defaults to `/mnt`, which exposes all shares and disks. Restrict to e.g. `/mnt/user` if you want.
 - **UI Language** — dropdown, default `de`.
 - **Theme** — `dark` or `light`.
-- **KasmVNC Password** — leave empty for LAN-only, set anything for exposure beyond the LAN.
+- **WebUI Password** — leave empty for LAN-only, set anything for exposure beyond the LAN.
 
-Hit **Apply**. The first start takes 30–60 seconds while the container seeds its config and KasmVNC generates a self-signed certificate.
+Hit **Apply**. The first start takes 30–60 seconds while the container seeds its config and Selkies generates a self-signed certificate.
 
 ### Step 4 — Open the WebUI
 
@@ -168,15 +168,15 @@ docker run -d \
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
-| `CUSTOM_USER` | `abc` | KasmVNC HTTP-basic-auth username |
-| `PASSWORD` | *(empty)* | KasmVNC password — **set this if exposed beyond LAN** |
-| `TITLE` | `Krusader` | Browser tab / KasmVNC top-bar title |
+| `CUSTOM_USER` | `abc` | WebUI HTTP-basic-auth username |
+| `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
+| `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
 | `UMASK` | `022` | File-creation mask |
 
 | Port | Purpose | | Volume | Purpose |
 |---|---|---|---|---|
-| `3001` | KasmVNC HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
-| `3000` | KasmVNC HTTP *(optional fallback)* | | `/storage` | Files to manage — default host `/mnt` |
+| `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
+| `3000` | Selkies HTTP *(optional fallback)* | | `/storage` | Files to manage — default host `/mnt` |
 
 <br>
 
@@ -270,7 +270,7 @@ docker stop krusader && docker rm krusader
 
 On Unraid: **Docker** tab → click the container → **Force Update**. Your `/config` is untouched.
 
-> The image is rebuilt **weekly** via GitHub Actions for upstream KasmVNC, Ubuntu and KDE patches.
+> The image is rebuilt **weekly** via GitHub Actions for upstream Selkies, Ubuntu and KDE patches.
 
 <br>
 
@@ -280,7 +280,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 <summary><b>WebUI is black / desktop never appears</b></summary>
 
 - Make sure `--shm-size` is at least `512mb` (Unraid template sets `1gb`)
-- Check the container log for KasmVNC startup errors
+- Check the container log for Selkies startup errors
 - Try opening on `https://<ip>:3001/` (self-signed) — sometimes browsers block ws over plain http
 - Wait 30–60 seconds on first start; KDE caches need to be built once
 </details>
@@ -321,7 +321,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 </details>
 
 <details>
-<summary><b>KasmVNC password not accepted</b></summary>
+<summary><b>WebUI password not accepted</b></summary>
 
 - Open in a private window once — your browser may have cached old credentials.
 </details>
@@ -335,11 +335,9 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 </details>
 
 <details>
-<summary><b>Bottom status bar reappears after a restart (known limitation)</b></summary>
+<summary><b>Bottom status bar hides persistently now</b></summary>
 
-Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Even with `[Startup] Show statusbar=false` in `krusaderrc` the bar is shown again on the next start, and Krusader only saves such UI state on a *clean* exit — which a hard `docker stop` never performs. The container can't force-hide it either: the only reliable mechanism (a Qt application stylesheet) also disables Krusader's **custom status-bar colours**, which are deliberately kept user-configurable.
-
-**Workaround:** hide it per session via **View → Show Statusbar**. The per-panel (upper) status bar with the free-space / device info is unaffected and stays fully configurable.
+Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Statusbar** once and it stays hidden across restarts — Krusader 2.9.0 auto-saves the statusbar state about a second after toggling and also saves settings on `docker stop`, so no clean exit is needed. (On the old KasmVNC image, Krusader 2.8.1 could not persist this.) The per-panel (upper) free-space / device status bar is a different widget and is unaffected.
 </details>
 
 <br>
@@ -348,7 +346,7 @@ Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Ev
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble              │
+│  ghcr.io/linuxserver/baseimage-selkies:ubunturesolute          │
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │  s6-overlay v3 init                                       │  │
 │  │   ↓                                                       │  │
@@ -356,7 +354,7 @@ Krusader **2.8.1 does not persist the bottom (KDE) status bar's visibility**. Ev
 │  │   ↓ seeds /config from /defaults  (first run only)        │  │
 │  │   ↓ sets theme, locale → s6 container environment         │  │
 │  │   ↓                                                       │  │
-│  │  KasmVNC ← /defaults/autostart                            │  │
+│  │  Selkies (Xvfb+openbox) ← /defaults/autostart             │  │
 │  │              → dbus-launch krusader-session               │  │
 │  │                 → ksmserver (KDE session manager)         │  │
 │  │                 → krusader                                │  │
@@ -373,7 +371,7 @@ Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/iss
 **Licensing — dual:**
 
 - This **wrapper repository** (Dockerfile, `rootfs/`, scripts, Unraid templates, README and banner/icon artwork) is licensed under the [MIT License](LICENSE).
-- **Krusader itself** and the bundled KDE / Qt / KasmVNC / unrar / LSIO base-image components retain their upstream licenses (mostly GPL-2.0+ / GPL-3.0+ / LGPL-2.1+, plus unrar's non-free terms). When you run, redistribute or rebuild the resulting container image, you must comply with **all** of those licenses, not only with this wrapper's MIT license. See the `LICENSE` file for the full notice.
+- **Krusader itself** and the bundled KDE / Qt / Selkies / unrar / LSIO base-image components retain their upstream licenses (mostly GPL-2.0+ / GPL-3.0+ / LGPL-2.1+, plus unrar's non-free terms). When you run, redistribute or rebuild the resulting container image, you must comply with **all** of those licenses, not only with this wrapper's MIT license. See the `LICENSE` file for the full notice.
 
 ```bash
 # Run lints locally (CI runs them too)
@@ -385,8 +383,8 @@ xmllint --noout unraid-template.xml ca_profile.xml
 ### Credits
 
 - [**Krusader**](https://krusader.org) — KDE community, the actual file manager
-- [**LinuxServer.io**](https://www.linuxserver.io) — for the excellent [`baseimage-kasmvnc`](https://github.com/linuxserver/docker-baseimage-kasmvnc)
-- [**KasmVNC**](https://github.com/kasmtech/KasmVNC) — for finally fixing remote-desktop-in-a-browser
+- [**LinuxServer.io**](https://www.linuxserver.io) — for the excellent [`baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies)
+- [**Selkies**](https://github.com/selkies-project/selkies) — for a modern, actively-developed browser desktop stack
 - [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
 - Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
 

@@ -3,8 +3,12 @@
 # -----------------------------------------------------------------------------
 # init-krusader  –  Krusader Theme & Config Bootstrap
 # -----------------------------------------------------------------------------
-# Laeuft als s6-Init-Skript NACH init-kasmvnc-config (wo /defaults/autostart
-# in /config/.config/openbox/autostart kopiert wird).
+# Laeuft als s6-Init-Skript NACH init-selkies-config (wo /defaults/autostart
+# in /config/.config/openbox/autostart kopiert wird). ACHTUNG Selkies-Base:
+# init-selkies-config RESTAURIERT /etc/xdg/openbox/rc.xml bei JEDEM Start aus
+# einer .bak und wendet dann NO_DECOR/NO_FULL-seds an - unser Komplett-Override
+# in 2d gewinnt trotzdem (wir laufen per Dependency danach), aber die
+# Base-Features NO_DECOR/NO_FULL wirken auf UNSERE rc.xml nicht.
 #
 # WARUM SO KOMPLEX:
 # Krusader ist eine KDE-Frameworks-App. KDE-Apps benutzen die "KColorScheme"-
@@ -51,7 +55,7 @@ esac
 # Init-Log-Banner (Junker der Provinz brand + container title)
 /usr/local/bin/print-banner.sh \
     "Krusader for Unraid" \
-    "${THEME_NAME} · KasmVNC · KDE" \
+    "${THEME_NAME} · Selkies · KDE" \
     2>/dev/null || true
 
 # -- 1) ENV-Propagation via s6 ------------------------------------------------

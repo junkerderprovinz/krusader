@@ -14,7 +14,7 @@ if [[ -f "${FLAG}" ]]; then
     exec sleep infinity
 fi
 
-# Wait until the KasmVNC WebUI accepts connections on its internal HTTP port
+# Wait until the Selkies WebUI (nginx) accepts connections on its internal HTTP port
 # (3000 is always served regardless of the user's HTTPS preference). Capped at
 # ~5 min so we never hang forever.
 ready=0
