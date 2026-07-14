@@ -37,8 +37,17 @@ LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
 # TITLE feeds the PWA manifest; SELKIES_UI_TITLE is the visible tab/sidebar
 # title of the Selkies web client — both must be set on this base.
+#
+# SELKIES_ENABLE_BASIC_AUTH=false: Selkies' server enables basic auth by DEFAULT
+# with the well-known default credentials (ubuntu / mypasswd), which would pop a
+# login on a container that never set a password — worse, an insecure default
+# one. The KasmVNC base required no login unless CUSTOM_USER/PASSWORD were set,
+# so we keep that: no login by default. Selkies binds to localhost only, so when
+# a user DOES set CUSTOM_USER/PASSWORD the base's nginx enforces HTTP-basic-auth
+# on the proxy (the single reachable entry point), exactly as before.
 ENV TITLE="Krusader" \
-    SELKIES_UI_TITLE="Krusader"
+    SELKIES_UI_TITLE="Krusader" \
+    SELKIES_ENABLE_BASIC_AUTH="false"
 
 # ---------------------------------------------------------------------------
 # Pakete installieren
