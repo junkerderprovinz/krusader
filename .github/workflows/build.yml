@@ -1,7 +1,7 @@
 name: Build & Push
 
 # -----------------------------------------------------------------------------
-# Builds the Krusader-on-KasmVNC image and pushes it to:
+# Builds the Krusader-on-Selkies image and pushes it to:
 #   * GitHub Container Registry  (ghcr.io/junkerderprovinz/krusader)
 #   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/krusader)
 #     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
@@ -10,7 +10,7 @@ name: Build & Push
 # Triggers:
 #   * Push to main           → tags: latest, sha-<short>
 #   * Tag v*.*.*             → tags: latest, <version>, <major>, <major.minor>
-#   * Weekly cron (Sun 04 UTC) – picks up upstream KasmVNC base updates
+#   * Weekly cron (Sun 04 UTC) – picks up upstream Selkies base updates
 #   * Manual workflow_dispatch
 # -----------------------------------------------------------------------------
 
@@ -76,11 +76,11 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
 
-      # Smoke-test gate (amd64): build the image, boot it, and require the KasmVNC
+      # Smoke-test gate (amd64): build the image, boot it, and require the Selkies
       # WebUI to respond before anything is pushed. A green Docker build only proves
       # the image *builds* — this proves the container actually *starts* and serves
-      # the WebUI (catches an s6 / KasmVNC / Krusader boot crash before :latest).
-      # amd64-only on purpose: the KasmVNC desktop is too slow to boot reliably
+      # the WebUI (catches an s6 / Selkies / Krusader boot crash before :latest).
+      # amd64-only on purpose: the Selkies desktop is too slow to boot reliably
       # under arm64 QEMU emulation for a CI gate.
       - name: Build amd64 image for smoke test
         uses: docker/build-push-action@v7
@@ -99,7 +99,7 @@ jobs:
           name=kru-smoke
           docker run -d --name "$name" --platform linux/amd64 -p 3000:3000 -p 3001:3001 krusader:smoke-amd64
           up() {
-            # KasmVNC serves HTTPS on 3001 (self-signed) and HTTP on 3000; any HTTP
+            # Selkies serves HTTPS on 3001 (self-signed) and HTTP on 3000; any HTTP
             # status (even 401) means the WebUI server is up. 000 = not listening.
             local c
             c=$(curl -k -o /dev/null -s -w '%{http_code}' --max-time 5 https://localhost:3001/ || true)
@@ -130,7 +130,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          # KasmVNC baseimage publishes amd64 + arm64; we follow.
+          # Selkies baseimage publishes amd64 + arm64; we follow.
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -159,7 +159,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
-          short-description: "Krusader twin-pane file manager for Unraid, in your browser via KasmVNC, dark mode."
+          short-description: "Krusader twin-pane file manager for Unraid, in your browser via Selkies, dark mode."
           enable-url-completion: true
 
       - name: Image digest

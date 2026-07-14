@@ -42,9 +42,12 @@ LABEL org.opencontainers.image.vendor="junkerderprovinz"
 # with the well-known default credentials (ubuntu / mypasswd), which would pop a
 # login on a container that never set a password — worse, an insecure default
 # one. The KasmVNC base required no login unless CUSTOM_USER/PASSWORD were set,
-# so we keep that: no login by default. Selkies binds to localhost only, so when
-# a user DOES set CUSTOM_USER/PASSWORD the base's nginx enforces HTTP-basic-auth
-# on the proxy (the single reachable entry point), exactly as before.
+# so we keep that: no login by default. The base's nginx would still turn a
+# merely-SET (even empty) PASSWORD into a login, so the init-nologin oneshot
+# drops an empty PASSWORD/CUSTOM_USER before nginx starts. Selkies binds to
+# localhost only, so when a user DOES set a real CUSTOM_USER/PASSWORD the base's
+# nginx enforces HTTP-basic-auth on the proxy (the single reachable entry
+# point), exactly as before.
 ENV TITLE="Krusader" \
     SELKIES_UI_TITLE="Krusader" \
     SELKIES_ENABLE_BASIC_AUTH="false"

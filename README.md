@@ -1,6 +1,6 @@
-<a href="https://krusader.org">
+<p align="center">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/krusader-banner.png" alt="Krusader" width="100%">
-</a>
+</p>
 
 <p align="center">
   <a href="https://github.com/junkerderprovinz/krusader/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/krusader/build.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions&logoColor=white" alt="Build" height="36"></a>&nbsp;
@@ -9,7 +9,7 @@
   <a href="https://hub.docker.com/r/junkerderprovinz/krusader"><img src="https://img.shields.io/docker/image-size/junkerderprovinz/krusader/latest?style=for-the-badge&logo=docker&logoColor=white&label=Size&color=1d99f3" alt="Image Size" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-success?style=for-the-badge&logo=linux&logoColor=white" alt="Arch" height="36"></a>&nbsp;
   <a href="https://github.com/selkies-project/selkies"><img src="https://img.shields.io/badge/Web-Selkies-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="Selkies" height="36"></a>&nbsp;
-  <a href="#5-languages"><img src="https://img.shields.io/badge/Languages-25-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
+  <a href="#5-languages"><img src="https://img.shields.io/badge/Languages-33-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License" height="36"></a>
 </p>
@@ -19,7 +19,7 @@
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
 management in your browser, powered by Selkies, with Dark Mode, Kate as
-external editor, full archive support and 25 UI languages — all configurable
+external editor, full archive support and 33 UI languages — all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
 
@@ -61,7 +61,7 @@ What's included beyond bare Krusader:
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
 - **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
-- **25 UI languages** picked from a dropdown in the Unraid template
+- **33 UI languages** picked from a dropdown in the Unraid template
 - **Update-safe configs** — first-run-only seeding, your customisations in `/config` survive every `docker pull`
 - **Multi-arch** — amd64 and arm64
 
@@ -75,7 +75,7 @@ What's included beyond bare Krusader:
 | Kate as editor | ✅ | ❌ | ❌ | ❌ |
 | Batch rename (krename) | ✅ | ❌ | ❌ | ❌ |
 | RAR right-click | ✅ | ❌ | ❌ | ❌ |
-| Language dropdown | ✅ (25) | ❌ | ❌ | ❌ |
+| Language dropdown | ✅ (33) | ❌ | ❌ | ❌ |
 | Multi-arch | ✅ amd64 + arm64 | amd64 | ✅ | amd64 |
 | Base | LinuxServer | binhex/Arch | jlesage/Alpine | ich777/Debian |
 
@@ -168,7 +168,7 @@ docker run -d \
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
-| `CUSTOM_USER` | `abc` | WebUI HTTP-basic-auth username |
+| `CUSTOM_USER` | *(empty)* | WebUI login username — leave empty with `PASSWORD` for no login |
 | `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
 | `UMASK` | `022` | File-creation mask |
@@ -182,7 +182,7 @@ docker run -d \
 
 ## 5. Languages
 
-The Unraid template ships a **dropdown** with **25 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
+The Unraid template ships a **dropdown** with **33 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
 
 | Region | Languages |
 |---|---|
@@ -376,8 +376,9 @@ Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/iss
 ```bash
 # Run lints locally (CI runs them too)
 docker run --rm -i hadolint/hadolint < Dockerfile
-docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable rootfs/etc/cont-init.d/* rootfs/usr/local/bin/*
-xmllint --noout unraid-template.xml ca_profile.xml
+docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable \
+  $(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' -o -name 'krusader-session' \))
+find . -name '*.xml' -not -path './.git/*' -exec xmllint --noout {} +
 ```
 
 ### Credits

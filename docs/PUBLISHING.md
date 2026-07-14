@@ -17,7 +17,7 @@ CA requires a support thread on the Unraid forums.
 
 1. Create a thread in **Community Applications → Docker Containers (User)**:
    <https://forums.unraid.net/forum/61-docker-containers-user/>
-2. Title suggestion: `[Support] junkerderprovinz - Krusader (KasmVNC)`
+2. Title suggestion: `[Support] junkerderprovinz - Krusader (Selkies)`
 3. First post should include: short description, image link, GitHub link,
    screenshot, basic config notes.
 4. Copy the thread URL.
@@ -56,7 +56,7 @@ docker push junkerderprovinz/krusader:latest
 
 ## 5. Maintenance
 
-- Weekly cron in `build.yml` already rebuilds for upstream KasmVNC / Ubuntu
+- Weekly cron in `build.yml` already rebuilds for upstream Selkies / Ubuntu / KDE
   patches.
 - Watch upstream Krusader releases: <https://krusader.org/get-krusader/>
   Major version bumps may require config tweaks under `rootfs/defaults/`.
