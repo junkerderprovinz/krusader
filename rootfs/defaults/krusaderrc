@@ -43,15 +43,31 @@ Show Terminal Emulator=false
 RememberPos=true
 
 [Colors]
-# Achtung: hier ohne Leerzeichen schreiben – KDE matcht den Datei-Basename
-# /usr/share/color-schemes/DarkMode.colors. "Dark Mode" wuerde NICHT
-# gefunden und Krusader fiele auf System-Default (hell) zurueck.
-KDEDefault=false
-ColorScheme=DarkMode
-# Active panel status line: green (Carbon #198038) + white text. Read directly
-# by Krusader's ListPanelFrame (getColor, group [Colors]) INDEPENDENT of the
-# "KDE Default" colour switch, so these apply on top of the KDE dark scheme.
-# Only the ACTIVE panel is green; the inactive panel keeps the neutral default
-# (a clear active/inactive cue). KConfig QColor format is "r,g,b".
+# Krusader's OWN file-panel colours — editable at runtime under
+# Settings > Configure Krusader > Colors. We preset ONLY the green accents the
+# user can re-edit there; every key left unset inherits the dark KDE colour
+# scheme (Qt palette). The app chrome (active-tab line, Konfigurator page nav,
+# checkbox marks, menus) is NOT a Krusader colour and is not editable here — it
+# stays dark-native grey via the colour scheme's [Colors:Selection].
+#
+# Gotchas (verified against Krusader's KF6 source, app/Panel/krcolorcache.cpp):
+#   * the flag key is "KDE Default" WITH a space — "KDEDefault" is silently
+#     ignored, which leaves the flag at its true default and disables every key
+#     below, so the space is mandatory.
+#   * colour values must be decimal R,G,B; a #hex string has no commas and is
+#     discarded.
+#   * the scheme itself is applied via kdeglobals + KDE_COLOR_SCHEME_PATH (set by
+#     init-krusader), NOT from here, so no ColorScheme= line is needed.
+KDE Default=false
+# File-list selection = Krusader's "Marked" item: green (Carbon #198038) + near-
+# white text. Shown in the dialog as "Selected background / foreground".
+Marked Background=25,128,56
+Marked Foreground=244,244,244
+# Cursor / current row = a subtle grey so the cursor stays visible on the dark
+# base and reads as distinct from the green selection ("Current background/…").
+Current Background=57,57,57
+Current Foreground=244,244,244
+# Active panel's bottom status line = the same green. Read by ListPanelFrame
+# INDEPENDENT of "KDE Default"; only the ACTIVE panel, inactive stays neutral.
 Statusbar Background Active=25,128,56
 Statusbar Foreground Active=244,244,244

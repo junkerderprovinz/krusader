@@ -270,34 +270,6 @@ RUN set -eux; \
     echo "krusader: branded selkies icon at $dst"
 
 # ---------------------------------------------------------------------------
-# Selkies web-UI theme — Carbon #161616 dark with a green accent, to match the
-# Krusader window instead of the default Atom-One-Dark grey-blue + React cyan.
-# Selkies has NO colour/theme env; the clean way is to override the dashboard's
-# own CSS custom properties. We drop a theme-override.css into the dashboard
-# SOURCE dir and load it after the app's bundle (init-nginx copies that dir to
-# the served web root on every start, so the override ships automatically). We
-# do NOT touch the hash-named bundle CSS. Fail loud if the dashboard/index.html
-# is gone (base layout changed) so CI catches it.
-RUN set -eux; \
-    dash=/usr/share/selkies/selkies-dashboard; \
-    [ -f "$dash/index.html" ] || { echo "ERROR: $dash/index.html missing — selkies dashboard layout changed, update the theme override"; exit 1; }; \
-    printf '%s\n' \
-      ':root, .theme-dark {' \
-      '  --sidebar-bg: #161616;          /* sidebar + page/loading background */' \
-      '  --sidebar-text: #c6c6c6;' \
-      '  --sidebar-header-color: #42be65; /* accent: title, slider, progress */' \
-      '  --sidebar-border: #393939;' \
-      '  --section-bg: #262626;' \
-      '  --button-bg: #198038;           /* buttons: deep green + white text */' \
-      '  --button-text: #f4f4f4;' \
-      '  --button-hover-bg: #24a148;' \
-      '}' > "$dash/theme-override.css"; \
-    grep -q 'theme-override.css' "$dash/index.html" || \
-      sed -i 's|</head>|<link rel="stylesheet" href="theme-override.css"></head>|' "$dash/index.html"; \
-    grep -q 'theme-override.css' "$dash/index.html"; \
-    echo "krusader: applied selkies web-UI dark+green theme override"
-
-# ---------------------------------------------------------------------------
 # MediaButton icon = the regular folder icon (match the file list)
 # ---------------------------------------------------------------------------
 # Krusader's status-bar "show available devices" button (MediaButton) uses the
