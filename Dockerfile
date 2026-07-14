@@ -273,30 +273,30 @@ RUN set -eux; \
 # MediaButton icon = the regular folder icon (match the file list)
 # ---------------------------------------------------------------------------
 # Krusader's status-bar "show available devices" button (MediaButton) uses the
-# "system-file-manager" icon. The user wants it to match the blue folder icon
-# shown in the file list, so overwrite system-file-manager with the breeze-dark
-# "folder" icon. IMPORTANT: it must be the COLOURFUL (blue) folder variant.
-# Breeze ships MONOCHROME line-art at the small sizes (16/22 px), recognisable
-# by the "ColorScheme-Text" stylesheet class in the SVG; those paint in the
-# global palette's light text colour and do NOT follow the status bar's local
-# background, so on a light bar (e.g. the yellow low-free-space state) the icon
-# turned invisible while the text auto-flipped to black. The colourful folder
-# reads on dark, green and yellow alike. Pick the largest colourful folder.svg
-# (SVG scales down cleanly) and stamp it into every size slot.
+# "system-file-manager" icon; overwrite it with a folder icon. IMPORTANT: it
+# must be a COLOURFUL icon. Breeze's plain "folder" is monochrome currentColor
+# line-art at EVERY size (verified against breeze-icons v6.10/v6.17/master): it
+# paints in the global palette's light text colour and does NOT follow the
+# status bar's local background, so on a light bar (e.g. the yellow
+# low-free-space state) the icon turned invisible while the text auto-flipped
+# to black. The colourful variants are the folder-<color> icons — use
+# "folder-blue" (the classic breeze folder blue, #4183d7), which reads on dark,
+# green and yellow alike. Pick the largest one (SVG scales down cleanly), guard
+# against monochrome (currentColor), and stamp it into every size slot.
 RUN set -eux; \
     fsrc=""; \
-    for f in /usr/share/icons/breeze-dark/places/*/folder.svg; do \
+    for f in /usr/share/icons/breeze-dark/places/*/folder-blue.svg; do \
         [ -e "$f" ] || continue; \
-        grep -q "ColorScheme-Text" "$f" && continue; \
+        grep -q "currentColor" "$f" && continue; \
         fsrc="$f"; \
     done; \
-    [ -n "$fsrc" ] || { echo "ERROR: no colourful breeze-dark folder.svg found — update the MediaButton icon override"; exit 1; }; \
+    [ -n "$fsrc" ] || { echo "ERROR: no colourful breeze-dark folder-blue.svg found — update the MediaButton icon override"; exit 1; }; \
     echo "krusader: using colourful folder icon $fsrc"; \
     n=0; \
     for d in /usr/share/icons/breeze-dark/apps/*/; do \
         if [ -e "${d}system-file-manager.svg" ]; then cp "$fsrc" "${d}system-file-manager.svg"; n=$((n + 1)); fi; \
     done; \
-    echo "krusader: MediaButton icon set to the colourful folder icon ($n file(s))"; \
+    echo "krusader: MediaButton icon set to the colourful folder-blue icon ($n file(s))"; \
     gtk-update-icon-cache -f -t /usr/share/icons/breeze-dark 2>/dev/null || true
 
 # Berechtigungen für init-scripts
