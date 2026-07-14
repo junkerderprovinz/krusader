@@ -83,23 +83,26 @@ ForegroundPositive=141,141,141
 ForegroundVisited=141,141,141
 
 [Colors:Selection]
-# Selection accent: IBM Carbon Green 60 (#198038) with near-white text. This
-# colours the file-list selection (Krusader uses the KDE Highlight/HighlightedText
-# from this scheme), and via the same palette Kate's selection + menu highlights,
-# for one friendly green accent across the container. ForegroundNormal stays
-# near-white so selected text is readable on the green bar.
-BackgroundAlternate=25,128,56
-BackgroundNormal=25,128,56
-DecorationFocus=25,128,56
-DecorationHover=25,128,56
+# Selection/highlight = dark-native grey (#525252), NOT a colour accent. This is
+# the Qt "Highlight" role, which the user CANNOT change from inside Krusader, so
+# per house rule it stays true to Dark Mode. It colours the app chrome: the
+# active-panel tab indicator line, the Konfigurator page-nav highlight, checkbox
+# marks and menu highlights. The friendly green is applied ONLY where the user
+# CAN change it (Krusader > Settings > Colors): the file-list selection and the
+# active status bar, both set in krusaderrc [Colors]. ForegroundNormal stays
+# near-white so selected text is readable on the grey bar.
+BackgroundAlternate=82,82,82
+BackgroundNormal=82,82,82
+DecorationFocus=82,82,82
+DecorationHover=82,82,82
 ForegroundActive=244,244,244
 ForegroundInactive=111,111,111
-ForegroundLink=244,244,244
+ForegroundLink=141,141,141
 ForegroundNegative=250,77,86
 ForegroundNeutral=241,194,27
 ForegroundNormal=244,244,244
-ForegroundPositive=244,244,244
-ForegroundVisited=244,244,244
+ForegroundPositive=141,141,141
+ForegroundVisited=141,141,141
 
 [Colors:Tooltip]
 BackgroundAlternate=30,30,30
