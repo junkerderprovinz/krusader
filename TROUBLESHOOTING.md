@@ -6,7 +6,7 @@ either a bigger image overhaul or upstream behavioural changes. It is meant as
 a hand-off note so that future-me (or contributors) can pick up where the
 current code left off without re-deriving the root cause from zero.
 
-For day-to-day usage issues (port collisions, KasmVNC certificates, language
+For day-to-day usage issues (port collisions, Selkies certificates, language
 not switching after a UI change, locale fallback, …) see **Section 9. Troubleshooting**
 in the main [`README.md`](README.md).
 
@@ -30,7 +30,7 @@ in the main [`README.md`](README.md).
 | # | Bug | Status | User-visible symptom | Fix applied |
 |---|---|---|---|---|
 | 1 | UI state not persisted | **Fixed** | After `File → Quit` and a fresh container start, status-bar visibility, panel widths, last directory and window geometry came back at defaults | `plasma-workspace` added to Dockerfile; new `rootfs/usr/local/bin/krusader-session` wrapper starts `ksmserver --no-lockscreen` before krusader within the same `dbus-launch` session so `org.kde.ksmserver` is present on the session bus. `autostart` now calls `krusader-session` instead of `krusader` directly. |
-| 2 | Kate opens maximised + window `X` freezes | **Fixed** | Kate filled the full KasmVNC viewport on launch; clicking close hung for ~10 s | Openbox application rule `<application class="kate">` added to `rootfs/defaults/openbox-rc.xml` (size 1100×750, centered). Freeze fixed by same `ksmserver` work as #1. |
+| 2 | Kate opens maximised + window `X` freezes | **Fixed** | Kate filled the full Selkies viewport on launch; clicking close hung for ~10 s | Openbox application rule `<application class="kate">` added to `rootfs/defaults/openbox-rc.xml` (size 1100×750, centered). Freeze fixed by same `ksmserver` work as #1. |
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
 
@@ -43,7 +43,7 @@ in the main [`README.md`](README.md).
 1. Start the container, open the web-UI.
 2. Drag the status bar off, resize a panel column, switch to "Detailed view",
    `cd` somewhere deep, close the second panel — anything visible.
-3. `File → Quit` (or hit the X) → wait for KasmVNC to show "Session ended".
+3. `File → Quit` (or hit the X) → wait for Selkies to show "Session ended".
 4. Stop the container, start it again, reopen the web-UI.
 
 → Everything is back at defaults. None of the runtime changes were saved.
@@ -69,7 +69,7 @@ live session, and it is not a substitute for `saveWindowState()`.
 
 ### Fix sketch
 
-1. **Add `ksmserver`** to the image. On the LSIO KasmVNC baseimage (Ubuntu/Debian-based),
+1. **Add `ksmserver`** to the image. On the LSIO Selkies baseimage (Ubuntu-based),
    the smallest path is to install `plasma-workspace` (~150 MB) or — if available — a
    trimmed `ksmserver` and its hard deps. Avoid `plasma-desktop`, it pulls in too much.
 
@@ -121,7 +121,7 @@ what v1.0.x does today.
 ### Symptom
 
 - Right-click any text file in Krusader → `Open with Kate`.
-- Kate launches **maximised** to the full KasmVNC viewport, ignoring the
+- Kate launches **maximised** to the full Selkies viewport, ignoring the
   multi-window layout.
 - Clicking the title-bar `X` makes Kate go grey for ~10 s, then the process is
   SIGKILL'd. **`Ctrl+Q` (or `File → Quit`) closes cleanly.**
@@ -280,7 +280,7 @@ locale                                                # → LANG=de_DE.UTF-8
 pgrep -af krusader | xargs -r -n1 cat /proc/*/environ 2>/dev/null | tr '\0' '\n' | grep -i ^LANG=
 ```
 
-Then refresh the KasmVNC tab → Krusader should come up in the chosen language
+Then refresh the Selkies tab → Krusader should come up in the chosen language
 and the Settings → Language picker should reflect it.
 
 ### Related but already-fixed
@@ -295,7 +295,7 @@ should work even without `ksmserver`.
 
 ## Architectural background — why a session manager is the real fix
 
-`baseimage-kasmvnc` boots `Xvnc + openbox + (optional) noVNC/KasmVNC web frontend`
+`baseimage-selkies` boots `Xvfb + openbox + the Selkies web frontend`
 plus a single user application. It deliberately ships **no** desktop
 environment. That's perfect for "single-app web wrappers" like Firefox or
 Audacity, where neither the app nor the user expects a multi-window session

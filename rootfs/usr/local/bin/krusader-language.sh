@@ -131,7 +131,7 @@ EOF
 fi
 
 # -- 3) Make sure the autostart script picks up the env -----------------------
-# The KasmVNC base image sources /etc/profile.d/* before running /defaults/autostart.
+# The Selkies base image sources /etc/profile.d/* before running /defaults/autostart.
 # We drop a system-wide snippet symlinked from our user-config so resets are easy.
 ln -sf "${ENV_FILE}" /etc/profile.d/zz-krusader-lang.sh 2>/dev/null || true
 

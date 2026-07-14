@@ -13,10 +13,10 @@
   "prConcurrentLimit": 6,
   "packageRules": [
     {
-      "description": "LinuxServer KasmVNC base image — group and label all updates, manual review required",
-      "matchPackageNames": ["ghcr.io/linuxserver/baseimage-kasmvnc"],
-      "groupName": "LSIO KasmVNC base",
-      "commitMessageTopic": "LSIO KasmVNC base",
+      "description": "LinuxServer Selkies base image — group and label all updates, manual review required",
+      "matchPackageNames": ["ghcr.io/linuxserver/baseimage-selkies"],
+      "groupName": "LSIO Selkies base",
+      "commitMessageTopic": "LSIO Selkies base",
       "commitMessagePrefix": "feat:",
       "labels": ["base-image"]
     },
@@ -34,12 +34,12 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track LinuxServer KasmVNC base image tag from ARG BASE_TAG=<tag>",
+      "description": "Track LinuxServer Selkies base image tag from ARG BASE_TAG=<tag>",
       "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
         "ARG BASE_TAG=(?<currentValue>[^\\s]+)"
       ],
-      "depNameTemplate": "ghcr.io/linuxserver/baseimage-kasmvnc",
+      "depNameTemplate": "ghcr.io/linuxserver/baseimage-selkies",
       "datasourceTemplate": "docker"
     }
   ]
