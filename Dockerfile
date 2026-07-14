@@ -306,7 +306,8 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
              /etc/s6-overlay/s6-rc.d/init-nologin/run \
              /etc/s6-overlay/s6-rc.d/svc-krusader-ready/run \
-             /defaults/autostart
+             /defaults/autostart \
+             /defaults/startwm.sh
 
 # ---------------------------------------------------------------------------
 # Standard-ENV (durch Unraid-Template überschreibbar)
@@ -315,11 +316,18 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # KRUSADER_THEME – dark | light
 # CUSTOM_PORT    – HTTP-Port  (Selkies-Standard 3000)
 # CUSTOM_HTTPS_PORT – HTTPS-Port (Selkies-Standard 3001)
+# Locale: keep the boot env LANGUAGE-NEUTRAL (C.UTF-8) and let KRUSADER_LANG drive
+# the UI language via krusader-language.sh (kdeglobals [Translations] + a matching
+# LANG/LANGUAGE pushed into the s6 env). We must NOT hardcode a German LANG/
+# LANGUAGE/LC_ALL here: the Selkies base's init-selkies-config derives
+# LANGUAGE=${LC_ALL%.UTF-8} + LANG=${LC_ALL} into the container env whenever LC_ALL
+# is set, and KDE gives that LANGUAGE env priority over kdeglobals [Translations].
+# With a German LC_ALL baked in, a user who set KRUSADER_LANG=en still got a German
+# UI (issue #21), because the base's German LANGUAGE env overrode the correct
+# kdeglobals we write. C.UTF-8 leaves no language in the env, so kdeglobals wins.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
-    LANG=de_DE.UTF-8 \
-    LANGUAGE=de_DE:de:en \
-    LC_ALL=de_DE.UTF-8 \
+    LANG=C.UTF-8 \
     QT_QPA_PLATFORMTHEME=qt5ct \
     QT_STYLE_OVERRIDE=Breeze
 
