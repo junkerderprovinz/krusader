@@ -27,17 +27,25 @@ for _ in $(seq 1 150); do
     sleep 2
 done
 
+# Small settle so Krusader's window is actually drawn before we announce.
+[[ "${ready}" -eq 1 ]] && sleep 4
+
+# House ASCII brand banner, printed here so it sits directly above the status box
+# (brand + "<APP> IS READY" as the log's final block). Subtitle tracks the active
+# theme, matching what the init banner used to show.
+case "${KRUSADER_THEME:-dark}" in
+    light | Light | breeze | Breeze | BreezeLight) TH="Breeze Light" ;;
+    *) TH="Dark Mode" ;;
+esac
+/usr/local/bin/print-banner.sh "Krusader for Unraid" "${TH} · Selkies · KDE" 2>/dev/null || true
+
 SEP="$(printf '#%.0s' {1..70})"
 if [[ "${ready}" -eq 1 ]]; then
-    # Small settle so Krusader's window is actually drawn before we announce.
-    sleep 4
-    echo ""
     echo "${SEP}"
     echo "###  KRUSADER IS READY  —  open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}  ###"
     echo "${SEP}"
     echo ""
 else
-    echo ""
     echo "${SEP}"
     echo "###  WARNING: KRUSADER DID NOT BECOME READY  —  the WebUI never answered within 5 min, check the log above  ###"
     echo "${SEP}"
