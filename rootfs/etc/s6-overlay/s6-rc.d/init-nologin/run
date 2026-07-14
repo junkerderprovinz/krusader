@@ -1,0 +1,16 @@
+#!/usr/bin/with-contenv bash
+# The Krusader template exposes optional WebUI auth via the CUSTOM_USER / PASSWORD
+# fields. Unraid passes them as empty environment variables when the fields are
+# left blank, and the base image's init-nginx enables HTTP basic auth whenever
+# PASSWORD is merely SET -- even to "" -- writing /etc/nginx/.htpasswd and
+# uncommenting the auth_basic lines. That pops a browser login prompt (with an
+# unusable empty password) even though the template promises "leave empty for no
+# login". Strip the empty values here, before init-nginx runs, so the no-login
+# default actually holds. A real, non-empty password is left untouched and still
+# enables basic auth on the WebUI exactly as documented.
+if [ -z "${PASSWORD}" ]; then
+  rm -f /run/s6/container_environment/PASSWORD
+fi
+if [ -z "${CUSTOM_USER}" ]; then
+  rm -f /run/s6/container_environment/CUSTOM_USER
+fi
