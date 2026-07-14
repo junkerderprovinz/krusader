@@ -52,11 +52,9 @@ case "${KRUSADER_THEME:-dark}" in
         ;;
 esac
 
-# Init-Log-Banner (Junker der Provinz brand + container title)
-/usr/local/bin/print-banner.sh \
-    "Krusader for Unraid" \
-    "${THEME_NAME} · Selkies · KDE" \
-    2>/dev/null || true
+# The house ASCII brand banner is printed later, right above the "KRUSADER IS
+# READY" box (see svc-krusader-ready/run), so brand + ready status sit together
+# as the log's final block instead of scrolling off the top during startup.
 
 # -- 1) ENV-Propagation via s6 ------------------------------------------------
 # /run/s6/container_environment/<NAME>=<VALUE> ist der offizielle Weg, ENV in
