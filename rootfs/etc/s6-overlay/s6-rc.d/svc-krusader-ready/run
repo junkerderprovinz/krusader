@@ -39,16 +39,14 @@ case "${KRUSADER_THEME:-dark}" in
 esac
 /usr/local/bin/print-banner.sh "Krusader for Unraid" "${TH} · Selkies · KDE" 2>/dev/null || true
 
-SEP="$(printf '#%.0s' {1..70})"
+# Clean two-line status (house look: no rule/box walls).
 if [[ "${ready}" -eq 1 ]]; then
-    echo "${SEP}"
-    echo "###  KRUSADER IS READY  —  open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}  ###"
-    echo "${SEP}"
+    echo "  ✓ KRUSADER IS READY"
+    echo "    Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
     echo ""
 else
-    echo "${SEP}"
-    echo "###  WARNING: KRUSADER DID NOT BECOME READY  —  the WebUI never answered within 5 min, check the log above  ###"
-    echo "${SEP}"
+    echo "  ✗ KRUSADER DID NOT BECOME READY"
+    echo "    The WebUI never answered within 5 minutes — check the log above"
     echo ""
 fi
 
