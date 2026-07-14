@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 # The Krusader template exposes optional WebUI auth via the CUSTOM_USER / PASSWORD
 # fields. Unraid passes them as empty environment variables when the fields are
 # left blank, and the base image's init-nginx enables HTTP basic auth whenever
