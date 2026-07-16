@@ -131,7 +131,7 @@ Hit **Apply**. The first start takes 30–60 seconds while the container seeds i
 
 ### Step 4 — Open the WebUI
 
-`https://<unraid-ip>:3001/` (HTTPS, self-signed — accept the certificate once). **Use HTTPS:** browsers only allow seamless clipboard sync over HTTPS, so the template's WebUI button points here. `http://<unraid-ip>:3000/` is an optional fallback without clipboard support.
+`https://<unraid-ip>:3001/` (HTTPS, self-signed — accept the certificate once). **Use HTTPS:** the Selkies web client requires a secure context, so direct browser access must go through the HTTPS port. Port `3000` (HTTP) is **not** a usable direct fallback — opening `http://<unraid-ip>:3000/` shows a *"requires a secure connection (HTTPS)"* error and won't load. It exists for a reverse proxy that terminates TLS in front of the container (the proxy serves HTTPS to the browser and forwards HTTP to `3000`).
 
 > Once Community Applications has accepted this image it will also be installable via **Apps** → search `Krusader`.
 
@@ -176,7 +176,7 @@ docker run -d \
 | Port | Purpose | | Volume | Purpose |
 |---|---|---|---|---|
 | `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
-| `3000` | Selkies HTTP *(optional fallback)* | | `/storage` | Files to manage — default host `/mnt` |
+| `3000` | Selkies HTTP *(reverse-proxy only — direct access needs HTTPS)* | | `/storage` | Files to manage — default host `/mnt` |
 
 <br>
 
