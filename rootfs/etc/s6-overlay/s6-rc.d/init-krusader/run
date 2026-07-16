@@ -263,6 +263,45 @@ fi
 # Permissions
 chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 
+# -- 3b) KService-Cache (kbuildsycoca6) fuer "Open With..." (Issue #22) -------
+# KOpenWithDialog (Rechtsklick -> "Oeffnen mit...") wird NICHT aus den .desktop-
+# Dateien direkt gefuellt, sondern aus KSycoca — einem binaeren Cache, den
+# KApplicationTrader abfragt. In einer vollen Plasma-Session baut kded6 diesen
+# Cache beim eigenen Start automatisch auf (kded6(8): "Those tasks are also
+# run when kded6 is started to ensure that the user configuration is up to
+# date."). Dieses Image faehrt openbox statt Plasma; kded6 wird hier bestenfalls
+# spaet und beilaeufig per D-Bus-Aktivierung gestartet, wenn zufaellig ein KIO-
+# Call es ausloest (im Box-Test beobachtet, siehe Kommentar in defaults/autostart:
+# "Doppel-kded/KIO-Effekte") — es gibt aber KEINE Garantie, dass das VOR dem
+# ersten "Oeffnen mit..." des Users passiert ist. Ohne fertigen Cache liefert
+# KApplicationTrader eine leere Liste: KOpenWithDialog zeigt dann eine KOMPLETT
+# leere Anwendungsliste UND eine leere Text-Combobox — nicht nur "Kate fehlt".
+# Gleiches, dokumentiertes Verhalten ausserhalb einer vollen KDE-Session ist
+# u.a. fuer Dolphin unter Hyprland belegt (kbuildsycoca6 manuell noetig, bis
+# die Anwendungsliste wieder Eintraege zeigt).
+# kbuildsycoca6 selbst baut den Cache SYNCHRON im aufrufenden Prozess (kein
+# Daemon/D-Bus-Umweg noetig, siehe KService-Quellcode), ist bei unveraenderten
+# .desktop-Verzeichnissen ein guenstiger No-Op, und liegt bereits im Image
+# (libkf6service-bin, Pflichtabhaengigkeit von plasma-workspace/kde-cli-tools).
+# Wir bauen ihn hier proaktiv bei JEDEM Start, ALS abc (damit der Cache unter
+# $HOME/.cache abc-gehoert ist, genau wie alles andere, was Krusader/Kate
+# selbst als abc anlegen) — das schliesst die Race komplett, statt auf die
+# zufaellige kded-Aktivierung zu hoffen.
+mkdir -p /config/.cache
+chown abc:abc /config/.cache
+# HOME/XDG_CACHE_HOME explizit: s6-setuidgid wechselt nur uid/gid, NICHT das
+# Environment — der Cache MUSS unter /config/.cache landen (persistent, dort
+# sucht ihn Krusader-als-abc), nicht unter einem geerbten Root-HOME.
+if command -v kbuildsycoca6 >/dev/null 2>&1; then
+    if env HOME=/config XDG_CACHE_HOME=/config/.cache s6-setuidgid abc kbuildsycoca6 >/tmp/kbuildsycoca6.log 2>&1; then
+        log "kbuildsycoca6: KService-Cache aufgebaut (Open With.../KApplicationTrader)"
+    else
+        log "WARNING: kbuildsycoca6 ist fehlgeschlagen — 'Oeffnen mit...' bleibt evtl. leer (siehe /tmp/kbuildsycoca6.log)"
+    fi
+else
+    log "WARNING: kbuildsycoca6 nicht gefunden — 'Oeffnen mit...' zeigt eine leere Liste (Issue #22)"
+fi
+
 # -- 4) Diagnose-Output -------------------------------------------------------
 log "=== Diagnose ==="
 log "ColorScheme in kdeglobals: $(grep -E '^ColorScheme=' "${CONFIG_HOME}/kdeglobals" | head -n 1)"
@@ -270,6 +309,7 @@ log "theme=${KRUSADER_THEME:-dark} scheme=${THEME_SCHEME}; palette source ${THEM
 log "kde-plattform-plugin: $(find /usr/lib -name 'libkdeplatformtheme.so' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "breeze-style-plugin:  $(find /usr/lib -name 'breeze.so' -path '*styles*' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 log "fc-list count:        $(fc-list 2>/dev/null | wc -l)"
+log "kbuildsycoca6 cache:  $(find /config/.cache -iname '*sycoca*' 2>/dev/null | head -n 1 || echo NOT-FOUND)"
 
 log "init-krusader done"
 exit 0
