@@ -288,6 +288,17 @@ RUN set -eux; \
         [ -d "$theme" ] || continue; \
         store="/usr/local/share/krusader-mediabutton/$(basename "$theme")"; \
         mkdir -p "$store"; \
+        # pristine copies of the PANEL folder icon too (places/<sz>/folder.svg,
+        # which inode-directory symlinks to): init-krusader tints the file-list
+        # folder icons to the CONFIGURED panel foreground the same way as the
+        # MediaButton, and restores these pristine files when no custom colour
+        # is set.
+        pstore="/usr/local/share/krusader-panelfolder/$(basename "$theme")"; \
+        mkdir -p "$pstore"; \
+        for pdir in "$theme"/places/*/; do \
+            [ -e "${pdir}folder.svg" ] || continue; \
+            cp -L "${pdir}folder.svg" "$pstore/$(basename "$pdir").svg"; \
+        done; \
         for appdir in "$theme"/apps/*/; do \
             [ -e "${appdir}system-file-manager.svg" ] || continue; \
             sz="$(basename "$appdir")"; \
