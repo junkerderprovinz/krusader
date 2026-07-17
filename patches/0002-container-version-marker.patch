@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c65568e..8b566ef 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
+ 
+ project(krusader)
+ 
+-set(VERSION "2.9.0")
++set(VERSION "2.9.0+icontint1")
+ set(RELEASE_NAME "Sixth Life")
+ 
+ set(CMAKE_CXX_STANDARD 17)

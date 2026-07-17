@@ -353,6 +353,24 @@ fi
 # schreibt der Konfigurator fuer "Default") zaehlen als nicht gesetzt.
 PF_STORE="/usr/local/share/krusader-panelfolder"
 if [[ -d "${PF_STORE}" ]]; then
+    # Gepatchter Source-Build (Per-Row-Icon-Tint, /usr/share/krusader/.icontint):
+    # Krusader rendert die Listen-Icons dann selbst live in der jeweiligen
+    # Zeilen-Textfarbe (normal/aktuell/markiert). Die statische Bake wuerde das
+    # SABOTIEREN (frozen-color-scheme = KIconLoader kann nicht mehr faerben) —
+    # also immer Stock restaurieren und den Bake-Teil ueberspringen.
+    if [[ -f /usr/share/krusader/.icontint ]]; then
+        pf_n=0
+        for pf_src in "${PF_STORE}"/*/*.svg; do
+            [[ -e "${pf_src}" ]] || continue
+            pf_theme="$(basename "$(dirname "${pf_src}")")"
+            pf_sz="$(basename "${pf_src}" .svg)"
+            pf_dst="/usr/share/icons/${pf_theme}/places/${pf_sz}/folder.svg"
+            [[ -e "${pf_dst}" ]] || continue
+            cp -f "${pf_src}" "${pf_dst}"
+            pf_n=$((pf_n + 1))
+        done
+        log "Per-Row-Icon-Tint aktiv (gepatchter Krusader) — Stock-Ordner-Icons restauriert (${pf_n}), Bake uebersprungen"
+    else
     # "KDE Default=true" (Konfigurator-Haken "KDE-Standardfarben") deaktiviert
     # ALLE Farb-Keys darunter — der Konfigurator loescht sie aber nicht. Stale
     # Werte duerfen dann nicht eingebrannt werden: Flag=true == keine Farbe.
@@ -384,6 +402,7 @@ if [[ -d "${PF_STORE}" ]]; then
     else
         log "Dateilisten-Ordner-Icons: keine eigene Panel-Farbe gesetzt — Stock-Icons restauriert (${pf_n})"
     fi
+    fi # Ende Bake-Zweig (nur ungepatchter apt-Krusader)
 fi
 
 # 2c) File associations (Issue #22): register Kate as the default text handler so

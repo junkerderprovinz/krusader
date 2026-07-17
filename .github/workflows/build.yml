@@ -1,11 +1,19 @@
 name: Build & Push
 
 # -----------------------------------------------------------------------------
-# Builds the Krusader-on-Selkies image and pushes it to:
+# Builds the Krusader-on-Selkies image (with the patched, source-built Krusader
+# — see patches/ and the Dockerfile builder stage) and pushes it to:
 #   * GitHub Container Registry  (ghcr.io/junkerderprovinz/krusader)
 #   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/krusader)
 #     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
 #       secret are set together; until then the build stays GHCR-only.
+#
+# Architecture: one NATIVE build job per platform (amd64 on ubuntu-latest,
+# arm64 on ubuntu-24.04-arm — free for public repos). Compiling Krusader from
+# source under QEMU would take 1-2 h; natively it is ~10 min per arch. Each job
+# boots its image as a smoke gate (WebUI + patched-Krusader marker), pushes by
+# digest, and a merge job assembles the multi-arch manifest under the final
+# tags for both registries.
 #
 # Triggers:
 #   * Push to main           → tags: latest, sha-<short>
@@ -27,7 +35,17 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
@@ -36,8 +54,129 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (labels)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+
+      # Build natively for this arch and load it locally for the smoke gate.
+      - name: Build ${{ matrix.arch }} image for smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: false
+          load: true
+          tags: krusader:smoke-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+
+      # Smoke-test gate: boot the image and require the Selkies WebUI to
+      # respond before anything is pushed. Runs NATIVELY on both arches now.
+      # Additionally asserts the patched source-built Krusader actually landed
+      # in the image (marker file from the builder stage) — a green build with
+      # the stock apt binary would silently drop the per-row icon tint.
+      - name: Smoke test — ${{ matrix.arch }} must boot and serve the WebUI
+        run: |
+          set -euo pipefail
+          img=krusader:smoke-${{ matrix.arch }}
+          echo "== patched-Krusader marker =="
+          docker run --rm --entrypoint sh "$img" -c 'test -f /usr/share/krusader/.icontint' \
+            || { echo "❌ /usr/share/krusader/.icontint missing — source-built Krusader not in image"; exit 1; }
+          # HARD assert: the patched binary must actually run and report the
+          # +icontint version marker. Catches an ABI-skewed builder artifact
+          # (e.g. base-series mismatch) that the marker file alone would hide.
+          # timeout guards against a hang under the offscreen platform.
+          ver=$(docker run --rm --entrypoint sh "$img" -c 'timeout 30 env QT_QPA_PLATFORM=offscreen krusader --version 2>/dev/null' || true)
+          echo "krusader --version: ${ver:-<none>}"
+          echo "$ver" | grep -q 'icontint' \
+            || { echo "❌ patched Krusader did not run/report the icontint version marker"; exit 1; }
+          echo "== boot gate =="
+          name=kru-smoke
+          docker run -d --name "$name" -p 3000:3000 -p 3001:3001 "$img"
+          up() {
+            # Selkies serves HTTPS on 3001 (self-signed) and HTTP on 3000; any HTTP
+            # status (even 401) means the WebUI server is up. 000 = not listening.
+            local c
+            c=$(curl -k -o /dev/null -s -w '%{http_code}' --max-time 5 https://localhost:3001/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            c=$(curl -o /dev/null -s -w '%{http_code}' --max-time 5 http://localhost:3000/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            return 1
+          }
+          # real 150s wall-clock deadline (each probe can spend up to ~10s in
+          # curl timeouts, so an iteration counter would overshoot massively)
+          deadline=$((SECONDS + 150))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            if up; then
+              echo "✅ WebUI responded after ${SECONDS}s"
+              docker rm -f "$name" >/dev/null
+              exit 0
+            fi
+            if [ -z "$(docker ps -q --filter "name=$name")" ]; then
+              echo "❌ container exited early — logs:"; docker logs "$name" || true
+              docker rm -f "$name" >/dev/null; exit 1
+            fi
+            sleep 1
+          done
+          echo "❌ WebUI did not respond within 150s — logs:"
+          docker logs "$name" || true
+          docker rm -f "$name" >/dev/null
+          exit 1
+
+      # Push this arch by digest (no tags yet — the merge job assembles the
+      # multi-arch manifest under the final tags).
+      - name: Push ${{ matrix.arch }} by digest
+        id: push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.push.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v7
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -51,7 +190,7 @@ jobs:
 
       # Docker Hub mirror — active only once DOCKERHUB_USERNAME (variable) and
       # DOCKERHUB_TOKEN (secret) are set together. Until then this step is
-      # skipped and the build stays GHCR-only, so CI is unaffected.
+      # skipped and the manifest stays GHCR-only, so CI is unaffected.
       - name: Login to Docker Hub
         if: ${{ vars.DOCKERHUB_USERNAME != '' }}
         uses: docker/login-action@v4
@@ -76,67 +215,29 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
 
-      # Smoke-test gate (amd64): build the image, boot it, and require the Selkies
-      # WebUI to respond before anything is pushed. A green Docker build only proves
-      # the image *builds* — this proves the container actually *starts* and serves
-      # the WebUI (catches an s6 / Selkies / Krusader boot crash before :latest).
-      # amd64-only on purpose: the Selkies desktop is too slow to boot reliably
-      # under arm64 QEMU emulation for a CI gate.
-      - name: Build amd64 image for smoke test
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64
-          push: false
-          load: true
-          tags: krusader:smoke-amd64
-          cache-from: type=gha
-
-      - name: Smoke test — amd64 must boot and serve the WebUI
+      # Assemble the multi-arch manifest for EVERY tag (both registries) from
+      # the per-arch digests pushed to GHCR. imagetools copies the platform
+      # images across registries where needed (Docker Hub tags).
+      - name: Create multi-arch manifests
+        working-directory: /tmp/digests
+        # tags come from the DOCKER_METADATA_OUTPUT_TAGS env the metadata action
+        # exports — no ${{ }} interpolation inside the script (injection hygiene)
         run: |
           set -euo pipefail
-          name=kru-smoke
-          docker run -d --name "$name" --platform linux/amd64 -p 3000:3000 -p 3001:3001 krusader:smoke-amd64
-          up() {
-            # Selkies serves HTTPS on 3001 (self-signed) and HTTP on 3000; any HTTP
-            # status (even 401) means the WebUI server is up. 000 = not listening.
-            local c
-            c=$(curl -k -o /dev/null -s -w '%{http_code}' --max-time 5 https://localhost:3001/ || true)
-            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
-            c=$(curl -o /dev/null -s -w '%{http_code}' --max-time 5 http://localhost:3000/ || true)
-            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
-            return 1
-          }
-          for i in $(seq 1 150); do
-            if up; then
-              echo "✅ WebUI responded after ${i}s"
-              docker rm -f "$name" >/dev/null
-              exit 0
-            fi
-            if [ -z "$(docker ps -q --filter "name=$name")" ]; then
-              echo "❌ container exited early — logs:"; docker logs "$name" || true
-              docker rm -f "$name" >/dev/null; exit 1
-            fi
-            sleep 1
-          done
-          echo "❌ WebUI did not respond within 150s — logs:"
-          docker logs "$name" || true
-          docker rm -f "$name" >/dev/null
-          exit 1
+          src="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
+          sources=""
+          for d in *; do sources="$sources ${src}@sha256:${d}"; done
+          echo "sources:${sources}"
+          tagargs=""
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && tagargs="$tagargs -t $tag"
+          done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
+          echo "tags:${tagargs}"
+          docker buildx imagetools create ${tagargs} ${sources}
 
-      - name: Build & push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          # Selkies baseimage publishes amd64 + arm64; we follow.
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Inspect
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       # Mirror the GitHub README to the Docker Hub repo's full description (same
       # text as on GitHub; relative image/link paths completed to absolute so they
@@ -145,6 +246,10 @@ jobs:
       # DOCKERHUB_PASSWORD secret (Docker Hub account password, or a PAT scoped to
       # edit repos). Skipped until that secret is set, so a missing credential
       # never fails the build.
+      - name: Checkout (README for Docker Hub sync)
+        if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+        uses: actions/checkout@v7
+
       - name: Docker Hub description sync ready?
         id: dhdesc
         if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
@@ -152,15 +257,13 @@ jobs:
           PW: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
           if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_PASSWORD not set — skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
+
       - name: Sync README to Docker Hub
         if: ${{ steps.dhdesc.outputs.go == 'true' }}
         uses: peter-evans/dockerhub-description@v5
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
           short-description: "Krusader twin-pane file manager for Unraid, in your browser via Selkies, dark mode."
           enable-url-completion: true
-
-      - name: Image digest
-        run: echo "Image digest = ${{ steps.meta.outputs.digest }}"
