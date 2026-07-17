@@ -247,9 +247,13 @@ fi
 # them back here and push them via set_env so they override the static
 # Docker-ENV defaults (e.g. LANG=de_DE.UTF-8).
 if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
-    _L=$(grep  '^export LANG='     /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
-    _A=$(grep  '^export LC_ALL='   /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
-    _C=$(grep  '^export LANGUAGE=' /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)
+    # Die Snippet-Werte sind QUOTED (dash-Schutz beim Sourcen) — beim Readback
+    # muessen die Literal-Quotes runter, sonst landet LANG='"de_DE.UTF-8"' im
+    # s6-Env und jeder Service warnt 'cannot change locale ("de_DE.UTF-8")'.
+    _unq() { local v="$1"; v="${v#\"}"; v="${v%\"}"; printf '%s' "$v"; }
+    _L=$(_unq "$(grep  '^export LANG='     /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)")
+    _A=$(_unq "$(grep  '^export LC_ALL='   /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)")
+    _C=$(_unq "$(grep  '^export LANGUAGE=' /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)")
     [[ -n "$_L" ]] && set_env LANG     "$_L"
     [[ -n "$_A" ]] && set_env LC_ALL   "$_A"
     [[ -n "$_C" ]] && set_env LANGUAGE "$_C"
