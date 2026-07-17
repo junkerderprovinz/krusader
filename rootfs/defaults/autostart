@@ -1,7 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # -----------------------------------------------------------------------------
 # Krusader autostart fuer linuxserver/baseimage-selkies
 # -----------------------------------------------------------------------------
+# ACHTUNG POSIX: openbox fuehrt dieses Skript mit /bin/sh (dash) aus und
+# IGNORIERT den Shebang — Bashismen wie [[ ]] schlagen still fehl ("[[: not
+# found", Block wird uebersprungen) waehrend der Rest weiterlaeuft. Genau so
+# wurde der Sprach-Block ausgehebelt (LANG blieb C.UTF-8). NUR POSIX-sh hier.
+#
 # Wird beim ersten Start nach /config/.config/openbox/autostart kopiert
 # (durch init-selkies-config). Bei jedem weiteren Start ueberschreibt
 # init-krusader dieses File, damit unsere ENV/Theme-Aenderungen ankommen.
@@ -13,10 +18,15 @@
 # -----------------------------------------------------------------------------
 
 # --- KDE-Plattform aktivieren (Hauptmechanismus) -----------------------------
-# Dies laedt das libkdeplatformtheme.so aus plasma-integration → KDE-Apps
-# wie Krusader/Kate lesen kdeglobals und KDE-Color-Schemes nativ.
-export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-kde}"
-export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-KDE}"
+# Dies laedt das libkdeplatformtheme.so aus plasma-integration -> KDE-Apps
+# wie Krusader/Kate lesen kdeglobals ([Icons] Theme, [Colors:*]) nativ.
+# UNBEDINGT unconditional: die Session erbt das Docker-ENV
+# QT_QPA_PLATFORMTHEME=qt5ct (s6-Env kommt hier nicht an, ground truth) — ein
+# ":-kde"-Fallback wuerde qt5ct BEHALTEN, das KDE-Plugin bliebe ungeladen und
+# kdeglobals (Icon-Theme-Switch!) wuerde ignoriert. Es ist unsere Session, es
+# gibt keinen legitimen Fremdwert, den wir respektieren muessten.
+export QT_QPA_PLATFORMTHEME="kde"
+export XDG_CURRENT_DESKTOP="KDE"
 export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-KDE}"
 export DESKTOP_SESSION="${DESKTOP_SESSION:-plasma}"
 
@@ -26,7 +36,7 @@ export QT_AUTO_SCREEN_SCALE_FACTOR="${QT_AUTO_SCREEN_SCALE_FACTOR:-1}"
 export KDE_COLOR_SCHEME_PATH="${KDE_COLOR_SCHEME_PATH:-/usr/share/color-schemes/DarkMode.colors}"
 
 # Fallback-Suchpfad
-if [[ ! -f "$KDE_COLOR_SCHEME_PATH" ]] && [[ -f "$HOME/.local/share/color-schemes/DarkMode.colors" ]]; then
+if [ ! -f "$KDE_COLOR_SCHEME_PATH" ] && [ -f "$HOME/.local/share/color-schemes/DarkMode.colors" ]; then
     export KDE_COLOR_SCHEME_PATH="$HOME/.local/share/color-schemes/DarkMode.colors"
 fi
 
@@ -40,7 +50,7 @@ export XCURSOR_THEME="${XCURSOR_THEME:-breeze_cursors}"
 # korrektem s6-Env) — darum sourcen wir das Sprach-Snippet HIER, direkt vor dem
 # Session-Start: das ueberschreibt die englischen Image-Defaults zuverlaessig
 # fuer jede PUID. Bei KRUSADER_LANG=system existiert kein Snippet -> Fallbacks.
-if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
+if [ -f /config/.profile.d/krusader-lang.sh ]; then
     # shellcheck disable=SC1091
     . /config/.profile.d/krusader-lang.sh
     echo "[krusader-autostart] language snippet sourced: LANG=$LANG LANGUAGE=$LANGUAGE" >&2

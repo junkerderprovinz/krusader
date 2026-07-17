@@ -37,8 +37,11 @@ log() { echo "[init-krusader] $*"; }
 # 'plasma-workspace' packages at /usr/share/color-schemes/BreezeLight.colors).
 # This MUST drive the palette merge below — merging the dark palette regardless
 # of KRUSADER_THEME is what previously made light mode stay dark.
-case "${KRUSADER_THEME:-dark}" in
-    light)
+# Normalize: accept light|Light|breeze|BreezeLight etc. (matches the READY
+# banner's accepted spellings, so init and banner agree on the same theme).
+THEME_LC="$(echo "${KRUSADER_THEME:-dark}" | tr '[:upper:]' '[:lower:]')"
+case "${THEME_LC}" in
+    light|breeze|breezelight)
         THEME_SCHEME="BreezeLight"; THEME_NAME="Breeze Light"
         THEME_LNF="org.kde.breeze.desktop"
         THEME_COLORS="/usr/share/color-schemes/BreezeLight.colors"
@@ -167,8 +170,12 @@ fi
 
 # 2b) Theme-Infrastruktur: jeden Start frisch
 log "Theme-Infrastruktur (re)deploy"
-cp -af "${DEFAULTS}/kdeglobals"                      "${CONFIG_HOME}/kdeglobals"
-cp -af "${DEFAULTS}/kdeglobals"                      "${KDEDEFAULTS}/kdeglobals"
+# tr -d '\r': ein lokal (Windows-Checkout) gebautes Image koennte CRLF in der
+# Default-Datei tragen — KConfig parst "[Icons]\r" dann als fremde Gruppe und
+# der Icon-Theme-Switch bricht still. CI-Builds sind LF; das hier macht es
+# unabhaengig von der Build-Umgebung deterministisch.
+tr -d '\r' < "${DEFAULTS}/kdeglobals" > "${CONFIG_HOME}/kdeglobals"
+tr -d '\r' < "${DEFAULTS}/kdeglobals" > "${KDEDEFAULTS}/kdeglobals"
 
 # Merge the colour sections from the SELECTED scheme INTO kdeglobals. KColorScheme
 # (plasma-integration + the Breeze widget style) builds the Qt palette and the
@@ -254,6 +261,12 @@ fi
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${CONFIG_HOME}/kdeglobals" || true
+# Dieselben seds auch auf die kdedefaults-Kopie — sonst traegt die Defaults-
+# Ebene unter light eine widerspruechliche Identitaet (helle Palette + dunkler
+# Scheme-Name).
+sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${KDEDEFAULTS}/kdeglobals" || true
+sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${KDEDEFAULTS}/kdeglobals" || true
+sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${KDEDEFAULTS}/kdeglobals" || true
 # [Icons] Theme MUST follow the selected theme too — the shipped kdeglobals
 # hardcodes breeze-dark, so without this sed EVERY icon (file list AND status
 # bar) kept its dark-theme tint under KRUSADER_THEME=light and never "switched".
@@ -276,16 +289,32 @@ fi
 # aus den unberuehrten Build-Kopien. Farbwechsel im Konfigurator greifen beim
 # naechsten Container-Start. Fixierter Fill + umbenannte Stylesheet-Id, damit
 # KIconLoader nicht wieder aus der Palette uebertoent.
+# "R,G,B" (dezimal) -> "#rrggbb"; leere Ausgabe bei allem Ungueltigen
+# (fehlende/zu viele Komponenten, Nicht-Ziffern, >255, fuehrende Nullen werden
+# als Dezimal gelesen). Haertet gegen handeditierte krusaderrc-Werte, die sonst
+# printf zum Abbruch braechten (set -e) oder kaputte Hexwerte einbrennen wuerden.
+rgb_to_hex() {
+    case ",$1," in *[!0-9,]*|*,,*) echo ""; return ;; esac
+    case "$1" in *,*,*,*) echo ""; return ;; *,*,*) : ;; *) echo ""; return ;; esac
+    local _r _g _b _rest
+    _r="${1%%,*}"; _rest="${1#*,}"; _g="${_rest%%,*}"; _b="${_rest##*,}"
+    _r=$((10#${_r})); _g=$((10#${_g})); _b=$((10#${_b}))
+    if [ "${_r}" -gt 255 ] || [ "${_g}" -gt 255 ] || [ "${_b}" -gt 255 ]; then echo ""; return; fi
+    printf '#%02x%02x%02x' "${_r}" "${_g}" "${_b}"
+}
+
+# Eingebrannter Fill + neutralisierte Stylesheet-Id, damit KIconLoader nicht
+# aus der Palette uebertoent; "currentcolor" (lowercase, gueltiges CSS) mit.
+bake_svg() { # $1=src $2=dst $3=hex
+    sed -e "s/currentColor/$3/g" -e "s/currentcolor/$3/g" \
+        -e 's/id="current-color-scheme"/id="frozen-color-scheme"/' \
+        "$1" > "$2"
+}
+
 MB_STORE="/usr/local/share/krusader-mediabutton"
 if [[ -d "${MB_STORE}" ]]; then
     FG_RGB="$(grep -m1 '^Statusbar Foreground Active=' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')"
-    FG_HEX=""
-    if [[ "${FG_RGB}" =~ ^([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3})$ ]]; then
-        FG_HEX="$(printf '#%02x%02x%02x' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"
-    fi
-    if [[ -z "${FG_HEX}" ]]; then
-        [[ "${KRUSADER_THEME:-dark}" == "light" ]] && FG_HEX="#232629" || FG_HEX="#f4f4f4"
-    fi
+    FG_HEX="$(rgb_to_hex "${FG_RGB}")"
     mb_n=0
     for mb_src in "${MB_STORE}"/*/*.svg; do
         [[ -e "${mb_src}" ]] || continue
@@ -293,12 +322,20 @@ if [[ -d "${MB_STORE}" ]]; then
         mb_sz="$(basename "${mb_src}" .svg)"
         mb_dst="/usr/share/icons/${mb_theme}/apps/${mb_sz}/system-file-manager.svg"
         [[ -d "$(dirname "${mb_dst}")" ]] || continue
-        sed -e "s/currentColor/${FG_HEX}/g" \
-            -e 's/id="current-color-scheme"/id="frozen-color-scheme"/' \
-            "${mb_src}" > "${mb_dst}"
+        if [[ -n "${FG_HEX}" ]]; then
+            bake_svg "${mb_src}" "${mb_dst}" "${FG_HEX}"
+        else
+            # keine (gueltige) konfigurierte Farbe -> Stock restaurieren, die
+            # Palette toent dann themengerecht (kein hartkodierter Fallback-Hex)
+            cp -f "${mb_src}" "${mb_dst}"
+        fi
         mb_n=$((mb_n + 1))
     done
-    log "MediaButton-Icon auf Statusbar-Foreground ${FG_HEX} getoent (${mb_n} Dateien)"
+    if [[ -n "${FG_HEX}" ]]; then
+        log "MediaButton-Icon auf Statusbar-Foreground ${FG_HEX} getoent (${mb_n} Dateien)"
+    else
+        log "MediaButton-Icon: keine Statusbar-Farbe gesetzt — Stock-Icon restauriert (${mb_n})"
+    fi
 fi
 
 # 2b-quater) DATEILISTEN-Ordner-Icons folgen der konfigurierten Listen-Farbe.
@@ -312,14 +349,18 @@ fi
 # schreibt der Konfigurator fuer "Default") zaehlen als nicht gesetzt.
 PF_STORE="/usr/local/share/krusader-panelfolder"
 if [[ -d "${PF_STORE}" ]]; then
-    PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Directory Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
-    if [[ -z "${PF_RGB}" ]]; then
-        PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+    # "KDE Default=true" (Konfigurator-Haken "KDE-Standardfarben") deaktiviert
+    # ALLE Farb-Keys darunter — der Konfigurator loescht sie aber nicht. Stale
+    # Werte duerfen dann nicht eingebrannt werden: Flag=true == keine Farbe.
+    PF_KDEDEF="$(sed -n '/^\[Colors\]/,/^\[/{s/^KDE Default=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+    PF_RGB=""
+    if [[ "${PF_KDEDEF}" != "true" ]]; then
+        PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Directory Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+        if [[ -z "${PF_RGB}" ]]; then
+            PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+        fi
     fi
-    PF_HEX=""
-    if [[ "${PF_RGB}" =~ ^([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3})$ ]]; then
-        PF_HEX="$(printf '#%02x%02x%02x' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"
-    fi
+    PF_HEX="$(rgb_to_hex "${PF_RGB}")"
     pf_n=0
     for pf_src in "${PF_STORE}"/*/*.svg; do
         [[ -e "${pf_src}" ]] || continue
@@ -328,9 +369,7 @@ if [[ -d "${PF_STORE}" ]]; then
         pf_dst="/usr/share/icons/${pf_theme}/places/${pf_sz}/folder.svg"
         [[ -e "${pf_dst}" ]] || continue
         if [[ -n "${PF_HEX}" ]]; then
-            sed -e "s/currentColor/${PF_HEX}/g" \
-                -e 's/id="current-color-scheme"/id="frozen-color-scheme"/' \
-                "${pf_src}" > "${pf_dst}"
+            bake_svg "${pf_src}" "${pf_dst}" "${PF_HEX}"
         else
             cp -f "${pf_src}" "${pf_dst}"
         fi
