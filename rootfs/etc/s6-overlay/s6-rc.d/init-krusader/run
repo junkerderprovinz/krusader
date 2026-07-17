@@ -254,6 +254,11 @@ fi
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${CONFIG_HOME}/kdeglobals" || true
+# [Icons] Theme MUST follow the selected theme too — the shipped kdeglobals
+# hardcodes breeze-dark, so without this sed EVERY icon (file list AND status
+# bar) kept its dark-theme tint under KRUSADER_THEME=light and never "switched".
+sed -i "s/^Theme=.*/Theme=${THEME_ICONS}/"                          "${CONFIG_HOME}/kdeglobals" || true
+sed -i "s/^Theme=.*/Theme=${THEME_ICONS}/"                          "${KDEDEFAULTS}/kdeglobals" || true
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/krusaderrc"  || true
 if [[ -f "${CONFIG_HOME}/katerc" ]]; then
     sed -i "s/^Color Theme=.*/Color Theme=${THEME_KATE}/"          "${CONFIG_HOME}/katerc" || true
