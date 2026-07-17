@@ -26,6 +26,26 @@ if command -v ksmserver >/dev/null 2>&1; then
     sleep 0.5
 fi
 
+# --- KSycoca service cache (Issue #22) ---------------------------------------
+# "Open With..." (KOpenWithDialog/KApplicationTrader) is filled from the BINARY
+# KSycoca cache, not the .desktop files. Build it HERE — in the live session,
+# as the very uid/$HOME this krusader runs under — so it lands in the same
+# ${XDG_CACHE_HOME:-$HOME/.cache} the process actually reads. Correct regardless
+# of uid: with PUID=0 the session runs as literal root (LSIO cannot remap abc
+# onto uid 0), whose $HOME/.cache is NOT the abc-owned /config/.cache that
+# init-krusader populated — which is why #22 stayed empty under root. Purge any
+# stale KF5 ksycoca5_* first (KF6 only reads ksycoca6_*; the leftover never
+# blocks the rebuild, we just clean it up).
+_kr_cache="${XDG_CACHE_HOME:-$HOME/.cache}"
+rm -f "${_kr_cache}"/ksycoca5_* 2>/dev/null || true
+if command -v kbuildsycoca6 >/dev/null 2>&1; then
+    kbuildsycoca6 >/dev/null 2>&1 \
+        && echo "[krusader-session] kbuildsycoca6: KSycoca cache built in ${_kr_cache}" >&2 \
+        || echo "[krusader-session] WARNING: kbuildsycoca6 failed — 'Open With...' may be empty (#22)" >&2
+else
+    echo "[krusader-session] WARNING: kbuildsycoca6 not found — 'Open With...' will be empty (#22)" >&2
+fi
+
 krusader "$@" &
 KR_PID=$!
 
