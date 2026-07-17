@@ -38,6 +38,10 @@ fi
 # blocks the rebuild, we just clean it up).
 _kr_cache="${XDG_CACHE_HOME:-$HOME/.cache}"
 rm -f "${_kr_cache}"/ksycoca5_* 2>/dev/null || true
+# Purge KDE's shared icon pixmap cache too (persists in /config across image
+# updates and would keep serving the old MediaButton icon). Relevant for the
+# running uid under PUID=0. KIconLoader rebuilds it lazily.
+rm -f "${_kr_cache}"/icon-cache.kcache 2>/dev/null || true
 if command -v kbuildsycoca6 >/dev/null 2>&1; then
     kbuildsycoca6 >/dev/null 2>&1 \
         && echo "[krusader-session] kbuildsycoca6: KSycoca cache built in ${_kr_cache}" >&2 \
