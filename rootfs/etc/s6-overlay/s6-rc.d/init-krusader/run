@@ -302,15 +302,20 @@ if [[ -d "${MB_STORE}" ]]; then
 fi
 
 # 2b-quater) DATEILISTEN-Ordner-Icons folgen der konfigurierten Listen-Farbe.
-# Gleicher Mechanismus wie der MediaButton, nur mit der Panel-VORDERGRUNDFARBE
-# (Konfigurator -> Farben, krusaderrc [Colors] Foreground): ist eine eigene
-# Farbe gesetzt, wird sie in places/<sz>/folder.svg eingebrannt (die
+# Gleicher Mechanismus wie der MediaButton, nur mit der Panel-Farbe aus dem
+# Konfigurator (krusaderrc [Colors]): bevorzugt "Directory Foreground"
+# (Krusaders eigene Ordner-Textfarbe), sonst "Foreground" (Standard-Text).
+# Ist eine gesetzt, wird sie in places/<sz>/folder.svg eingebrannt (die
 # inode-directory-Symlinks der Liste zeigen genau dorthin). Ohne eigene Farbe
 # werden die unberuehrten Build-Kopien restauriert (Stock: Palette/Theme).
-# Section-scoped grep: "Foreground=" nur aus [Colors] lesen.
+# Section-scoped: Keys nur aus [Colors] lesen; leere Werte (Key ohne Wert,
+# schreibt der Konfigurator fuer "Default") zaehlen als nicht gesetzt.
 PF_STORE="/usr/local/share/krusader-panelfolder"
 if [[ -d "${PF_STORE}" ]]; then
-    PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+    PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Directory Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+    if [[ -z "${PF_RGB}" ]]; then
+        PF_RGB="$(sed -n '/^\[Colors\]/,/^\[/{s/^Foreground=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]')"
+    fi
     PF_HEX=""
     if [[ "${PF_RGB}" =~ ^([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3})$ ]]; then
         PF_HEX="$(printf '#%02x%02x%02x' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"

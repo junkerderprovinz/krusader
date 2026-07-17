@@ -34,8 +34,17 @@ fi
 export GTK_THEME="${GTK_THEME:-Breeze-Dark}"
 export XCURSOR_THEME="${XCURSOR_THEME:-breeze_cursors}"
 
-# --- Locale (vom Container-ENV, gesetzt durch init-krusader/krusader-language.sh) ---
-# Fallback nur wenn die Propagation aus dem s6-Env komplett ausbleibt.
+# --- Locale (von krusader-language.sh) ---------------------------------------
+# Die Desktop-Session der Selkies-Base uebernimmt die s6-container_environment-
+# Werte NICHT (die laufende App hatte LANG=C.UTF-8/LANGUAGE=en_US trotz
+# korrektem s6-Env) — darum sourcen wir das Sprach-Snippet HIER, direkt vor dem
+# Session-Start: das ueberschreibt die englischen Image-Defaults zuverlaessig
+# fuer jede PUID. Bei KRUSADER_LANG=system existiert kein Snippet -> Fallbacks.
+if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
+    # shellcheck disable=SC1091
+    . /config/.profile.d/krusader-lang.sh
+    echo "[krusader-autostart] language snippet sourced: LANG=$LANG LANGUAGE=$LANGUAGE" >&2
+fi
 export LANG="${LANG:-en_US.UTF-8}"
 export LANGUAGE="${LANGUAGE:-en_US:en}"
 export LC_ALL="${LC_ALL:-en_US.UTF-8}"
