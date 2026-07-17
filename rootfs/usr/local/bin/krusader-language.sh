@@ -32,6 +32,7 @@ LOCALE=""; CHAIN=""; KDE=""
 
 # Normalize input — strip suffixes, lowercase, special-case CJK variants.
 NORM="$(echo "${CODE}" | tr '[:upper:]' '[:lower:]')"
+NORM="${NORM%% *}"   # Unraid dropdown passes the full label "de = Deutsch" → keep the leading code
 NORM="${NORM%%.*}"   # de_DE.UTF-8 → de_de
 NORM="${NORM%%@*}"
 
