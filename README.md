@@ -58,6 +58,7 @@ What's included beyond bare Krusader:
 
 - **Selkies** instead of noVNC — a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
 - **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
+- **Row-aware panel icons** — Krusader is built from source with our icon-tint patch: the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
 - **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box

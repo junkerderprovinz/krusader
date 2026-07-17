@@ -23,6 +23,72 @@
 # dem Umschalten via KXmlGui-AutoSave gespeichert; zusaetzlich speichert der
 # SIGTERM-Handler seit 2.9.0 die Session bei docker stop). noble = 2.8.1 = Bug.
 ARG BASE_TAG=ubunturesolute
+# Source-build switch: 1 = build Krusader 2.9.0 from source WITH our panel-
+# icon-tint patches (patches/) and install it over the apt package; 0 = plain
+# apt Krusader (emergency fallback, no rebuild of the patch toolchain).
+ARG KRUSADER_SOURCE_BUILD=1
+ARG KRUSADER_VERSION=2.9.0
+# sha256 of krusader-${KRUSADER_VERSION}.tar.xz — download.kde.org redirects to
+# arbitrary third-party mirrors, so the tarball is hash-pinned. Overriding
+# KRUSADER_VERSION requires overriding this hash too.
+ARG KRUSADER_SHA256=c9b79bfade6cc69fe0e341ecef932fcac8afd9fe94e8cbcfbd729feb54394e04
+
+# ---------------------------------------------------------------------------
+# Builder: patched Krusader from the official KDE source tarball
+# ---------------------------------------------------------------------------
+# Deliberately ubuntu:resolute (same Ubuntu archive as the Selkies base) so the
+# Qt6/KF6 ABI matches the runtime libs in the final image — but as a SEPARATE
+# base, so this expensive layer survives the weekly Selkies base bumps in the
+# gha cache; it only rebuilds when patches/, KRUSADER_VERSION or the ubuntu
+# image digest change.
+# COUPLING: this series MUST match BASE_TAG's Ubuntu series. If BASE_TAG is
+# ever moved to a different series (e.g. rollback to noble), build with
+# KRUSADER_SOURCE_BUILD=0 — a resolute-ABI binary over another series' runtime
+# would not start (the CI smoke gate asserts the patched binary runs).
+FROM ubuntu:resolute AS krusader-build
+ARG KRUSADER_VERSION
+ARG KRUSADER_SHA256
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        build-essential cmake ninja-build extra-cmake-modules gettext \
+        curl ca-certificates xz-utils patch \
+        libacl1-dev libattr1-dev zlib1g-dev \
+        qt6-base-dev qt6-5compat-dev \
+        libkf6archive-dev libkf6bookmarks-dev libkf6codecs-dev \
+        libkf6colorscheme-dev libkf6completion-dev libkf6config-dev \
+        libkf6coreaddons-dev libkf6crash-dev libkf6doctools-dev \
+        libkf6globalaccel-dev libkf6guiaddons-dev libkf6i18n-dev \
+        libkf6iconthemes-dev libkf6itemviews-dev libkf6kio-dev \
+        libkf6notifications-dev libkf6parts-dev libkf6solid-dev \
+        libkf6statusnotifieritem-dev libkf6textwidgets-dev libkf6wallet-dev \
+        libkf6widgetsaddons-dev libkf6windowsystem-dev libkf6xmlgui-dev; \
+    apt-get clean; rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    curl -fsSL -o /tmp/krusader.tar.xz \
+        "https://download.kde.org/stable/krusader/${KRUSADER_VERSION}/krusader-${KRUSADER_VERSION}.tar.xz"; \
+    echo "${KRUSADER_SHA256}  /tmp/krusader.tar.xz" | sha256sum -c -; \
+    mkdir /src; tar -xJf /tmp/krusader.tar.xz -C /src --strip-components=1; rm -f /tmp/krusader.tar.xz
+COPY patches/ /patches/
+RUN set -eux; \
+    for p in /patches/*.patch; do patch -d /src -p1 < "$p"; done; \
+    # KDE_INSTALL_USE_QT_SYS_PATHS: mandatory so the krarc KIO worker lands in
+    # the Qt plugin path the runtime actually searches (CMakeLists warns).
+    cmake -S /src -B /build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr -DKDE_INSTALL_USE_QT_SYS_PATHS=true; \
+    cmake --build /build; \
+    DESTDIR=/staging cmake --install /build; \
+    # marker: init-krusader detects the patched build (skips the folder-icon
+    # bake so KIconLoader can tint), and the CI smoke gate asserts it exists.
+    mkdir -p /staging/usr/share/krusader; \
+    touch /staging/usr/share/krusader/.icontint
+
+# Switch: KRUSADER_SOURCE_BUILD=0 -> empty staging, apt krusader stays as-is.
+FROM ubuntu:resolute AS krusader-artifact-0
+RUN mkdir -p /staging
+FROM krusader-build AS krusader-artifact-1
+# hadolint ignore=DL3006
+FROM krusader-artifact-${KRUSADER_SOURCE_BUILD} AS krusader-artifact
 
 # Flavor tag deliberately pinned (never :latest) — the Selkies base makes
 # breaking changes between versions by design; bump BASE_TAG consciously.
@@ -130,6 +196,15 @@ RUN set -eux; \
     # apt-get update (frische Listen statt stale Layer-Cache).
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# Patched Krusader over the apt package (see builder stage at the top)
+# ---------------------------------------------------------------------------
+# Install-over instead of dpkg -r: the apt package keeps providing all runtime
+# dependencies (KF6 libs, KIO workers, icons); our staging overwrites the
+# binary, the krarc KIO worker and the data files. With KRUSADER_SOURCE_BUILD=0
+# the staging directory is empty and this is a no-op.
+COPY --from=krusader-artifact /staging/ /
 
 # ---------------------------------------------------------------------------
 # Phase 2: Optionale i18n + Hunspell-Pakete (Build läuft weiter, wenn ein
