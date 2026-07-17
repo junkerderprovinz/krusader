@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<!-- Minimal XDG application menu (Issue #22).
+     kbuildsycoca6 indexes applications through the XDG menu spec: without an
+     applications.menu it logs '"applications.menu" not found' and builds a
+     KSycoca WITHOUT the application services - KApplicationTrader then cannot
+     resolve any app, so "Open With" shows no suggestions and double-click
+     falls back to the chooser even though mimeapps.list is correct.
+     plasma-workspace only ships plasma-applications.menu (used when a full
+     Plasma session exports XDG_MENU_PREFIX=plasma-); this container runs
+     openbox, so we ship a plain include-everything menu instead - we need the
+     service index, not menu categories. -->
+<Menu>
+  <Name>Applications</Name>
+  <DefaultAppDirs/>
+  <DefaultDirectoryDirs/>
+  <Include>
+    <All/>
+  </Include>
+</Menu>

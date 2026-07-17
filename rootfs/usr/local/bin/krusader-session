@@ -43,7 +43,9 @@ rm -f "${_kr_cache}"/ksycoca5_* 2>/dev/null || true
 # running uid under PUID=0. KIconLoader rebuilds it lazily.
 rm -f "${_kr_cache}"/icon-cache.kcache 2>/dev/null || true
 if command -v kbuildsycoca6 >/dev/null 2>&1; then
-    kbuildsycoca6 >/dev/null 2>&1 \
+    # --noincremental: a timestamp-based incremental rebuild can skip newly
+    # deployed mimeapps.list associations on the persistent /config volume.
+    kbuildsycoca6 --noincremental >/dev/null 2>&1 \
         && echo "[krusader-session] kbuildsycoca6: KSycoca cache built in ${_kr_cache}" >&2 \
         || echo "[krusader-session] WARNING: kbuildsycoca6 failed — 'Open With...' may be empty (#22)" >&2
 else
