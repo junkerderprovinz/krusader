@@ -265,6 +265,42 @@ if [[ -f "${CONFIG_HOME}/katerc" ]]; then
     sed -i "s/^Schema=.*/Schema=${THEME_KATE}/"                    "${CONFIG_HOME}/katerc" || true
 fi
 
+# 2b-ter) MediaButton-Icon folgt der KONFIGURIERTEN Statusleisten-Farbe (#22).
+# Der Geraete-Button sitzt auf Krusaders Statusleiste, deren Farben der User
+# frei einstellt (Konfigurator -> Farben, krusaderrc [Colors] "Statusbar
+# Foreground/Background Active"). KIconLoader toent currentColor-Icons aber aus
+# der GLOBALEN Palette, die von dieser lokalen Balkenfarbe nichts weiss — auf
+# einem hell konfigurierten Balken blieb das Icon hell. Darum brennen wir hier
+# bei jedem Start die konfigurierte Statusbar-VORDERGRUNDFARBE (die Farbe, in
+# der der Balken-Text ohnehin steht — also garantiert lesbar) fest ins Icon,
+# aus den unberuehrten Build-Kopien. Farbwechsel im Konfigurator greifen beim
+# naechsten Container-Start. Fixierter Fill + umbenannte Stylesheet-Id, damit
+# KIconLoader nicht wieder aus der Palette uebertoent.
+MB_STORE="/usr/local/share/krusader-mediabutton"
+if [[ -d "${MB_STORE}" ]]; then
+    FG_RGB="$(grep -m1 '^Statusbar Foreground Active=' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')"
+    FG_HEX=""
+    if [[ "${FG_RGB}" =~ ^([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3})$ ]]; then
+        FG_HEX="$(printf '#%02x%02x%02x' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")"
+    fi
+    if [[ -z "${FG_HEX}" ]]; then
+        [[ "${KRUSADER_THEME:-dark}" == "light" ]] && FG_HEX="#232629" || FG_HEX="#f4f4f4"
+    fi
+    mb_n=0
+    for mb_src in "${MB_STORE}"/*/*.svg; do
+        [[ -e "${mb_src}" ]] || continue
+        mb_theme="$(basename "$(dirname "${mb_src}")")"
+        mb_sz="$(basename "${mb_src}" .svg)"
+        mb_dst="/usr/share/icons/${mb_theme}/apps/${mb_sz}/system-file-manager.svg"
+        [[ -d "$(dirname "${mb_dst}")" ]] || continue
+        sed -e "s/currentColor/${FG_HEX}/g" \
+            -e 's/id="current-color-scheme"/id="frozen-color-scheme"/' \
+            "${mb_src}" > "${mb_dst}"
+        mb_n=$((mb_n + 1))
+    done
+    log "MediaButton-Icon auf Statusbar-Foreground ${FG_HEX} getoent (${mb_n} Dateien)"
+fi
+
 # 2c) File associations (Issue #22): register Kate as the default text handler so
 # a double-click opens Kate DIRECTLY instead of the "Open With" dialog, and Kate
 # is offered in Open With. Deployed to the XDG config-home AND the legacy
