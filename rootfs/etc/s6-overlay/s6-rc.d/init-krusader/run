@@ -289,6 +289,8 @@ chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 # zufaellige kded-Aktivierung zu hoffen.
 mkdir -p /config/.cache
 chown abc:abc /config/.cache
+# Purge the stale KF5 ksycoca5_* leftover — KF6 krusader only reads ksycoca6_*.
+rm -f /config/.cache/ksycoca5_* 2>/dev/null || true
 # HOME/XDG_CACHE_HOME explizit: s6-setuidgid wechselt nur uid/gid, NICHT das
 # Environment — der Cache MUSS unter /config/.cache landen (persistent, dort
 # sucht ihn Krusader-als-abc), nicht unter einem geerbten Root-HOME.
