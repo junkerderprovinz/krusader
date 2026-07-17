@@ -1,0 +1,28 @@
+[Default Applications]
+text/plain=org.kde.kate.desktop
+text/markdown=org.kde.kate.desktop
+text/html=org.kde.kate.desktop
+text/xml=org.kde.kate.desktop
+text/x-log=org.kde.kate.desktop
+text/x-python=org.kde.kate.desktop
+text/x-shellscript=org.kde.kate.desktop
+text/x-csrc=org.kde.kate.desktop
+text/x-c++src=org.kde.kate.desktop
+application/x-shellscript=org.kde.kate.desktop
+application/xml=org.kde.kate.desktop
+application/json=org.kde.kate.desktop
+application/x-yaml=org.kde.kate.desktop
+application/javascript=org.kde.kate.desktop
+
+[Added Associations]
+text/plain=org.kde.kate.desktop;
+text/markdown=org.kde.kate.desktop;
+text/html=org.kde.kate.desktop;
+text/xml=org.kde.kate.desktop;
+text/x-log=org.kde.kate.desktop;
+text/x-python=org.kde.kate.desktop;
+text/x-shellscript=org.kde.kate.desktop;
+application/x-shellscript=org.kde.kate.desktop;
+application/xml=org.kde.kate.desktop;
+application/json=org.kde.kate.desktop;
+application/x-yaml=org.kde.kate.desktop;

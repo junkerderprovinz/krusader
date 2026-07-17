@@ -40,6 +40,23 @@ export LANG="${LANG:-en_US.UTF-8}"
 export LANGUAGE="${LANGUAGE:-en_US:en}"
 export LC_ALL="${LC_ALL:-en_US.UTF-8}"
 
+# --- XDG base dirs: pin to the persistent /config paths for EVERY PUID --------
+# Under PUID=0 the session runs as literal root (LSIO cannot remap abc onto uid
+# 0), whose default $HOME/.{config,cache,local/share} differ from abc's /config
+# tree — so config, the KSycoca cache and file-type associations would land
+# where the running Krusader does not read them (Issue #22). Pin them to the
+# persistent /config locations so root and non-root behave identically, and make
+# sure /usr/share/applications (Kate's .desktop) stays on the scan path so
+# "Open With" and the mimeapps.list default resolve.
+export XDG_CONFIG_HOME="/config/.config"
+export XDG_DATA_HOME="/config/.local/share"
+export XDG_CACHE_HOME="/config/.cache"
+case ":${XDG_DATA_DIRS:-}:" in
+    *":/usr/share:"*) : ;;
+    *) export XDG_DATA_DIRS="${XDG_DATA_DIRS:+$XDG_DATA_DIRS:}/usr/local/share:/usr/share" ;;
+esac
+echo "[krusader-autostart] XDG pinned: CONFIG=$XDG_CONFIG_HOME CACHE=$XDG_CACHE_HOME DATA_DIRS=$XDG_DATA_DIRS" >&2
+
 # --- Diagnose-Log ------------------------------------------------------------
 echo "[krusader-autostart] QT_QPA_PLATFORMTHEME=$QT_QPA_PLATFORMTHEME" >&2
 echo "[krusader-autostart] XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP" >&2

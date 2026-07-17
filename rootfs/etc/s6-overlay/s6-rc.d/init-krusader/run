@@ -260,6 +260,19 @@ if [[ -f "${CONFIG_HOME}/katerc" ]]; then
     sed -i "s/^Schema=.*/Schema=${THEME_KATE}/"                    "${CONFIG_HOME}/katerc" || true
 fi
 
+# 2c) File associations (Issue #22): register Kate as the default text handler so
+# a double-click opens Kate DIRECTLY instead of the "Open With" dialog, and Kate
+# is offered in Open With. Deployed to the XDG config-home AND the legacy
+# data-home applications dir; the kbuildsycoca6 rebuild below bakes it into
+# KSycoca. Deployed on EVERY start (not first-run) so existing /config installs
+# get the fix too.
+if [[ -f "${DEFAULTS}/mimeapps.list" ]]; then
+    cp -af "${DEFAULTS}/mimeapps.list" "${CONFIG_HOME}/mimeapps.list"
+    mkdir -p "${LOCAL_SHARE}/applications"
+    cp -af "${DEFAULTS}/mimeapps.list" "${LOCAL_SHARE}/applications/mimeapps.list"
+    log "mimeapps.list deployed (text/* default -> Kate)"
+fi
+
 # Permissions
 chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 
