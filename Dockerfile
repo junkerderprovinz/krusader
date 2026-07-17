@@ -67,7 +67,9 @@ RUN set -eux; \
 RUN set -eux; \
     curl -fsSL -o /tmp/krusader.tar.xz \
         "https://download.kde.org/stable/krusader/${KRUSADER_VERSION}/krusader-${KRUSADER_VERSION}.tar.xz"; \
-    echo "${KRUSADER_SHA256}  /tmp/krusader.tar.xz" | sha256sum -c -; \
+    printf '%s  %s\n' "${KRUSADER_SHA256}" /tmp/krusader.tar.xz > /tmp/krusader.sha256; \
+    sha256sum -c /tmp/krusader.sha256; \
+    rm -f /tmp/krusader.sha256; \
     mkdir /src; tar -xJf /tmp/krusader.tar.xz -C /src --strip-components=1; rm -f /tmp/krusader.tar.xz
 COPY patches/ /patches/
 RUN set -eux; \
