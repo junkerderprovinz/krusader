@@ -6,3 +6,4 @@
 # scripts (run), the openbox autostart, and configs. No binaries live here —
 # pin the whole tree to LF so CRLF checkouts can't break shebangs.
 rootfs/** text eol=lf
+patches/*.patch text eol=lf
