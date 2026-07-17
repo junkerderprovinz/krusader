@@ -286,6 +286,8 @@ RUN set -eux; \
     n=0; \
     for theme in /usr/share/icons/breeze-dark /usr/share/icons/breeze; do \
         [ -d "$theme" ] || continue; \
+        store="/usr/local/share/krusader-mediabutton/$(basename "$theme")"; \
+        mkdir -p "$store"; \
         for appdir in "$theme"/apps/*/; do \
             [ -e "${appdir}system-file-manager.svg" ] || continue; \
             sz="$(basename "$appdir")"; \
@@ -293,12 +295,15 @@ RUN set -eux; \
             [ -e "$src" ] || src="$theme/places/$sz/folder.svg"; \
             [ -e "$src" ] || continue; \
             cp -L "$src" "${appdir}system-file-manager.svg"; \
+            # pristine copy for the runtime tint (init-krusader recolors the
+            # button to the CONFIGURED statusbar foreground on every start)
+            cp -L "$src" "$store/$sz.svg"; \
             n=$((n + 1)); \
         done; \
         gtk-update-icon-cache -f -t "$theme" 2>/dev/null || true; \
     done; \
     [ "$n" -gt 0 ] || { echo "ERROR: no apps/*/system-file-manager.svg overridden — breeze layout changed"; exit 1; }; \
-    echo "krusader: MediaButton icon matched to the panel folder icon ($n file(s))"
+    echo "krusader: MediaButton icon matched to the panel folder icon ($n file(s)) + pristine store"
 
 # Berechtigungen für init-scripts
 RUN chmod +x /usr/local/bin/krusader-*.sh \
