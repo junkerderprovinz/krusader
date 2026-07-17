@@ -295,10 +295,13 @@ RUN set -eux; \
         # is set.
         pstore="/usr/local/share/krusader-panelfolder/$(basename "$theme")"; \
         mkdir -p "$pstore"; \
+        pn=0; \
         for pdir in "$theme"/places/*/; do \
             [ -e "${pdir}folder.svg" ] || continue; \
             cp -L "${pdir}folder.svg" "$pstore/$(basename "$pdir").svg"; \
+            pn=$((pn + 1)); \
         done; \
+        [ "$pn" -gt 0 ] || { echo "ERROR: no places/*/folder.svg in $theme — panel-folder tint store empty, breeze layout changed"; exit 1; }; \
         for appdir in "$theme"/apps/*/; do \
             [ -e "${appdir}system-file-manager.svg" ] || continue; \
             sz="$(basename "$appdir")"; \
