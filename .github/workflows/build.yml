@@ -49,6 +49,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
 
     steps:
       - name: Checkout
@@ -134,6 +135,27 @@ jobs:
           docker logs "$name" || true
           docker rm -f "$name" >/dev/null
           exit 1
+
+      # CVE scan of the locally-loaded smoke image. Report-only: exit-code 0
+      # so a HIGH/CRITICAL finding never blocks the build — results land in the
+      # repo's Security tab (Code scanning) for triage. ignore-unfixed hides
+      # CVEs with no upstream fix yet (nothing actionable on our side).
+      - name: Scan image for CVEs (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: krusader:smoke-${{ matrix.arch }}
+          format: sarif
+          output: trivy-results-${{ matrix.arch }}.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload Trivy results to the Security tab
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results-${{ matrix.arch }}.sarif
+          category: trivy-${{ matrix.arch }}
 
       # Push this arch by digest (no tags yet — the merge job assembles the
       # multi-arch manifest under the final tags).
