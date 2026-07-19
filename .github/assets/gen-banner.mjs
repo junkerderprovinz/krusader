@@ -1,8 +1,10 @@
 /**
- * Generates the Krusader README banner (house banner convention):
- *   krusader-banner.svg / .png : white 1600x500 - the Breeze-recoloured logo on
- *                                the left, the official lowercase "krusader"
- *                                wordmark + a cheeky claim below.
+ * Generates the Krusader README banners (house theme-adaptive pair):
+ *   krusader-banner.svg / .png      : light 1600x500 - white bg, dark wordmark
+ *   krusader-banner-dark.svg / .png : dark 1600x500 - GitHub-dark bg, light wordmark
+ * Both embed the SAME Breeze-recoloured logo verbatim (blue panes + white cursor
+ * read on both backgrounds - no hell/dunkel masters exist); only the background
+ * and text colours flip. The README serves the pair via <picture>.
  *
  * The official Krusader wordmark (krusader.org header) is lowercase "krusader"
  * in DejaVu Sans Bold Oblique - the classic Bitstream-Vera-era Linux face. We
@@ -36,8 +38,13 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 // ---- content + styling -----------------------------------------------------
 const NAME = "krusader"; // lowercase, exactly like the official wordmark
 const CLAIM = "Drag it. Drop it. In the dark.";
-const NAME_FILL = "#232629"; // Breeze dark grey - the logo's frame colour
-const CLAIM_FILL = "#5a5d5e"; // house claim grey
+// Theme pair (house rule): same logo in both, only bg + text colours flip.
+// Light: Breeze dark grey wordmark (the logo's frame colour) + house claim grey.
+// Dark:  GitHub dark-canvas bg, light wordmark, muted light claim.
+const THEMES = [
+  { suffix: "", bg: "#ffffff", name: "#232629", claim: "#5a5d5e" },
+  { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad" },
+];
 const W = 1600, H = 500;
 const LH = 400; // logo height (the source is square, 200x200 units)
 const nameSize = 150, claimSize = 42, gap = 64, lineGap = 22;
@@ -115,15 +122,16 @@ logo = logo.replace(
   `<svg x="${LX.toFixed(1)}" y="${LY.toFixed(1)}" width="${LW}" height="${LH}" viewBox="0 0 200.00003 199.99998" xmlns="http://www.w3.org/2000/svg">`,
 );
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Krusader">
-  <rect width="${W}" height="${H}" fill="#ffffff"/>
+for (const t of THEMES) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Krusader">
+  <rect width="${W}" height="${H}" fill="${t.bg}"/>
   ${logo}
-  <path d="${namePath}" fill="${NAME_FILL}"/>
-  <path d="${claimPath}" fill="${CLAIM_FILL}"/>
+  <path d="${namePath}" fill="${t.name}"/>
+  <path d="${claimPath}" fill="${t.claim}"/>
 </svg>
 `;
-writeFileSync(join(__dir, "krusader-banner.svg"), svg);
-
-const png = new Resvg(svg, { fitTo: { mode: "width", value: W }, background: "white" }).render().asPng();
-writeFileSync(join(__dir, "krusader-banner.png"), png);
-console.log(`wrote krusader-banner.svg + .png (name ${Math.round(nameW)}px, claim ${Math.round(claimW)}px, group ${Math.round(groupW)}px)`);
+  writeFileSync(join(__dir, `krusader-banner${t.suffix}.svg`), svg);
+  const png = new Resvg(svg, { fitTo: { mode: "width", value: W }, background: t.bg }).render().asPng();
+  writeFileSync(join(__dir, `krusader-banner${t.suffix}.png`), png);
+  console.log(`wrote krusader-banner${t.suffix}.svg + .png (name ${Math.round(nameW)}px, claim ${Math.round(claimW)}px, group ${Math.round(groupW)}px)`);
+}
