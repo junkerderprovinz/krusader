@@ -255,7 +255,15 @@ jobs:
             [ -n "$tag" ] && tagargs="$tagargs -t $tag"
           done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
           echo "tags:${tagargs}"
-          docker buildx imagetools create ${tagargs} ${sources}
+          # Cross-registry copy (GHCR -> Docker Hub) can hit a transient HTTP/2
+          # PROTOCOL_ERROR on large layers; retry a few times before failing.
+          n=0
+          until docker buildx imagetools create ${tagargs} ${sources}; do
+            n=$((n + 1))
+            if [ "$n" -ge 4 ]; then echo "imagetools create failed after $n attempts"; exit 1; fi
+            echo "imagetools create failed (attempt $n); retrying in $((n * 15))s..."
+            sleep $((n * 15))
+          done
 
       - name: Inspect
         run: |
