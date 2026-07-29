@@ -1,7 +1,7 @@
 NOTICE — Bundled Software in the Krusader Unraid Container Image
 =================================================================
 
-The MIT License (see LICENSE) covers ONLY the wrapper assets in this
+The GNU Affero General Public License v3.0 (AGPL-3.0, see LICENSE) covers ONLY the wrapper assets in this
 repository:
   * Dockerfile and rootfs/ overlay
   * Helper scripts under scripts/ and rootfs/usr/local/bin/
@@ -26,4 +26,4 @@ container image. Each bundled component retains its upstream license:
 
 When you run, redistribute or rebuild the resulting container image, you
 must comply with the licenses of all bundled components in addition to
-the MIT license that covers this repository.
+the AGPL-3.0 license that covers this repository.
