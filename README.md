@@ -50,8 +50,8 @@ from the Unraid template, no SSH or config-file editing required.
 10. [Troubleshooting](#10-troubleshooting)
 11. [Architecture](#11-architecture)
 12. [Contributing / License](#12-contributing--license)
-13. [Support this project](#13-support-this-project)
-14. [License](#14-license)
+13. [License](#13-license)
+14. [Support this project](#14-support-this-project)
 <br>
 
 ## 1. Overview
@@ -396,7 +396,17 @@ find . -name '*.xml' -not -path './.git/*' -exec xmllint --noout {} +
 
 <br>
 
-## 13. Support this project
+## 13. License
+
+**Copyright (C) 2026 Junker der Provinz.**
+
+This repository packages Krusader as a container for Unraid. The packaging in this repository (Dockerfile, scripts, theme, web assets and everything else original here) is free software under the **GNU Affero General Public License v3.0** (AGPL-3.0); see [LICENSE](LICENSE). If you distribute it, or run a modified version as a network service, you must release your source under the same AGPL-3.0 terms and keep the existing copyright and attribution notices intact.
+
+**Scope.** The AGPL applies to this repository's own code and assets. Krusader itself is a separate project under its own license and name; this repository does not claim it. The banner, logo, theme and other branding original to this repository remain reserved: a fork must use its own branding and may not present itself as this project.
+
+<br>
+
+## 14. Support this project
 
 If this template saves you a setup hassle or a debug night, consider buying me a coffee:
 
@@ -405,13 +415,3 @@ If this template saves you a setup hassle or a debug night, consider buying me a
     <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
   </a>
 </p>
-
-<br>
-
-## 14. License
-
-**Copyright (C) 2026 Junker der Provinz.**
-
-This repository packages Krusader as a container for Unraid. The packaging in this repository (Dockerfile, scripts, theme, web assets and everything else original here) is free software under the **GNU Affero General Public License v3.0** (AGPL-3.0); see [LICENSE](LICENSE). If you distribute it, or run a modified version as a network service, you must release your source under the same AGPL-3.0 terms and keep the existing copyright and attribution notices intact.
-
-**Scope.** The AGPL applies to this repository's own code and assets. Krusader itself is a separate project under its own license and name; this repository does not claim it. The banner, logo, theme and other branding original to this repository remain reserved: a fork must use its own branding and may not present itself as this project.
