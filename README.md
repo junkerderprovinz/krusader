@@ -61,7 +61,6 @@ This image packages [Krusader](https://krusader.org) — KDE's twin-pane file ma
 What's included beyond bare Krusader:
 
 - **Selkies** instead of noVNC — a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
-- **Bottom taskbar** — a thin window list at the bottom of the desktop; click any open window (file manager, editor, terminal, dialogs) to bring it to the front (the minimal openbox desktop otherwise has no panel)
 - **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
 - **Row-aware panel icons** — Krusader is built from source with our icon-tint patch: the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
@@ -289,13 +288,6 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 - Check the container log for Selkies startup errors
 - Try opening on `https://<ip>:3001/` (self-signed) — sometimes browsers block ws over plain http
 - Wait 30–60 seconds on first start; KDE caches need to be built once
-</details>
-
-<details>
-<summary><b>A window slipped behind another / I can't get it back</b></summary>
-
-- Click the window you want in the **taskbar** at the bottom of the desktop to bring it to the front. You can also press **Alt+Tab** to cycle windows (Alt+Shift+Tab goes backwards), or **middle-click the empty desktop background** for a full window list.
-- There is no system tray in this minimal desktop, so avoid Krusader's "minimize to tray" option (Settings, then General): a minimised window goes to the taskbar instead, where you can click it back.
 </details>
 
 <details>

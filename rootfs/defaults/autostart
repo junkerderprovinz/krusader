@@ -84,18 +84,6 @@ echo "[krusader-autostart] KDE_COLOR_SCHEME_PATH=$KDE_COLOR_SCHEME_PATH" >&2
 echo "[krusader-autostart] GTK_THEME=$GTK_THEME" >&2
 echo "[krusader-autostart] LANG=$LANG" >&2
 
-# --- Taskbar (tint2) ---------------------------------------------------------
-# openbox has no panel; without a window list, a window that slips behind another
-# or is minimized is hard to get back (issue #26, user Thraka). tint2 draws a thin
-# dark bottom bar of every window (click to switch/restore). Backgrounded so the
-# session start (exec below) keeps process-group ownership. No systray here: KDE
-# apps expose their tray icon via SNI, which this tint2 build cannot host, and a
-# window list makes "minimize to tray" unnecessary anyway.
-if command -v tint2 >/dev/null 2>&1; then
-    tint2 -c /etc/xdg/tint2/tint2rc >/tmp/tint2.log 2>&1 &
-    echo "[krusader-autostart] tint2 taskbar started" >&2
-fi
-
 # --- Start -------------------------------------------------------------------
 # dbus-launch fuer KIO-Slaves (krarc, file, smb, ...). Auf der Selkies-Base
 # wrappt startwm.sh openbox bereits in dbus-launch (aeusserer Session-Bus);
