@@ -156,11 +156,6 @@ RUN set -eux; \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
-        # Taskbar: openbox ships no panel, so a window that slips behind another
-        # or is minimized is hard to get back (issue #26). tint2 (~1 MB) draws a
-        # thin window-list bar; launched from autostart. Taskbar only - KDE apps
-        # use SNI which this tint2 build cannot host, so no systray.
-        tint2 \
         # Sonnet-Hunspell-Plugin: macht KDE-Apps (Kate, KMail, ...) die
         # Hunspell-Woerterbuecher als Spell-Backend zugaenglich. Ohne dieses
         # Plugin meckert Sonnet "No speller backends available!".
