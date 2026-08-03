@@ -155,6 +155,10 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show statusbar"      "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Cmd Line"       "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Function Keys"  "true"
+    # openbox ships no system tray (no StatusNotifierHost). Krusader's "Show and
+    # close to tray" would withdraw the window into a tray that does not exist, and
+    # it could not be recovered (issue #26) - keep it off.
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Look&Feel" "Minimize To Tray"   "false"
     log "krusaderrc: Startup-Keys idempotent gesichert"
     # Hide statusbar + command line by default. IMPORTANT: krusader only
     # RESPECTS the Show statusbar / Show Cmd Line settings when "User Save
@@ -165,7 +169,11 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     sed -i 's|^User Save Settings=.*|User Save Settings=true|'  "${CONFIG_HOME}/krusaderrc"
     sed -i 's|^Show statusbar=.*|Show statusbar=false|'         "${CONFIG_HOME}/krusaderrc"
     sed -i 's|^Show Cmd Line=.*|Show Cmd Line=false|'           "${CONFIG_HOME}/krusaderrc"
-    log "krusaderrc: statusbar + command line forced hidden (User Save Settings=true)"
+    # Force "Show and close to tray" off on every start (issue #26): even if a user
+    # turned it on, the window must stay a normal, Alt+Tab-recoverable window since
+    # there is no system tray under openbox.
+    sed -i 's|^Minimize To Tray=.*|Minimize To Tray=false|'     "${CONFIG_HOME}/krusaderrc"
+    log "krusaderrc: statusbar + command line hidden, tray disabled (issue #26)"
 fi
 
 # 2b) Theme-Infrastruktur: jeden Start frisch

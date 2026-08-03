@@ -291,6 +291,13 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 </details>
 
 <details>
+<summary><b>A window slipped behind another / I can't get it back</b></summary>
+
+- Press **Alt+Tab** to cycle windows (Alt+Shift+Tab goes backwards), or **middle-click the empty desktop background** for a list of every open window (minimised ones included) and pick one. Krusader also stays maximised so it does not slip behind on its own.
+- Krusader's "Show and close to tray" option is disabled in this container on purpose: the minimal openbox desktop has no system tray, so a tray-hidden window could not be recovered. A normal minimise stays reachable via Alt+Tab or the desktop menu.
+</details>
+
+<details>
 <summary><b>WebUI is unreachable</b></summary>
 
 - Check the host port isn't already taken: `netstat -tlnp | grep 3000`
