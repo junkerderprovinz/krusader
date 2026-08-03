@@ -1,0 +1,70 @@
+# tint2rc - Krusader container: thin dark bottom taskbar (window list).
+# openbox ships no panel, so a window that slips behind another or is minimized
+# is hard to get back (issue #26). This gives a bottom bar listing every window
+# (click to switch/restore). Carbon #161616 to match the container's dark theme.
+# Taskbar only: no systray (KDE apps use SNI, which this tint2 build cannot host,
+# and the taskbar makes minimize-to-tray unnecessary), no launcher/clock clutter.
+
+# Backgrounds: 1 = panel, 2 = normal task, 3 = active task
+rounded = 0
+border_width = 0
+background_color = #161616 100
+border_color = #161616 0
+
+rounded = 4
+border_width = 0
+background_color = #262626 0
+border_color = #262626 0
+
+rounded = 4
+border_width = 0
+background_color = #393939 100
+border_color = #525252 100
+
+# Panel
+panel_items = T
+panel_monitor = all
+panel_position = bottom center horizontal
+panel_size = 100% 32
+panel_margin = 0 0
+panel_padding = 4 3 4
+panel_background_id = 1
+wm_menu = 1
+panel_dock = 0
+panel_layer = top
+panel_shrink = 0
+
+# Taskbar
+taskbar_mode = single_desktop
+taskbar_padding = 0 0 4
+taskbar_background_id = 0
+taskbar_name = 0
+task_align = left
+
+# Task (window buttons)
+task_text = 1
+task_icon = 1
+task_centered = 0
+task_maximum_size = 260 28
+task_padding = 8 2 8
+task_font = Sans 9
+task_tooltip = 1
+task_font_color = #c6c6c6 100
+task_active_font_color = #f4f4f4 100
+task_background_id = 2
+task_active_background_id = 3
+task_urgent_background_id = 3
+task_iconified_background_id = 2
+
+# Tooltip
+tooltip = 1
+tooltip_background_id = 3
+tooltip_font_color = #f4f4f4 100
+tooltip_font = Sans 9
+
+# Mouse (task click behaviour)
+mouse_left = toggle
+mouse_middle = none
+mouse_right = none
+mouse_scroll_up = toggle
+mouse_scroll_down = iconify
