@@ -42,12 +42,13 @@ const CLAIM = "Drag it. Drop it. In the dark.";
 // Light: Breeze dark grey wordmark (the logo's frame colour) + house claim grey.
 // Dark:  GitHub dark-canvas bg, light wordmark, muted light claim.
 const THEMES = [
-  { suffix: "", bg: "#ffffff", name: "#232629", claim: "#5a5d5e" },
+  { suffix: "", bg: "#ffffff", name: "#1f2328", claim: "#5a5d5e" },
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad" },
 ];
 const W = 1600, H = 500;
 const LH = 400; // logo height (the source is square, 200x200 units)
-const nameSize = 150, claimSize = 42, gap = 64, lineGap = 22;
+// House banner standard: name 132 / claim 44, logo-to-text gap 70, name-to-claim gap 8.
+const nameSize = 132, claimSize = 44, gap = 70, lineGap = 8;
 // ---------------------------------------------------------------------------
 
 // DejaVu's ccmp GSUB lookups crash opentype.js's feature engine even with
@@ -97,7 +98,7 @@ const nameW = runWidth(nameFont, NAME, nameSize);
 const claimW = runWidth(claimFont, CLAIM, claimSize);
 const LW = LH; // square logo
 const groupW = LW + gap + Math.max(nameW, claimW);
-const startX = (W - groupW) / 2;
+const startX = 165; // left-anchored (house banner standard)
 const LX = startX, LY = (H - LH) / 2;
 const textX = startX + LW + gap;
 
