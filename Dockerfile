@@ -16,7 +16,7 @@
 #   * KDE i18n language packs for every selectable language
 #
 # Repository:  https://github.com/junkerderprovinz/krusader
-# License:     MIT (this wrapper)  –  Krusader upstream is GPL-3.0
+# License:     AGPL-3.0-only (this wrapper)  –  Krusader upstream is GPL-3.0
 #
 # ubunturesolute (26.04) statt noble: liefert Krusader 2.9.0 (KF6), das den
 # Statusbar-Persistenz-Bug aus Issue #16 doppelt fixt (Zustand wird ~1 s nach
@@ -100,7 +100,7 @@ LABEL maintainer="junkerderprovinz"
 LABEL org.opencontainers.image.title="krusader"
 LABEL org.opencontainers.image.description="Krusader für Unraid mit Selkies-Web-Desktop, Dark Mode, Kate-Editor, RAR-Support und Multi-Language-UI"
 LABEL org.opencontainers.image.source="https://github.com/junkerderprovinz/krusader"
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
 # TITLE feeds the PWA manifest; SELKIES_UI_TITLE is the visible tab/sidebar
