@@ -156,6 +156,10 @@ RUN set -eux; \
         lhasa arj unace rpm cpio \
         # KDE/Qt Runtime essentials
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
+        # x11-xkb-utils (setxkbmap) + xkb-data: the Selkies base ships Xvfb with
+        # no keymap, so autostart loads a full keymap at session start to bind
+        # Shift and keep pasted uppercase from collapsing to lowercase (#27).
+        x11-xkb-utils xkb-data \
         # Sonnet-Hunspell-Plugin: macht KDE-Apps (Kate, KMail, ...) die
         # Hunspell-Woerterbuecher als Spell-Backend zugaenglich. Ohne dieses
         # Plugin meckert Sonnet "No speller backends available!".
@@ -424,6 +428,7 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # kdeglobals we write. C.UTF-8 leaves no language in the env, so kdeglobals wins.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
+    KEYBOARD_LAYOUT=us \
     LANG=C.UTF-8 \
     QT_QPA_PLATFORMTHEME=qt5ct \
     QT_STYLE_OVERRIDE=Breeze
