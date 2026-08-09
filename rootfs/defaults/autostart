@@ -84,6 +84,18 @@ echo "[krusader-autostart] KDE_COLOR_SCHEME_PATH=$KDE_COLOR_SCHEME_PATH" >&2
 echo "[krusader-autostart] GTK_THEME=$GTK_THEME" >&2
 echo "[krusader-autostart] LANG=$LANG" >&2
 
+# --- Keyboard map: bind a complete keymap so Shift resolves ------------------
+# The Selkies base starts Xvfb with NO keymap (the X11 keymap is "deployment-
+# owned" and is set neither in the base nor here). Without a real Shift binding,
+# Selkies' Firefox re-type paste path (it injects Shift_L + the LOWERCASE keysym
+# whenever the browser lacks a secure-context async clipboard, or on a pre-#254
+# base) drops every capital, so pasted text arrives all lowercase (issue #27).
+# Loading a full keymap binds Shift_L as a real modifier and gives each letter a
+# level-1 uppercase, so the paste keeps its case. KEYBOARD_LAYOUT (default us)
+# lets non-US users pick their layout.
+setxkbmap -display "${DISPLAY:-:1}" -layout "${KEYBOARD_LAYOUT:-us}" >/dev/null 2>&1 || true
+echo "[krusader-autostart] keymap: layout=${KEYBOARD_LAYOUT:-us}" >&2
+
 # --- Start -------------------------------------------------------------------
 # dbus-launch fuer KIO-Slaves (krarc, file, smb, ...). Auf der Selkies-Base
 # wrappt startwm.sh openbox bereits in dbus-launch (aeusserer Session-Bus);
