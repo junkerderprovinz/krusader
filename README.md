@@ -347,6 +347,21 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 </details>
 
 <details>
+<summary><b>Pasted UPPERCASE text arrives lowercase (Firefox)</b></summary>
+
+Known Firefox-specific issue — see [issue #27](https://github.com/junkerderprovinz/krusader/issues/27) and
+[TROUBLESHOOTING.md Bug #5](TROUBLESHOOTING.md#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
+for the full root-cause chain. Firefox restricts silent clipboard reads more
+than Chromium, so it falls back to a Selkies retype path that has a real,
+still-open upstream bug. **Workaround:** in Firefox, open `about:config`,
+search for `dom.events.testing.asyncClipboard`, and set it to `true`. This
+gives Firefox the same silent clipboard-sync behaviour Chromium already has,
+which sidesteps the retype path (and its case bug) entirely. No container
+change or restart needed — takes effect on the next paste. Chromium-based
+browsers (Brave, Edge, Chrome) are not affected.
+</details>
+
+<details>
 <summary><b>Bottom status bar hides persistently now</b></summary>
 
 Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Statusbar** once and it stays hidden across restarts — Krusader 2.9.0 auto-saves the statusbar state about a second after toggling and also saves settings on `docker stop`, so no clean exit is needed. (On the old KasmVNC image, Krusader 2.8.1 could not persist this.) The per-panel (upper) free-space / device status bar is a different widget and is unaffected.

@@ -87,14 +87,26 @@ echo "[krusader-autostart] LANG=$LANG" >&2
 # --- Keyboard map: bind a complete keymap so Shift resolves ------------------
 # The Selkies base starts Xvfb with NO keymap (the X11 keymap is "deployment-
 # owned" and is set neither in the base nor here). Without a real Shift binding,
-# Selkies' Firefox re-type paste path (it injects Shift_L + the LOWERCASE keysym
-# whenever the browser lacks a secure-context async clipboard, or on a pre-#254
-# base) drops every capital, so pasted text arrives all lowercase (issue #27).
-# Loading a full keymap binds Shift_L as a real modifier and gives each letter a
-# level-1 uppercase, so the paste keeps its case. KEYBOARD_LAYOUT (default us)
-# lets non-US users pick their layout.
-setxkbmap -display "${DISPLAY:-:1}" -layout "${KEYBOARD_LAYOUT:-us}" >/dev/null 2>&1 || true
-echo "[krusader-autostart] keymap: layout=${KEYBOARD_LAYOUT:-us}" >&2
+# Selkies' keystroke re-type paste path (input.js's _handleMobileInput, used
+# whenever the byte-exact clipboard-sync channel is unavailable — notably on
+# Firefox, see TROUBLESHOOTING.md Bug #5) injects Shift_L + the LOWERCASE
+# keysym, and with no keymap at all Shift_L never binds, so every capital
+# falls to keymap level 0. Loading a full keymap binds Shift_L as a real
+# modifier and gives each letter a level-1 uppercase. This closes ONE failure
+# mode of the retype path (an unbound Shift); it does not fix the retype
+# path's own design (see Bug #5) — TEST BEFORE assuming a paste bug is fixed.
+# KEYBOARD_LAYOUT (default us) lets non-US users pick their layout.
+#
+# NOTE: this used to be `>/dev/null 2>&1 || true`, which threw away setxkbmap's
+# actual exit status AND stderr, then unconditionally logged a success-shaped
+# line regardless of what happened — i.e. there was no way to tell from the
+# container log whether the keymap actually bound. Capture and log the real
+# result instead so a future regression is debuggable from `docker logs`.
+if setxkbmap_out=$(setxkbmap -display "${DISPLAY:-:1}" -layout "${KEYBOARD_LAYOUT:-us}" 2>&1); then
+    echo "[krusader-autostart] keymap: layout=${KEYBOARD_LAYOUT:-us} bound OK" >&2
+else
+    echo "[krusader-autostart] keymap: setxkbmap FAILED (layout=${KEYBOARD_LAYOUT:-us}): ${setxkbmap_out}" >&2
+fi
 
 # --- Start -------------------------------------------------------------------
 # dbus-launch fuer KIO-Slaves (krarc, file, smb, ...). Auf der Selkies-Base
