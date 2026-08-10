@@ -444,4 +444,4 @@ ENV KRUSADER_LANG=de \
 # Verbindung verweigert) markiert den Container als unhealthy.
 # ---------------------------------------------------------------------------
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD c=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 5 https://127.0.0.1:${CUSTOM_HTTPS_PORT:-3001}/); [ "$c" != "000" ] || exit 1
+    CMD ["/bin/sh", "-c", "c=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 5 https://127.0.0.1:${CUSTOM_HTTPS_PORT:-3001}/); [ \"$c\" != \"000\" ] || exit 1"]
