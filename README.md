@@ -183,6 +183,8 @@ docker run -d \
 | `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3000` | Selkies HTTP *(reverse-proxy only — direct access needs HTTPS)* | | `/storage` | Files to manage — default host `/mnt` |
 
+> **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
+
 <br>
 
 ## 5. Languages
@@ -255,7 +257,8 @@ docker build -t krusader:dev .
 # Multi-arch (amd64 + arm64) – needs buildx
 docker buildx build --platform linux/amd64,linux/arm64 -t krusader:dev --load .
 
-# Test run
+# Test run — http://localhost:3000 is fine here: browsers treat localhost as a
+# secure context, so the HTTP port works for local testing but not over the LAN
 docker run --rm -it \
   -p 3000:3000 \
   -v "$PWD/.dev-config:/config" \
@@ -286,7 +289,7 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 - Make sure `--shm-size` is at least `512mb` (Unraid template sets `1gb`)
 - Check the container log for Selkies startup errors
-- Try opening on `https://<ip>:3001/` (self-signed) — sometimes browsers block ws over plain http
+- Make sure you opened `https://<ip>:3001/` (self-signed) and not `http://<ip>:3000/` — over plain HTTP the Selkies client aborts with *"requires a secure connection (HTTPS)"* and the desktop never appears
 - Wait 30–60 seconds on first start; KDE caches need to be built once
 </details>
 
