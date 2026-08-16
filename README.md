@@ -29,7 +29,7 @@ from the Unraid template, no SSH or config-file editing required.
 <br>
 
 <p align="center">
-Maintained solo, in whatever spare time there is. Bugs, ideas and feature requests via <a href="https://github.com/junkerderprovinz/krusader/issues">GitHub issues</a>. If it's useful to you, a coffee is always welcome.
+Maintained solo, in whatever spare time there is. Questions via the <a href="https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/">support thread</a>, bugs, ideas and feature requests via <a href="https://github.com/junkerderprovinz/krusader/issues">GitHub issues</a>. If it's useful to you, a coffee is always welcome.
 </p>
 
 <br>
@@ -439,7 +439,7 @@ This repository packages Krusader as a container for Unraid. The packaging in th
 
 ## 14. Support this project
 
-Questions, bugs, ideas or feature requests? Please [open a GitHub issue](https://github.com/junkerderprovinz/krusader/issues).
+Questions? Check the [support thread](https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/). Bugs, ideas or feature requests? Please [open a GitHub issue](https://github.com/junkerderprovinz/krusader/issues).
 
 This is a one-person project. I put a lot of time and effort into building and maintaining it, in whatever free time I have. If it's helped you, I'd genuinely appreciate the support: you're welcome to buy me a coffee.
 
