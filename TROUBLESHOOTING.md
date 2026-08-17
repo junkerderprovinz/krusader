@@ -432,15 +432,21 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 ### Options considered for a krusader-local fix
 
 - **Wait for upstream.** Step (a) is done — the fix landed on `main` as
-  `4edd73a` (superseding PR #296). What's still needed: (b) port it (plus the
-  clipboard-sync fix `00ce739`) onto the `lsio` branch (not automatic —
-  `lsio` has already diverged with its own commits since the merge-base), (c)
-  get picked up by a new `docker-baseimage-selkies` `ubunturesolute` pin
-  bump, (d) reach a new `linuxserver/baseimage-selkies` published tag that
-  krusader then adopts via a `BASE_TAG` bump. Still out of krusader's control
-  end-to-end, but a `docker-baseimage-selkies` PR porting these two specific
-  commits onto `lsio` is now a well-scoped, concrete ask rather than "wait
-  and see" — worth doing directly rather than waiting.
+  `4edd73a` (superseding #296). Step (b), porting the keysym-lookup fix onto
+  `lsio` itself (not the whole `4edd73a`, which also carries an unrelated
+  chord-modifier feature `lsio` doesn't have): **submitted 2026-08-17 as
+  [selkies-project/selkies#301](https://github.com/selkies-project/selkies/pull/301)**,
+  open. The clipboard-sync fix `00ce739` was investigated too but not
+  submitted — it's deeply entangled in a much larger, unrelated
+  "Performance optimizations" commit (26 files, 3131 lines) with real
+  conflicts against `lsio`'s current state; not safely portable without a
+  much bigger, dedicated effort. Once/if #301 merges, still needed: (c) a new
+  `docker-baseimage-selkies` pin bump (its Dockerfile hard-pins an exact
+  commit SHA, `348bc4f...`, not the `lsio` branch HEAD — merging to `lsio`
+  alone does not reach downstream images), (d) a new
+  `linuxserver/baseimage-selkies` published tag that krusader then adopts via
+  a `BASE_TAG` bump. Still out of krusader's control end-to-end, but now a
+  tracked, concrete chain instead of "wait and see."
 - **Local patch of the built JS in krusader's own `Dockerfile`.** Considered
   and **rejected for now**: `docker-baseimage-selkies` builds
   `selkies-web-core`/`selkies-dashboard` with `vite build`, which minifies by
