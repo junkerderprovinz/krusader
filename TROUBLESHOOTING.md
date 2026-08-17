@@ -408,7 +408,9 @@ has since replaced this FAQ entry — a later commit ("Performance
 optimizations", 2026-06-13) added a synchronous-copy fallback and rewrote
 the FAQ to say no browser configuration is needed at all. That fallback
 commit is not on `lsio` (confirmed: not an ancestor of the pinned commit), so
-it is not in the image krusader ships. The `about:config` workaround below is
+it is not in the image krusader ships. Its read-direction mechanism has a
+narrower port up as PR #302 (see "Options considered" below) — until that
+merges and reaches this image, the `about:config` workaround below is
 checked against the code actually running in this container, not against
 whatever upstream's live docs page currently says — the two have diverged.
 
@@ -432,21 +434,29 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 ### Options considered for a krusader-local fix
 
 - **Wait for upstream.** Step (a) is done — the fix landed on `main` as
-  `4edd73a` (superseding #296). Step (b), porting the keysym-lookup fix onto
+  `4edd73a` (superseding #296). Step (b), porting the keysym-lookup part onto
   `lsio` itself (not the whole `4edd73a`, which also carries an unrelated
   chord-modifier feature `lsio` doesn't have): **submitted 2026-08-17 as
   [selkies-project/selkies#301](https://github.com/selkies-project/selkies/pull/301)**,
-  open. The clipboard-sync fix `00ce739` was investigated too but not
-  submitted — it's deeply entangled in a much larger, unrelated
-  "Performance optimizations" commit (26 files, 3131 lines) with real
-  conflicts against `lsio`'s current state; not safely portable without a
-  much bigger, dedicated effort. Once/if #301 merges, still needed: (c) a new
-  `docker-baseimage-selkies` pin bump (its Dockerfile hard-pins an exact
-  commit SHA, `348bc4f...`, not the `lsio` branch HEAD — merging to `lsio`
-  alone does not reach downstream images), (d) a new
-  `linuxserver/baseimage-selkies` published tag that krusader then adopts via
-  a `BASE_TAG` bump. Still out of krusader's control end-to-end, but now a
-  tracked, concrete chain instead of "wait and see."
+  open. The clipboard-sync commit `00ce739` was investigated too — it's
+  deeply entangled in a much larger, unrelated "Performance optimizations"
+  commit (26 files, 3131 lines) with real conflicts against `lsio`'s current
+  state, and about half of it is a *write*-direction (Ctrl+C) feature
+  needing a new client/server protocol `lsio` doesn't have — but its
+  *read*-direction mechanism (trigger the existing clipboard-read-and-send
+  logic on a real Ctrl/Cmd+V keydown instead of only on window focus, since
+  Firefox/Safari require real user-gesture activation for that read) turned
+  out to be self-contained. That narrower slice was extracted and
+  **submitted 2026-08-17 as
+  [selkies-project/selkies#302](https://github.com/selkies-project/selkies/pull/302)**,
+  open — see the "Why Firefox specifically" section above for the mechanism.
+  Once/if both merge, still needed: (c) a new `docker-baseimage-selkies` pin
+  bump (its Dockerfile hard-pins an exact commit SHA, `348bc4f...`, not the
+  `lsio` branch HEAD — merging to `lsio` alone does not reach downstream
+  images), (d) a new `linuxserver/baseimage-selkies` published tag that
+  krusader then adopts via a `BASE_TAG` bump. Still out of krusader's
+  control end-to-end, but now a tracked, concrete chain instead of "wait and
+  see."
 - **Local patch of the built JS in krusader's own `Dockerfile`.** Considered
   and **rejected for now**: `docker-baseimage-selkies` builds
   `selkies-web-core`/`selkies-dashboard` with `vite build`, which minifies by
@@ -588,5 +598,7 @@ cat /var/log/cont-init.d/30-krusader-keys.log 2>/dev/null
 *Last updated 2026-08-17 — Bug #5's client-side Firefox retype bug and the
 underlying clipboard-permission issue are both fixed on `selkies-project/selkies`
 `main` (`4edd73a`, `00ce739`) but not yet on the `lsio` branch this image
-builds from. See Bug #5 for the full evidence chain and the immediate
-`about:config` mitigation, which now resolves both symptoms at once.*
+builds from. Narrower ports of each are up for `lsio` as PR #301 (retype
+bug) and PR #302 (clipboard-permission gesture trigger), both open. See Bug
+#5 for the full evidence chain and the immediate `about:config` mitigation,
+which covers both symptoms at once in the meantime.*
