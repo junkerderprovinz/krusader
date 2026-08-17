@@ -39,13 +39,22 @@ case "${KRUSADER_THEME:-dark}" in
 esac
 /usr/local/bin/print-banner.sh "Krusader for Unraid" "${TH} · Selkies · KDE" 2>/dev/null || true
 
+# Colored via plain ANSI SGR codes, not tput (tput needs a terminfo database
+# that may not exist in a minimal container): 32 green / 31 red, reset with 0.
+# docker logs passes stdout bytes through untouched, so any ANSI-aware viewer
+# (a real terminal, Unraid's log panel) renders the color; a viewer that does
+# not understand SGR codes just shows them as inert text.
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
 # Clean two-line status (house look: no rule/box walls).
 if [[ "${ready}" -eq 1 ]]; then
-    echo "  ✓ KRUSADER IS READY"
+    echo -e "  ${GREEN}✓ KRUSADER IS READY${NC}"
     echo "    Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
     echo ""
 else
-    echo "  ✗ KRUSADER DID NOT BECOME READY"
+    echo -e "  ${RED}✗ KRUSADER DID NOT BECOME READY${NC}"
     echo "    The WebUI never answered within 5 minutes — check the log above"
     echo ""
 fi
