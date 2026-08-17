@@ -34,7 +34,7 @@ in the main [`README.md`](README.md).
 | 2 | Kate opens maximised + window `X` freezes | **Fixed** | Kate filled the full Selkies viewport on launch; clicking close hung for ~10 s | Openbox application rule `<application class="kate">` added to `rootfs/defaults/openbox-rc.xml` (size 1100×750, centered). Freeze fixed by same `ksmserver` work as #1. |
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
-| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Partial — client-side bug confirmed still present upstream, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)** | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `autostart` now loads a real Xvfb keymap (`setxkbmap`, `x11-xkb-utils`/`xkb-data` added to the Dockerfile) — a real fix for the "Shift never binds at all" failure mode, kept because it's harmless and does help other X11 modifier issues. **The "rebuilt on a base carrying upstream PR #254" claim in the original fix was verified false** — the pinned `selkies-project/selkies` commit is on the `lsio` branch and still lacks PR #254, and the resulting Firefox-specific retype bug (`_handleMobileInput` in `input.js`) is still present verbatim. No local code fix shipped; see Bug #5 for the full chain and the immediate workaround. |
+| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Partial — fixed on upstream `main`, not yet on the `lsio` branch this image builds from, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)** | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `autostart` now loads a real Xvfb keymap (`setxkbmap`, `x11-xkb-utils`/`xkb-data` added to the Dockerfile) — a real fix for the "Shift never binds at all" failure mode, kept because it's harmless and does help other X11 modifier issues. **The "rebuilt on a base carrying upstream PR #254" claim in the original fix was verified false** — the pinned `selkies-project/selkies` commit is on the `lsio` branch and still lacks PR #254, and the resulting Firefox-specific retype bug (`_handleMobileInput` in `input.js`) is still present verbatim there. The real fix (`4edd73a`) exists on upstream `main` but hasn't reached `lsio` yet; no local code fix shipped, use the `about:config` mitigation below meanwhile — see Bug #5 for the full chain. |
 
 ---
 
@@ -351,10 +351,33 @@ directly.)
    sends `kd,Shift_L` → `kd,<lowercase keysym>` → `ku,<lowercase keysym>` →
    `ku,Shift_L`, i.e. it depends on the server correctly interpreting a
    held-modifier + lowercase-keysym sequence rather than sending the
-   uppercase character's own keysym. This is exactly the bug fixed by
+   uppercase character's own keysym. This was exactly the bug tracked by
    `selkies-project/selkies` **PR #296** (`fix(input): send the character
-   keysym directly for typed and pasted uppercase`, tracking issue #295) —
-   which is **open, unmerged**, as of this writing.
+   keysym directly for typed and pasted uppercase`, tracking issue #295).
+
+   **Update (2026-08-10): fixed upstream, but not yet on the branch this
+   image ships.** PR #296 was closed as superseded by commit
+   [`4edd73a`](https://github.com/selkies-project/selkies/commit/4edd73a6c1f865abb236e87c06d40afb3ce76a1c)
+   (`fix: Container logic`), which routes `_handleMobileInput` through the
+   shared `_typeText` helper — it looks up each character's own keysym and
+   sends `kd`/`ku` for it directly, no `Shift_L` injection, so capitals keep
+   their case regardless of keymap state. Separately, commit
+   [`00ce739`](https://github.com/selkies-project/selkies/commit/00ce7394046eb0b89f2bd1892492a348a23db780)
+   (2026-06-13, "Performance optimizations") replaced the
+   `navigator.clipboard.readText()` silent-sync path with a synchronous-copy
+   fallback that works on Firefox without any `about:config` change at all —
+   upstream's FAQ was rewritten accordingly ("the older Firefox `about:config`
+   workaround is no longer required"). **Both fixes are on `main`, neither is
+   on `lsio`** (re-verified 2026-08-17: `git compare` shows both commits are
+   ancestors of `main` but not of `lsio`, whose tip is still the same
+   `348bc4f6` this document already cites — `lsio` remains actively
+   maintained, just hasn't cherry-picked these two yet). Until
+   `docker-baseimage-selkies` bumps its `ubunturesolute` pin past a `main`
+   sync (or someone ports these two commits onto `lsio` directly), the
+   `about:config` mitigation below is still the fastest path for an affected
+   user; it now fixes both symptoms at once (no more Paste-button friction
+   *and* no more retype path, since the working clipboard sync means
+   `_handleMobileInput` is never reached for a clipboard paste).
 
 ### Why Firefox specifically, and not Chromium
 
@@ -408,13 +431,16 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 
 ### Options considered for a krusader-local fix
 
-- **Wait for upstream.** PR #296 needs to (a) merge into
-  `selkies-project/selkies` `main`, (b) get ported onto the `lsio` branch
-  (not automatic — `lsio` has already diverged with its own commits since the
-  merge-base), (c) get picked up by a new `docker-baseimage-selkies`
-  `ubunturesolute` pin bump, (d) reach a new `linuxserver/baseimage-selkies`
-  published tag that krusader then adopts via a `BASE_TAG` bump. Out of
-  krusader's control end-to-end; no ETA.
+- **Wait for upstream.** Step (a) is done — the fix landed on `main` as
+  `4edd73a` (superseding PR #296). What's still needed: (b) port it (plus the
+  clipboard-sync fix `00ce739`) onto the `lsio` branch (not automatic —
+  `lsio` has already diverged with its own commits since the merge-base), (c)
+  get picked up by a new `docker-baseimage-selkies` `ubunturesolute` pin
+  bump, (d) reach a new `linuxserver/baseimage-selkies` published tag that
+  krusader then adopts via a `BASE_TAG` bump. Still out of krusader's control
+  end-to-end, but a `docker-baseimage-selkies` PR porting these two specific
+  commits onto `lsio` is now a well-scoped, concrete ask rather than "wait
+  and see" — worth doing directly rather than waiting.
 - **Local patch of the built JS in krusader's own `Dockerfile`.** Considered
   and **rejected for now**: `docker-baseimage-selkies` builds
   `selkies-web-core`/`selkies-dashboard` with `vite build`, which minifies by
@@ -553,7 +579,8 @@ cat /var/log/cont-init.d/30-krusader-keys.log 2>/dev/null
 
 ---
 
-*Last updated August 2026 — Bug #5 investigated in depth; the client-side
-Firefox retype bug is confirmed still present upstream and tracked against
-`selkies-project/selkies` PR #296 (open). See Bug #5 for the full evidence
-chain and the immediate `about:config` mitigation.*
+*Last updated 2026-08-17 — Bug #5's client-side Firefox retype bug and the
+underlying clipboard-permission issue are both fixed on `selkies-project/selkies`
+`main` (`4edd73a`, `00ce739`) but not yet on the `lsio` branch this image
+builds from. See Bug #5 for the full evidence chain and the immediate
+`about:config` mitigation, which now resolves both symptoms at once.*

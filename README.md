@@ -361,8 +361,9 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 Known Firefox-specific issue — see [issue #27](https://github.com/junkerderprovinz/krusader/issues/27) and
 [TROUBLESHOOTING.md Bug #5](TROUBLESHOOTING.md#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
 for the full root-cause chain. Firefox restricts silent clipboard reads more
-than Chromium, so it falls back to a Selkies retype path that has a real,
-still-open upstream bug. **Workaround:** in Firefox, open `about:config`,
+than Chromium, so it falls back to a Selkies retype path with a real bug —
+already fixed upstream, just not yet on the Selkies branch this image
+builds from. **Workaround:** in Firefox, open `about:config`,
 search for `dom.events.testing.asyncClipboard`, and set it to `true`. This
 gives Firefox the same silent clipboard-sync behaviour Chromium already has,
 which sidesteps the retype path (and its case bug) entirely. No container
