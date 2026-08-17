@@ -48,16 +48,14 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Clean two-line status (house look: no rule/box walls).
+# Clean one-line status (house look: no rule/box walls, label + detail on the
+# same line). print-banner.sh already left one blank line above this.
 if [[ "${ready}" -eq 1 ]]; then
-    echo -e "  ${GREEN}✓ KRUSADER IS READY${NC}"
-    echo "    Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
-    echo ""
+    echo -e "  ${GREEN}✓ KRUSADER IS READY${NC} - Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
 else
-    echo -e "  ${RED}✗ KRUSADER DID NOT BECOME READY${NC}"
-    echo "    The WebUI never answered within 5 minutes — check the log above"
-    echo ""
+    echo -e "  ${RED}✗ KRUSADER DID NOT BECOME READY${NC} - The WebUI never answered within 5 minutes, check the log above"
 fi
+echo ""
 
 touch "${FLAG}"
 # Longrun: stay up so s6 does not restart us and re-print the banner.
