@@ -383,7 +383,7 @@ Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Status
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ghcr.io/linuxserver/baseimage-selkies:ubunturesolute          │
+│  ghcr.io/linuxserver/baseimage-selkies:dev                      │
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │  s6-overlay v3 init                                       │  │
 │  │   ↓                                                       │  │

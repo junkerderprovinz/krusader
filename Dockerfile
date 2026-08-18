@@ -18,11 +18,15 @@
 # Repository:  https://github.com/junkerderprovinz/krusader
 # License:     AGPL-3.0-only (this wrapper)  –  Krusader upstream is GPL-3.0
 #
-# ubunturesolute (26.04) statt noble: liefert Krusader 2.9.0 (KF6), das den
-# Statusbar-Persistenz-Bug aus Issue #16 doppelt fixt (Zustand wird ~1 s nach
-# dem Umschalten via KXmlGui-AutoSave gespeichert; zusaetzlich speichert der
-# SIGTERM-Handler seit 2.9.0 die Session bei docker stop). noble = 2.8.1 = Bug.
-ARG BASE_TAG=ubunturesolute
+# dev (statt des gepinnten ubunturesolute) liefert dieselbe Ubuntu-Resolute-Serie
+# (Krusader 2.9.0/KF6 bleibt, siehe Issue #16 oben), baut aber selkies-project/
+# selkies live von main statt vom eingefrorenen lsio-Pin – das ist der einzige
+# Weg, den Firefox/Safari-Clipboard-Bug aus Issue #27 zu bekommen, ohne auf den
+# lsio-Port von PR #301/#302 zu warten (byte-genau gegen den gebauten Container
+# verifiziert: echter _typeText()-Pfad statt Shift_L-Retype + natives paste-Event
+# statt Async-Clipboard-Workaround). Tradeoff bewusst akzeptiert: kein manuell
+# geprueftes Pin-Bump-Review mehr, dev floated auf jedem Rebuild mit main mit.
+ARG BASE_TAG=dev
 # Source-build switch: 1 = build Krusader 2.9.0 from source WITH our panel-
 # icon-tint patches (patches/) and install it over the apt package; 0 = plain
 # apt Krusader (emergency fallback, no rebuild of the patch toolchain).

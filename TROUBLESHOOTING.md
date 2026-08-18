@@ -34,7 +34,7 @@ in the main [`README.md`](README.md).
 | 2 | Kate opens maximised + window `X` freezes | **Fixed** | Kate filled the full Selkies viewport on launch; clicking close hung for ~10 s | Openbox application rule `<application class="kate">` added to `rootfs/defaults/openbox-rc.xml` (size 1100×750, centered). Freeze fixed by same `ksmserver` work as #1. |
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
-| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Partial — fixed on upstream `main`, not yet on the `lsio` branch this image builds from, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)** | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `autostart` now loads a real Xvfb keymap (`setxkbmap`, `x11-xkb-utils`/`xkb-data` added to the Dockerfile) — a real fix for the "Shift never binds at all" failure mode, kept because it's harmless and does help other X11 modifier issues. **The "rebuilt on a base carrying upstream PR #254" claim in the original fix was verified false** — the pinned `selkies-project/selkies` commit is on the `lsio` branch and still lacks PR #254, and the resulting Firefox-specific retype bug (`_handleMobileInput` in `input.js`) is still present verbatim there. The real fix (`4edd73a`) exists on upstream `main` but hasn't reached `lsio` yet; no local code fix shipped, use the `about:config` mitigation below meanwhile — see Bug #5 for the full chain. |
+| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
 
 ---
 
@@ -296,6 +296,22 @@ should work even without `ksmserver`.
 ---
 
 ## Bug #5 — Pasted UPPERCASE arrives lowercase on Firefox (issue #27)
+
+**RESOLVED (2026-08-19).** LSIO maintainer `thelamer` pointed out that
+`docker-baseimage-selkies`'s `dev` tag is the same Ubuntu Resolute series as
+`ubunturesolute` (a drop-in `BASE_TAG` swap) but builds `selkies-project/selkies`
+live from `main` at build time instead of the frozen `lsio` pin this document
+spent most of its length chasing. `BASE_TAG` is now `dev`. Verified directly
+against the built image, not inferred from commit dates: `_handleMobileInput`
+in the shipped `selkies-core.js` calls `_typeText` (the real per-character
+keysym fix, commit `4edd73a`) with no `Shift_L` retype path left, and a native
+`paste`-event clipboard sync (`clipboard-sync.js`) is present and working on
+Firefox without the `about:config` flag below. This also means the whole
+`lsio`-porting effort described below (PR #301/#302) is no longer on this
+image's critical path — kept here as-is for the historical record and because
+`dev` trades a manually-reviewed pin for one that floats with upstream `main`,
+so understanding what changed and why remains useful. If `dev` is ever rolled
+back to a pinned tag, this whole analysis becomes relevant again.
 
 ### Symptom
 
