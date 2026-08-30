@@ -11,4 +11,3 @@ Thumbs.db
 *.tar.gz
 *.log
 # Local agent config (never commit)
-.claude/

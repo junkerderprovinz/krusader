@@ -1,5 +1,5 @@
 # justfile — Krusader for Unraid (Selkies)
-# Recipes mirror the real CI flows (see .github/workflows/ and CLAUDE.md).
+# Recipes mirror the real CI flows (see .github/workflows/).
 # Run `just --list` to see everything. POSIX sh recipes.
 
 set shell := ["sh", "-euc"]
