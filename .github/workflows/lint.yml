@@ -12,8 +12,8 @@ jobs:
     name: Hadolint (Dockerfile)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: hadolint/hadolint-action@v3.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6 # v3.4.0
         with:
           dockerfile: Dockerfile
           # DL3008 = pin apt versions – we deliberately skip pinning since
@@ -30,7 +30,7 @@ jobs:
     name: ShellCheck (shell scripts)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run shellcheck
         run: |
           sudo apt-get update
@@ -62,7 +62,7 @@ jobs:
     name: XML Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Validate XML files
         run: |
           sudo apt-get update

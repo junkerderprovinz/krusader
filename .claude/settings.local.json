@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "mcp__obsidian__vault_list",
+      "mcp__obsidian__vault_read",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter 'sed \"/^Co-Authored-By: Claude/d; /^Co-authored-by: Claude/d\"' 3bfcc83^..HEAD)",
+      "mcp__obsidian__vault_write",
+      "Bash(git checkout *)",
+      "Bash(git rebase *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git branch *)",
+      "Bash(dir \"d:\\\\nextcloud\\\\it\\\\github\\\\krusader\" /b)",
+      "mcp__obsidian__search_simple",
+      "Bash(gh repo *)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)"
+    ]
+  }
+}
