@@ -53,12 +53,12 @@ jobs:
         if: ${{ vars.DOCKERHUB_USERNAME != '' }}
         env:
           DH_USER: ${{ vars.DOCKERHUB_USERNAME }}
-          DH_PASS: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DH_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
           TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
           if [ -z "$DH_PASS" ]; then
-            echo "::warning::DOCKERHUB_PASSWORD not set — skipping Docker Hub"
+            echo "::warning::DOCKERHUB_TOKEN not set — skipping Docker Hub"
             exit 0
           fi
           jwt=$(curl -s -X POST -H "Content-Type: application/json" \
