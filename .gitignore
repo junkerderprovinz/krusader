@@ -11,3 +11,8 @@ Thumbs.db
 *.tar.gz
 *.log
 # Local agent config (never commit)
+
+# Assistant scratch files never belong in a public repo (standing rule:
+# no reference to any assistant, anywhere).
+CLAUDE.md
+.claude/
