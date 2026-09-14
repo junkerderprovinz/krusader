@@ -107,18 +107,17 @@ if grep -qi 'giving up' "${SB}/out"; then ok "logs why it stopped restarting ins
 else no "logs why it stopped restarting instant clean exits" "a 'giving up' line" "$(tail -3 "${SB}/out")"; fi
 
 # -----------------------------------------------------------------------------
-# 5) Shutdown must go through krusader's own quit path, so its "save settings
-#    on exit" still runs (Bug #1). Killing the process would skip that.
+# 5) Shutdown must ASK krusader to quit itself before resorting to a signal,
+#    so its "save settings on exit" gets the chance to run (Bug #1).
 # -----------------------------------------------------------------------------
 sandbox 'sleep 30'
-cat > "${SB}/bin/kquitapp6" <<'STUB'
+cat > "${SB}/bin/qdbus6" <<'STUB'
 #!/usr/bin/env bash
-echo "kquitapp6 $*" >> "${KRTEST_CALLS}.quit"
-pkill -TERM -f 'bin/krusader$' 2>/dev/null
-pkill -TERM krusader 2>/dev/null
+echo "qdbus6 $*" >> "${KRTEST_CALLS}.quit"
+pkill -TERM -x krusader 2>/dev/null
 exit 0
 STUB
-chmod +x "${SB}/bin/kquitapp6"
+chmod +x "${SB}/bin/qdbus6"
 : > "${KRTEST_CALLS}.quit"
 bash "${SESSION}" > "${SB}/out" 2>&1 &
 pid=$!
@@ -128,8 +127,8 @@ for _ in $(seq 1 60); do
 done
 kill -TERM "${pid}" 2>/dev/null
 wait "${pid}"
-if grep -q 'kquitapp6 krusader' "${KRTEST_CALLS}.quit"; then ok "quits krusader via kquitapp6 on shutdown"
-else no "quits krusader via kquitapp6 on shutdown" "a kquitapp6 call" "$(cat "${KRTEST_CALLS}.quit")"; fi
+if grep -q 'org.kde.krusader' "${KRTEST_CALLS}.quit"; then ok "asks krusader to quit itself on shutdown"
+else no "asks krusader to quit itself on shutdown" "a qdbus6 quit call" "$(cat "${KRTEST_CALLS}.quit")"; fi
 
 # -----------------------------------------------------------------------------
 [ -n "${SB}" ] && rm -rf "${SB}"

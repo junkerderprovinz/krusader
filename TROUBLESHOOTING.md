@@ -621,9 +621,14 @@ the application layer, i.e. here.
 
 - krusader exits (any reason) → start it again, so the WebUI gets a fresh
   session within a second and a browser refresh is enough.
-- `SIGTERM`/`SIGINT`/`SIGHUP` (i.e. `docker stop`) → quit krusader cleanly via
-  `kquitapp6` so its "save settings on exit" still runs (the Bug #1 path),
-  then exit **without** restarting.
+- `SIGTERM`/`SIGINT`/`SIGHUP` (i.e. `docker stop`) → ask krusader to quit
+  itself over D-Bus, fall back to signalling it, then exit **without**
+  restarting. Measured on the built image: the D-Bus call does not fire today,
+  because krusader registers no name on the session bus (`qdbus6` lists only
+  `org.kde.ksmserver`), so the signal is what ends it. The attempt is kept
+  because it costs one failed lookup and would start working on its own. What
+  actually preserves the UI state across a stop is Krusader 2.9.0 writing its
+  own settings as it goes, not this call.
 - Crash guard, two counters, both looking only at runs shorter than **5 s** and
   both reset by any run longer than that:
   - **5 non-zero exits in a row** → krusader cannot start at all (broken
