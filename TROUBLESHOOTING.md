@@ -37,7 +37,7 @@ in the main [`README.md`](README.md).
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
 | 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
-| 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6--shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | `selkies-patches/fix-shift-on-unleveled-keys.py` patches the base image at build time so a held Shift is only lifted for a key whose keymap level Shift actually changes. Upstream fixed this itself one layer up; the patch aborts the build once the base carries that fix. |
+| 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6--shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | Fixed upstream in the base image (selkies `720fad27`, `is_function_keysym()`), which also covers Shift+Home and Shift+Arrow. This repo carried a bridge patch for v2.4.0; it stopped the build when the base caught up, as designed, and was removed in v2.5.0. |
 | 7 | Quitting Krusader leaves a black screen | **Fixed**, see [Bug #7](#bug-7--quitting-krusader-leaves-a-black-screen) | `File → Quit` (or the window `X`) left an empty openbox desktop; reconnecting or refreshing the browser gave the same black viewport, only a container restart brought Krusader back | `krusader-session` supervises krusader in a restart loop: any exit starts a fresh krusader, `SIGTERM` still quits it cleanly and ends the session, and a spin guard (5 failed starts, or 20 instant exits of any kind) stops the loop instead of burning CPU. Pinned by `tests/test-krusader-session.sh`. |
 
 ---
@@ -567,16 +567,19 @@ letter it really does select a level.
 
 ### Fix
 
-`selkies-patches/fix-shift-on-unleveled-keys.py` runs at build time and asks the
-keymap whether Shift changes anything for that particular keycode, lifting only
-when it does. Verified with `xev`: Shift+F4 now arrives as `KeyPress F4
-state=0x1`, while F4 alone and the letter path are unchanged.
+**Now carried by the base image.** Upstream solved this one layer up on
+2026-09-13 (selkies commit `720fad27`): `is_function_keysym()` feeds the
+neutralize derivation, so a function keysym never asks for the lift in the first
+place. That covers more than our bridge did — the whole X function block
+(`0xFF00`–`0xFFFF`) plus the XF86 vendor block, so Shift+Home and Shift+Arrow
+keep their Shift as well, not just Shift+F*n*.
 
-This is a bridge, not a fix this project owns. Upstream solved it one layer up
-by never asking for neutralization on a function key. The base image simply
-predates that. The patch script stops the build once the base carries the
-upstream fix, which is the signal to delete `selkies-patches/` and its Dockerfile
-step.
+Between v2.4.0 and v2.5.0 this repo shipped its own bridge,
+`selkies-patches/fix-shift-on-unleveled-keys.py`, which asked the keymap whether
+Shift changed anything for that keycode and lifted only when it did. It was
+built to stop the build the moment the base carried the upstream fix, so that
+two fixes could never silently stack. On 2026-09-14 it did exactly that, and the
+patch plus its Dockerfile step were deleted. Nothing to do here anymore.
 
 ---
 

@@ -364,33 +364,12 @@ RUN set -eux; \
     cp /usr/local/share/krusader-icon.png "$dst"; \
     echo "krusader: branded selkies icon at $dst"
 
-# ---------------------------------------------------------------------------
-# Selkies input fix: keep a held Shift on keys that Shift does not level
-# ---------------------------------------------------------------------------
-# The dev base's XTEST injector lifts a held Shift around a press whenever the
-# target level does not want it, so a glyph cannot land on the wrong level.
-# Correct for letters, wrong for a function key: F4 carries the same keysym at
-# level 0 and 1, so Shift selects no level there and belongs to the chord. The
-# lift made Shift+F4 arrive as a bare F4, which is why Krusader ran "Edit File"
-# instead of "New Text File". Measurement and reasoning: selkies-patches/.
-#
-# Only the dev base has this code path; the pinned ubunturesolute tag ships an
-# older selkies without the level synthesis.
-#
-# THIS IS A BRIDGE. Upstream fixed it on 2026-09-13 (commit 720fad27) one layer
-# up, via an is_function_keysym() term in the neutralize derivation. The dev base
-# image predates that (built 2026-09-12), which is the only reason we patch.
-#
-# The build FAILS ON PURPOSE in both directions: once the base carries the
-# upstream fix the script stops and asks for selkies-patches/ and this step to be
-# deleted, and if upstream reshapes press() an anchor stops matching. Either way
-# we re-check instead of silently stacking two fixes or shipping a dead patch.
-# The script is python rather than a unified diff because this base has no
-# `patch` binary, and one apt package for a single edit is not worth it.
-COPY selkies-patches/ /selkies-patches/
-RUN set -eux; \
-    python3 /selkies-patches/fix-shift-on-unleveled-keys.py; \
-    rm -rf /selkies-patches
+# The Shift-on-function-keys bridge that lived here is gone: the base now
+# carries the upstream fix (selkies 720fad27, is_function_keysym() in the
+# neutralize derivation), which covers the whole X function block and the XF86
+# vendor block, so Shift+Arrow and Shift+Home keep their Shift too. The patch
+# script stopped the build to say so, exactly as it was built to. See
+# TROUBLESHOOTING.md Bug #6.
 
 # ---------------------------------------------------------------------------
 # MediaButton icon = the SAME icon the panel shows for a directory
