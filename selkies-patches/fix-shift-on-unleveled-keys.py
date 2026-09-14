@@ -38,10 +38,21 @@ changes anything for this particular keycode.
 Only the dev base carries this code path. The pinned ubunturesolute tag ships an
 older selkies without the level synthesis, so the sibling images are unaffected.
 
-Upstream main still carries the unpatched line (checked 2026-09-14). Drop this
-script once upstream carries the fix. It exits non-zero when an anchor no longer
-matches, which fails the build on purpose so the change gets re-checked instead
-of shipping a patch that quietly does nothing.
+THIS IS A BRIDGE, NOT A FIX WE OWN. Upstream already solved it on 2026-09-13 in
+commit 720fad27, one layer up from here: an `is_function_keysym(keysym)` term in
+the neutralize derivation, so a function key never asks for neutralization in
+the first place. The linuxserver dev base simply predates it (image built
+2026-09-12), which is the only reason this script exists.
+
+So there are two exits, and both are deliberate:
+
+  * The base picks up the upstream fix. The check below sees
+    `is_function_keysym` and stops the build, telling us to delete
+    selkies-patches/ and the Dockerfile step. Without that check the two fixes
+    would silently stack and the signal to clean up would never arrive.
+  * Upstream reshapes press() instead. An anchor stops matching and the build
+    fails, which is the signal to re-read the code rather than ship a patch
+    that quietly does nothing.
 
 A plain unified diff would have been the obvious form, but the final image has no
 `patch` binary and pulling one in for a single edit is not worth a package.
@@ -96,6 +107,9 @@ def main():
 
     src = open(path, "rb").read()
 
+    if b"is_function_keysym" in src:
+        fail("the base now carries the upstream fix (commit 720fad27): "
+             "delete selkies-patches/ and the Dockerfile step that runs it")
     if b"_shift_selects_level" in src:
         fail("already patched, or upstream adopted the fix under the same name")
     for name, needle in (("helper anchor", ANCHOR), ("call site", CALL_OLD)):

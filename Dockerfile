@@ -367,8 +367,14 @@ RUN set -eux; \
 # Only the dev base has this code path; the pinned ubunturesolute tag ships an
 # older selkies without the level synthesis.
 #
-# The build FAILS ON PURPOSE when the patch stops applying: upstream touched the
-# code, so we re-check instead of silently shipping a patch that does nothing.
+# THIS IS A BRIDGE. Upstream fixed it on 2026-09-13 (commit 720fad27) one layer
+# up, via an is_function_keysym() term in the neutralize derivation. The dev base
+# image predates that (built 2026-09-12), which is the only reason we patch.
+#
+# The build FAILS ON PURPOSE in both directions: once the base carries the
+# upstream fix the script stops and asks for selkies-patches/ and this step to be
+# deleted, and if upstream reshapes press() an anchor stops matching. Either way
+# we re-check instead of silently stacking two fixes or shipping a dead patch.
 # The script is python rather than a unified diff because this base has no
 # `patch` binary, and one apt package for a single edit is not worth it.
 COPY selkies-patches/ /selkies-patches/
