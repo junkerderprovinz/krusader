@@ -9,6 +9,7 @@
 # Features added on top of the base image:
 #   * Krusader (twin-pane file manager)
 #   * Kate (KDE editor) – also wired up as Krusader's default editor
+#   * Kompare (diff viewer) – drives Krusader's "Compare by content"
 #   * Full archive support including RAR (unrar), 7z, ARJ, ACE, LHA …
 #   * Pre-configured Dark Mode theme (Krusader, Kate, KDE)
 #   * Right-click "Extract RAR here", "Open with Kate", "Open Konsole here"
@@ -150,6 +151,15 @@ RUN set -eux; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         # File-Manager + Editor
         krusader kate konsole ark krename \
+        # Diff viewer for Krusader's "Compare by content" (F10 / File menu).
+        # Krusader looks for kdiff3, kompare, xxdiff in that order via
+        # KrServices::supportedTools() and disables the action when it finds
+        # none; kompare is the KDE-native one and the lightest of the three
+        # (~2.6 MB, its KF6 deps are already in the image). No config needed —
+        # KrServices::fullPathName() picks it up from PATH on first use and
+        # records it under krusaderrc [Dependencies] "diff utility", so a user
+        # who mounts another differ can still point that key elsewhere.
+        kompare \
         # Theme / Icons
         breeze breeze-icon-theme kde-style-breeze \
         # Archiv-Tools (wichtig für Krusader)
@@ -458,9 +468,29 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # With a German LC_ALL baked in, a user who set KRUSADER_LANG=en still got a German
 # UI (issue #21), because the base's German LANGUAGE env overrode the correct
 # kdeglobals we write. C.UTF-8 leaves no language in the env, so kdeglobals wins.
+#
+# MAX_RES — the VIRTUAL SCREEN SIZE Xvfb allocates, and by far the biggest
+# single memory item in this container. The base image defaults it to
+# 15360x8640 (8K x 2), and Xvfb allocates that whole framebuffer up front in
+# shared memory regardless of how large the browser window actually is:
+# 15360 x 8640 x 4 bytes = 530 MB, resident, forever. Measured on a live
+# container (Unraid, one connected client at 2528x1324):
+#
+#   MAX_RES (default) 15360x8640  ->  Xvfb RSS 578 MB, container 778 MiB
+#   MAX_RES           5120x2880   ->  Xvfb RSS 119 MB, container 252 MiB
+#   MAX_RES           3840x2160   ->  Xvfb RSS  93 MB, container 266 MiB
+#
+# So capping it saves ~520 MB with no effect on image quality below the cap —
+# and that huge default is what made this image look heavy next to the noVNC
+# ones (reported in the Unraid support thread). 5120x2880 covers every 4K and
+# 5K display plus every ultrawide, and costs 26 MB more than a 4K cap. Users
+# with a browser window wider/taller than this (e.g. one window spanning two
+# 4K monitors) can raise it in the Unraid template; the streamed image is
+# scaled to fit the window above the cap, so it stays usable either way.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     KEYBOARD_LAYOUT=us \
+    MAX_RES=5120x2880 \
     LANG=C.UTF-8 \
     QT_QPA_PLATFORMTHEME=qt5ct \
     QT_STYLE_OVERRIDE=Breeze
