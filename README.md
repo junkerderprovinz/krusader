@@ -77,8 +77,11 @@ What's included beyond bare Krusader:
 - **Row-aware panel icons** — Krusader is built from source with our icon-tint patch: the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
 - **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
+- **Kompare** — a side-by-side diff viewer bundled, so **File → Compare by Content…** opens two selected files in a real diff instead of the "cannot find any of the supported diff-frontends" error
+- **Quit and come back** — closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **33 UI languages** picked from a dropdown in the Unraid template
+- **~250 MB idle** — the virtual screen is capped at a sane 5K instead of the base image's 8K×2 default, which alone reserved 530 MB of framebuffer (see [Memory use](#memory-use))
 - **Update-safe configs** — first-run-only seeding, your customisations in `/config` survive every `docker pull`
 - **Multi-arch** — amd64 and arm64
 
@@ -185,6 +188,7 @@ docker run -d \
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
+| `MAX_RES` | `5120x2880` | Largest virtual screen the container allocates. Raise it only if your browser window is bigger than this — it costs ~4 bytes of RAM per pixel (see [Memory use](#memory-use)) |
 | `CUSTOM_USER` | *(empty)* | WebUI login username — leave empty with `PASSWORD` for no login |
 | `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
@@ -194,6 +198,29 @@ docker run -d \
 |---|---|---|---|---|
 | `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3000` | Selkies HTTP *(reverse-proxy only — direct access needs HTTPS)* | | `/storage` | Files to manage — default host `/mnt` |
+
+### Memory use
+
+A browser desktop costs more RAM than a plain noVNC one, but most of what this
+container used to take was one avoidable allocation. Xvfb reserves its whole
+virtual framebuffer up front, at roughly **4 bytes per pixel**, no matter how
+big your browser window is — and the base image's default screen is
+`15360x8640`, which is 530 MB on its own. Since **v2.5.0** the image caps that
+at `5120x2880`, enough for any 4K or 5K display and any ultrawide.
+
+Measured on a live container with one client connected at 2528x1324:
+
+| `MAX_RES` | Xvfb resident | Container total |
+|---|---:|---:|
+| `15360x8640` (old default) | 578 MB | 778 MiB |
+| `5120x2880` (v2.5.0 default) | 119 MB | 252 MiB |
+| `3840x2160` | 93 MB | 266 MiB |
+
+Raise `MAX_RES` only if your browser window is genuinely larger than the cap,
+for example one window spanning two 4K monitors. Above the cap the picture is
+scaled to the window rather than cut off, so the container stays usable either
+way. GPU rendering (`DRI_NODE`) changes where frames are *encoded*, not this
+allocation — which is why enabling it does not move the number much.
 
 > **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
 
@@ -303,6 +330,20 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 - Check the container log for Selkies startup errors
 - Make sure you opened `https://<ip>:3001/` (self-signed) and not `http://<ip>:3000/` — over plain HTTP the Selkies client aborts with *"requires a secure connection (HTTPS)"* and the desktop never appears
 - Wait 30–60 seconds on first start; KDE caches need to be built once
+</details>
+
+<details>
+<summary><b>I closed Krusader and got a black screen</b></summary>
+
+Fixed in **v2.5.0**. Quitting Krusader (File → Quit, `Ctrl+Q`, the window X) now
+starts a fresh Krusader, so refreshing the browser tab brings the file manager
+back instead of an empty desktop. On older versions the desktop kept running
+without any window and only a container restart helped.
+
+If Krusader cannot stay up — five failed starts in a row, or twenty instant
+exits of any kind — the session stops trying instead of looping. That means
+something is genuinely broken (config, X, a missing library), so restart the
+container and check the log.
 </details>
 
 <details>
