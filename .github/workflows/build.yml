@@ -16,8 +16,9 @@ name: Build & Push
 # tags for both registries.
 #
 # Triggers:
-#   * Push to main           → tags: latest, sha-<short>
-#   * Tag v*.*.*             → tags: latest, <version>, <major>, <major.minor>
+#   * Push to main           → tags: edge, main, sha-<short>
+#   * Tag v*.*.*             → tags: <version>, <major>, <major.minor>, plus
+#                              latest when that tag is the newest release
 #   * Weekly cron (Sun 04 UTC) – picks up upstream Selkies base updates
 #   * Manual workflow_dispatch
 # -----------------------------------------------------------------------------
@@ -220,6 +221,37 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Is the tag being built the newest release in this repo?
+      #
+      # `latest` moves only for a tag build, and only for the highest version
+      # tag (see the tag list below). Both halves are needed and they guard
+      # different accidents: gating on the tag keeps an unreleased merge to main
+      # away from everyone who pulls `latest`, and gating on "newest" keeps a
+      # re-cut of an older version from dragging `latest` backwards onto it.
+      #
+      # This job assembles manifests from digests and never checks the repo out,
+      # so the tags are read straight from the remote. `sort -V` orders versions
+      # rather than strings, so v1.10.0 beats v1.9.0 instead of losing to it.
+      - name: Is this the newest release tag?
+        id: newest
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          newest=$(git ls-remote --tags --refs \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" 'v*.*.*' \
+            | sed 's#.*refs/tags/##' | sort -V | tail -1)
+          echo "this tag: ${GITHUB_REF_NAME}"
+          echo "newest:   ${newest}"
+          if [ "$newest" = "${GITHUB_REF_NAME}" ]; then
+            echo "is_newest=true" >> "$GITHUB_OUTPUT"
+            echo "-> this build moves :latest"
+          else
+            echo "is_newest=false" >> "$GITHUB_OUTPUT"
+            echo "-> this build leaves :latest where it is"
+          fi
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
@@ -227,6 +259,35 @@ jobs:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
+          # `latest` means "the newest released version", and nothing else.
+          #
+          # It used to say enable={{is_default_branch}}, which reads like that
+          # and is not: the tip of main got `latest` the moment it was pushed,
+          # and metadata-action counts a tag cut from the default branch as the
+          # default branch too, so every tag build moved it as well. On
+          # 2026-09-14 a 23-commit merge to main put an unreleased build in
+          # front of everyone pulling `latest` before any release existed, and
+          # the first bug report against it arrived before the release notes.
+          #
+          # So: a tag build sets `latest`, and only when that tag is the newest
+          # release (see the step above). Gating on the tag alone would bring
+          # back the opposite accident: on 2026-09-02 a re-cut of an old version
+          # tag pulled `latest` backwards onto it, long after a newer version
+          # had shipped. That is why there are two conditions and not one.
+          #
+          # `edge` is where the tip of main goes now, including the weekly cron
+          # rebuild. Still built, still smoke-tested, still pullable; nobody
+          # just gets it without asking for it. It spells the default branch out
+          # instead of using {{is_default_branch}} for the reason above: that
+          # expression is also true on a tag build, and `edge` on a release
+          # build would make the name mean nothing.
+          #
+          # STILL SHARP, deliberately: {{major}} and {{major}}.{{minor}} below
+          # are moved by whichever tag built last, so re-cutting an old version
+          # drags `2` back with it. Correct for a normal forward release and
+          # wrong only while folding, which is rare enough to handle by hand.
+          # After folding, re-run the NEWEST tag's build and check that
+          # latest/2/2.<minor> all resolve to the same digest.
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -234,7 +295,8 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=schedule,pattern=weekly
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=edge,enable=${{ github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true' }}
             type=sha,format=short
 
       # Assemble the multi-arch manifest for EVERY tag (both registries) from
