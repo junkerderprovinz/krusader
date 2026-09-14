@@ -65,6 +65,14 @@ run:
 # All lint checks.
 lint: hadolint shellcheck xmllint
 
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+# Behaviour tests for the shipped shell scripts (no container needed).
+test:
+    bash tests/test-krusader-session.sh
+
 # Hadolint the Dockerfile (same ignores as CI).
 hadolint:
     hadolint --ignore DL3008 --ignore DL3009 --ignore DL3059 --ignore SC2086 Dockerfile
@@ -102,8 +110,8 @@ trivy: build
 # Aggregate + assets
 # ---------------------------------------------------------------------------
 
-# Full pre-push check: lint + secrets.
-check: lint secrets
+# Full pre-push check: lint + tests + secrets.
+check: lint test secrets
 
 # Regenerate the logo/icon assets (Python + cairosvg/PIL).
 logo:

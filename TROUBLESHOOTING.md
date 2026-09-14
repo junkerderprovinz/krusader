@@ -21,9 +21,10 @@ in the main [`README.md`](README.md).
 5. [Bug #4 — Template `KRUSADER_LANG` is ignored by the running app](#bug-4--template-krusader_lang-is-ignored-by-the-running-app)
 6. [Bug #5 — Pasted UPPERCASE arrives lowercase on Firefox (issue #27)](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
 7. [Bug #6 — Shift plus a function key arrives without the Shift](#bug-6--shift-plus-a-function-key-arrives-without-the-shift)
-8. [Architectural background — why a session manager is the real fix](#architectural-background--why-a-session-manager-is-the-real-fix)
-9. [Suggested order of attack](#suggested-order-of-attack)
-10. [Useful debug commands inside the container](#useful-debug-commands-inside-the-container)
+8. [Bug #7 — Quitting Krusader leaves a black screen](#bug-7--quitting-krusader-leaves-a-black-screen)
+9. [Architectural background — why a session manager is the real fix](#architectural-background--why-a-session-manager-is-the-real-fix)
+10. [Suggested order of attack](#suggested-order-of-attack)
+11. [Useful debug commands inside the container](#useful-debug-commands-inside-the-container)
 
 ---
 
@@ -37,6 +38,7 @@ in the main [`README.md`](README.md).
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
 | 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
 | 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6--shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | `selkies-patches/fix-shift-on-unleveled-keys.py` patches the base image at build time so a held Shift is only lifted for a key whose keymap level Shift actually changes. Upstream fixed this itself one layer up; the patch aborts the build once the base carries that fix. |
+| 7 | Quitting Krusader leaves a black screen | **Fixed**, see [Bug #7](#bug-7--quitting-krusader-leaves-a-black-screen) | `File → Quit` (or the window `X`) left an empty openbox desktop; reconnecting or refreshing the browser gave the same black viewport, only a container restart brought Krusader back | `krusader-session` supervises krusader in a restart loop: any exit starts a fresh krusader, `SIGTERM` still quits it cleanly and ends the session, and a spin guard (5 failed starts, or 20 instant exits of any kind) stops the loop instead of burning CPU. Pinned by `tests/test-krusader-session.sh`. |
 
 ---
 
@@ -575,6 +577,78 @@ by never asking for neutralization on a function key. The base image simply
 predates that. The patch script stops the build once the base carries the
 upstream fix, which is the signal to delete `selkies-patches/` and its Dockerfile
 step.
+
+---
+
+## Bug #7 — Quitting Krusader leaves a black screen
+
+### Symptom
+
+1. Open the WebUI, use Krusader normally.
+2. Quit the application — `File → Quit`, `Ctrl+Q`, or the window's `X`.
+3. The viewport goes black. Refreshing the browser tab, reconnecting, or
+   opening the WebUI from another machine all give the same empty desktop.
+
+→ The only way back into a Krusader session is restarting the container.
+
+Reported in the Unraid support thread, alongside the note that `ich777/krusader`
+behaves better here: closing the app there and reconnecting brings it back.
+
+### Why
+
+Krusader is the container's only window, and nothing supervised it:
+
+- `startwm.sh` `exec`s `openbox-session`, which runs `/config/.config/openbox/autostart`.
+- `autostart` ends in `exec dbus-launch --exit-with-session krusader-session`.
+- `krusader-session` started krusader **once** and `wait`ed for it.
+
+So when krusader exited, `krusader-session` exited, `dbus-launch` followed, and
+`autostart` was done — but **openbox itself kept running**. An openbox with no
+windows and no desktop environment is exactly a black viewport. The container
+stayed up (s6 saw no failed service), which is why nothing appeared in the log
+and why only a restart helped.
+
+Note that the upstream base image has no restart logic either: its stock
+`startwm.sh` `exec`s the session and returns. The supervision has to live in
+the application layer, i.e. here.
+
+### Fix applied
+
+`krusader-session` now runs krusader in a supervised loop:
+
+- krusader exits (any reason) → start it again, so the WebUI gets a fresh
+  session within a second and a browser refresh is enough.
+- `SIGTERM`/`SIGINT`/`SIGHUP` (i.e. `docker stop`) → quit krusader cleanly via
+  `kquitapp6` so its "save settings on exit" still runs (the Bug #1 path),
+  then exit **without** restarting.
+- Crash guard, two counters, both looking only at runs shorter than **5 s** and
+  both reset by any run longer than that:
+  - **5 non-zero exits in a row** → krusader cannot start at all (broken
+    config, no X, missing library). Few, because a failing start is never
+    something the user did.
+  - **20 instant exits in a row of any kind**, clean ones included → catches
+    krusader exiting 0 immediately every time (e.g. a second instance handing
+    over to a unique-instance owner that is already gone), which the failure
+    counter alone would never see. Deliberately high so that a user quitting a
+    few times in quick succession keeps their session.
+
+  Either one stops the loop and logs the reason instead of burning CPU.
+
+Behaviour is pinned by `tests/test-krusader-session.sh`, which runs the real
+script against a stub krusader on `PATH` (restart-after-quit, no-restart-after-
+SIGTERM, and the crash guard including its log line).
+
+### Verification
+
+```bash
+# in the WebUI: File -> Quit, then wait a second - Krusader should reappear.
+# From the host, watch the process being replaced:
+watch -n1 'docker exec krusader pgrep -a krusader'
+
+# The session's own log lines are sent to /dev/null by startwm.sh so they
+# cannot trail the READY banner; to see them, run krusader-session's output
+# into a file temporarily while debugging.
+```
 
 ---
 

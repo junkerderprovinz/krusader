@@ -52,20 +52,82 @@ else
     echo "[krusader-session] WARNING: kbuildsycoca6 not found — 'Open With...' will be empty (#22)" >&2
 fi
 
-krusader "$@" &
-KR_PID=$!
+KR_PID=""
 
 _save_and_quit() {
     echo "[krusader-session] shutdown — quitting krusader cleanly so it saves" >&2
     # Clean quit triggers krusader's aboutToQuit -> "Save settings on exit".
+    # Always try the D-Bus path FIRST and unconditionally: it addresses
+    # krusader by service name, so it still reaches the running instance when
+    # KR_PID is stale or unset — a signal can arrive in the gap between
+    # starting krusader and recording its PID, and falling back to the PID
+    # alone would then skip the settings-save entirely (Bug #1). Signalling
+    # the PID is only the last resort, and only while that PID is alive, so a
+    # stale one can never hit an unrelated process.
     kquitapp6 krusader 2>/dev/null \
         || kquitapp5 krusader 2>/dev/null \
         || qdbus6 org.kde.krusader /MainApplication quit 2>/dev/null \
         || qdbus   org.kde.krusader /MainApplication quit 2>/dev/null \
-        || kill -TERM "${KR_PID}" 2>/dev/null
-    wait "${KR_PID}" 2>/dev/null
+        || { [ -n "${KR_PID}" ] && kill -0 "${KR_PID}" 2>/dev/null && kill -TERM "${KR_PID}" 2>/dev/null; }
+    [ -n "${KR_PID}" ] && wait "${KR_PID}" 2>/dev/null
     exit 0
 }
 trap _save_and_quit TERM INT HUP
 
-wait "${KR_PID}"
+# --- Supervised restart loop -------------------------------------------------
+# Krusader is the container's only window. When the user quits it (File > Quit,
+# the window X, Ctrl+Q) openbox keeps running with an empty desktop, so the
+# WebUI goes black and the only way back is a container restart. Restarting
+# krusader here gives the user a fresh session instead, matching what people
+# expect from a browser-hosted file manager.
+#
+# Two guards against a spin, both counting only runs shorter than
+# KR_MIN_RUNTIME seconds and both reset by any run that lasts longer:
+#
+#   KR_MAX_FAILS   non-zero exits in a row — krusader cannot start at all
+#                  (broken config, no X, a missing library). Few, because this
+#                  is unambiguous: a failing start is never the user's doing.
+#   KR_MAX_QUICK   instant exits of ANY kind in a row, clean ones included.
+#                  Catches the case where krusader keeps exiting 0 at once
+#                  (e.g. a second instance handing over to a unique-instance
+#                  owner that is already gone), which the failure counter
+#                  would never see. Deliberately high, so a user who quits a
+#                  few times in quick succession keeps their session.
+#
+# NOTE: these lines go to the session's stderr, which startwm.sh sends to
+# /dev/null so nothing trails the READY banner in `docker logs`. They are for
+# the debugging case where that redirect is temporarily removed.
+KR_MIN_RUNTIME=5
+KR_MAX_FAILS=5
+KR_MAX_QUICK=20
+_fails=0
+_quick=0
+
+while : ; do
+    _started=${SECONDS}
+    krusader "$@" &
+    KR_PID=$!
+    wait "${KR_PID}"
+    _rc=$?
+    _ran=$((SECONDS - _started))
+
+    if [ "${_ran}" -lt "${KR_MIN_RUNTIME}" ]; then
+        _quick=$((_quick + 1))
+        [ "${_rc}" -ne 0 ] && _fails=$((_fails + 1))
+
+        if [ "${_fails}" -ge "${KR_MAX_FAILS}" ]; then
+            echo "[krusader-session] krusader failed ${_fails} times in a row within ${KR_MIN_RUNTIME}s each (last exit code ${_rc}) — giving up instead of looping. Fix the cause and restart the container." >&2
+            exit "${_rc}"
+        fi
+        if [ "${_quick}" -ge "${KR_MAX_QUICK}" ]; then
+            echo "[krusader-session] krusader exited within ${KR_MIN_RUNTIME}s ${_quick} times in a row (last exit code ${_rc}) — giving up instead of looping. Fix the cause and restart the container." >&2
+            exit 1
+        fi
+    else
+        _fails=0
+        _quick=0
+    fi
+
+    echo "[krusader-session] krusader exited (code ${_rc}, ran ${_ran}s) — restarting it so the WebUI does not stay black" >&2
+    sleep 1
+done

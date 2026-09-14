@@ -58,6 +58,19 @@ jobs:
 
           echo "All scripts passed shellcheck."
 
+  session-tests:
+    name: Session script behaviour
+    runs-on: ubuntu-latest
+    # The tests wait on real signals and sleeps; a hang must not sit in the
+    # queue for the 6 h job default.
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Run behaviour tests
+        # Runs the real krusader-session against a stub krusader on PATH:
+        # restart-after-quit, no restart after SIGTERM, and the crash guard.
+        run: bash tests/test-krusader-session.sh
+
   xml-validate:
     name: XML Validation
     runs-on: ubuntu-latest
