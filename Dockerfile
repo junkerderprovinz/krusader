@@ -355,6 +355,28 @@ RUN set -eux; \
     echo "krusader: branded selkies icon at $dst"
 
 # ---------------------------------------------------------------------------
+# Selkies input fix: keep a held Shift on keys that Shift does not level
+# ---------------------------------------------------------------------------
+# The dev base's XTEST injector lifts a held Shift around a press whenever the
+# target level does not want it, so a glyph cannot land on the wrong level.
+# Correct for letters, wrong for a function key: F4 carries the same keysym at
+# level 0 and 1, so Shift selects no level there and belongs to the chord. The
+# lift made Shift+F4 arrive as a bare F4, which is why Krusader ran "Edit File"
+# instead of "New Text File". Measurement and reasoning: selkies-patches/.
+#
+# Only the dev base has this code path; the pinned ubunturesolute tag ships an
+# older selkies without the level synthesis.
+#
+# The build FAILS ON PURPOSE when the patch stops applying: upstream touched the
+# code, so we re-check instead of silently shipping a patch that does nothing.
+# The script is python rather than a unified diff because this base has no
+# `patch` binary, and one apt package for a single edit is not worth it.
+COPY selkies-patches/ /selkies-patches/
+RUN set -eux; \
+    python3 /selkies-patches/fix-shift-on-unleveled-keys.py; \
+    rm -rf /selkies-patches
+
+# ---------------------------------------------------------------------------
 # MediaButton icon = the SAME icon the panel shows for a directory
 # ---------------------------------------------------------------------------
 # Krusader's status-bar "show available devices" button (MediaButton) uses the
