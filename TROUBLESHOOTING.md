@@ -20,9 +20,10 @@ in the main [`README.md`](README.md).
 4. [Bug #3 — Krusader window comes back small after a restart](#bug-3--krusader-window-comes-back-small-after-a-restart)
 5. [Bug #4 — Template `KRUSADER_LANG` is ignored by the running app](#bug-4--template-krusader_lang-is-ignored-by-the-running-app)
 6. [Bug #5 — Pasted UPPERCASE arrives lowercase on Firefox (issue #27)](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
-7. [Architectural background — why a session manager is the real fix](#architectural-background--why-a-session-manager-is-the-real-fix)
-8. [Suggested order of attack](#suggested-order-of-attack)
-9. [Useful debug commands inside the container](#useful-debug-commands-inside-the-container)
+7. [Bug #6 — Shift plus a function key arrives without the Shift](#bug-6--shift-plus-a-function-key-arrives-without-the-shift)
+8. [Architectural background — why a session manager is the real fix](#architectural-background--why-a-session-manager-is-the-real-fix)
+9. [Suggested order of attack](#suggested-order-of-attack)
+10. [Useful debug commands inside the container](#useful-debug-commands-inside-the-container)
 
 ---
 
@@ -35,6 +36,7 @@ in the main [`README.md`](README.md).
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
 | 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
+| 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6--shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | `selkies-patches/fix-shift-on-unleveled-keys.py` patches the base image at build time so a held Shift is only lifted for a key whose keymap level Shift actually changes. Upstream fixed this itself one layer up; the patch aborts the build once the base carries that fix. |
 
 ---
 
@@ -519,6 +521,60 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 docker logs krusader 2>&1 | grep -A1 "keymap:"
 docker exec krusader setxkbmap -display "${DISPLAY:-:1}" -query
 ```
+
+---
+
+## Bug #6 — Shift plus a function key arrives without the Shift
+
+### Symptom
+
+Shift+F4 opened Krusader's editor on the selected file instead of the New Text
+File dialog. On a folder it only answered "folders cannot be edited". The
+shortcut is bound correctly: the File menu shows "New Text File ... Shift+F4"
+and "Edit File F4". Shift+F2 ran the inline rename rather than the multi-rename,
+and so on for the other Shift plus function key shortcuts. Letters were never
+affected, typing capitals worked normally.
+
+### Why
+
+Measured rather than guessed. `xev` inside the container shows what reaches the
+X server:
+
+```
+KeyPress    Shift_L  state=0x0
+KeyRelease  Shift_L  state=0x1   <- lifted here
+KeyPress    F4       state=0x0   <- arrives without Shift
+KeyPress    Shift_L  state=0x0
+KeyRelease  F4       state=0x1
+KeyRelease  Shift_L  state=0x1
+```
+
+The browser client is not at fault. Wrapping `_sendKeyEvent` on the live
+`window.webrtcInput` shows it sends Shift down, F4 down, F4 up, Shift up, in
+that order and nothing else.
+
+The lift happens server-side in the key injector's `press()`. It lifts a held
+Shift around the keystroke whenever the target keymap level does not want it, so
+a glyph cannot land on the wrong level. That is correct for letters and digits.
+It is wrong for a function key: F4 carries the same keysym at level 0 and level
+1, so Shift selects no level there, it is part of a chord.
+
+Ctrl+Shift+X survives because the chord modifiers (Control, Alt, Meta, Super,
+Hyper) suppress the lift. Shift is deliberately not one of them, since on a
+letter it really does select a level.
+
+### Fix
+
+`selkies-patches/fix-shift-on-unleveled-keys.py` runs at build time and asks the
+keymap whether Shift changes anything for that particular keycode, lifting only
+when it does. Verified with `xev`: Shift+F4 now arrives as `KeyPress F4
+state=0x1`, while F4 alone and the letter path are unchanged.
+
+This is a bridge, not a fix this project owns. Upstream solved it one layer up
+by never asking for neutralization on a function key. The base image simply
+predates that. The patch script stops the build once the base carries the
+upstream fix, which is the signal to delete `selkies-patches/` and its Dockerfile
+step.
 
 ---
 
