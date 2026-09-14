@@ -188,7 +188,7 @@ docker run -d \
 | `CUSTOM_USER` | *(empty)* | WebUI login username — leave empty with `PASSWORD` for no login |
 | `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
-| `UMASK` | `022` | File-creation mask |
+| `UMASK` | `000` | File-creation mask. Keeps new files writable for other containers on the same shares |
 
 | Port | Purpose | | Volume | Purpose |
 |---|---|---|---|---|
