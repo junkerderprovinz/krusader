@@ -81,7 +81,7 @@ What's included beyond bare Krusader:
 - **Quit and come back** — closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
 - **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **33 UI languages** picked from a dropdown in the Unraid template
-- **~250 MB idle** — the virtual screen is capped at a sane 5K instead of the base image's 8K×2 default, which alone reserved 530 MB of framebuffer (see [Memory use](#memory-use))
+- **Your screen size, your call** — pick it from a dropdown of presets or type your own. It is what the container's memory use hangs on: the full size costs 530 MB of framebuffer, 1440p costs 30 MB, and everything in between is one field away (see [Screen size and memory use](#screen-size-and-memory-use))
 - **Update-safe configs** — first-run-only seeding, your customisations in `/config` survive every `docker pull`
 - **Multi-arch** — amd64 and arm64
 
@@ -188,7 +188,8 @@ docker run -d \
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
-| `MAX_RES` | `5120x2880` | Largest virtual screen the container allocates. Raise it only if your browser window is bigger than this — it costs ~4 bytes of RAM per pixel (see [Memory use](#memory-use)) |
+| `MAX_RES` | `15360x8640` | Virtual screen the container serves, from a dropdown of presets. Costs ~4 bytes of RAM per pixel (see [Screen size and memory use](#screen-size-and-memory-use)) |
+| `MAX_RES_CUSTOM` | *(empty)* | Your own `WIDTHxHEIGHT` instead of a preset, e.g. `3440x1440`. Wins over `MAX_RES` when set |
 | `CUSTOM_USER` | *(empty)* | WebUI login username — leave empty with `PASSWORD` for no login |
 | `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
@@ -199,28 +200,37 @@ docker run -d \
 | `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
 | `3000` | Selkies HTTP *(reverse-proxy only — direct access needs HTTPS)* | | `/storage` | Files to manage — default host `/mnt` |
 
-### Memory use
+### Screen size and memory use
 
-A browser desktop costs more RAM than a plain noVNC one, but most of what this
-container used to take was one avoidable allocation. Xvfb reserves its whole
-virtual framebuffer up front, at roughly **4 bytes per pixel**, no matter how
-big your browser window is — and the base image's default screen is
-`15360x8640`, which is 530 MB on its own. Since **v2.5.0** the image caps that
-at `5120x2880`, enough for any 4K or 5K display and any ultrawide.
+A browser desktop costs more RAM than a plain noVNC one, and almost all of the
+difference is one allocation. The X server reserves its whole virtual
+framebuffer up front, at roughly **4 bytes per pixel**, no matter how big your
+browser window actually is. At the full `15360x8640` that is 530 MB before
+anything else runs.
 
-Measured on a live container with one client connected at 2528x1324:
+The image ships that full size, so every resolution stays available. If you
+would rather have the RAM back, pick a smaller screen in the template. Measured
+on a live container with one client connected at 2528x1324:
 
-| `MAX_RES` | Xvfb resident | Container total |
+| Screen size | X server resident | Container total |
 |---|---:|---:|
-| `15360x8640` (old default) | 578 MB | 778 MiB |
-| `5120x2880` (v2.5.0 default) | 119 MB | 252 MiB |
+| `15360x8640` (default, full) | 578 MB | 778 MiB |
+| `5120x2880` | 119 MB | 252 MiB |
 | `3840x2160` | 93 MB | 266 MiB |
 
-Raise `MAX_RES` only if your browser window is genuinely larger than the cap,
-for example one window spanning two 4K monitors. Above the cap the picture is
-scaled to the window rather than cut off, so the container stays usable either
-way. GPU rendering (`DRI_NODE`) changes where frames are *encoded*, not this
-allocation — which is why enabling it does not move the number much.
+Two template fields set this, because Unraid renders any variable with preset
+values as a plain dropdown with no way to type into it:
+
+- **`MAX_RES`** is the dropdown, from 1080p up to the full size, each entry
+  labelled with what it costs.
+- **`MAX_RES_CUSTOM`** is a free field for anything not in the list, for
+  example `3440x1440` or `6016x3384`. When it has a value it wins. A typo is
+  ignored with a note in the container log rather than stopping the container.
+
+Your browser window can be any size up to the screen you picked. Above it the
+picture is scaled to the window rather than cut off. GPU rendering (`DRI_NODE`)
+changes where frames are *encoded*, not this allocation, which is why enabling
+it does not move the number much.
 
 > **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
 

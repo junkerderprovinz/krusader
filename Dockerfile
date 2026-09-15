@@ -364,6 +364,21 @@ RUN set -eux; \
     cp /usr/local/share/krusader-icon.png "$dst"; \
     echo "krusader: branded selkies icon at $dst"
 
+# ---------------------------------------------------------------------------
+# Assert the X service we hook the screen size onto is really the base's
+# ---------------------------------------------------------------------------
+# rootfs/ ships svc-xorg/dependencies.d/init-krusader-res so that our oneshot
+# settles MAX_RES before Xvfb reads it. If a base bump ever renames that
+# service, COPY rootfs/ / would CREATE /etc/s6-overlay/s6-rc.d/svc-xorg as a
+# service directory with a dependency and no `type` file. s6-rc-compile then
+# aborts in stage 2 and EVERY container exits at boot, while the build itself
+# stays green — the failure would only show up in users' logs. Checking for the
+# base's own `type` file here turns that into a build error instead.
+RUN set -eux; \
+    t=/etc/s6-overlay/s6-rc.d/svc-xorg/type; \
+    [ -f "$t" ] || { echo "ERROR: $t missing — the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-krusader-res at the new service"; exit 1; }; \
+    echo "krusader: screen-size oneshot ordered before $(cat "$t") service svc-xorg"
+
 # The Shift-on-function-keys bridge that lived here is gone: the base now
 # carries the upstream fix (selkies 720fad27, is_function_keysym() in the
 # neutralize derivation), which covers the whole X function block and the XF86
@@ -425,6 +440,7 @@ RUN set -eux; \
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
              /usr/local/bin/print-banner.sh \
+             /etc/s6-overlay/s6-rc.d/init-krusader-res/run \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
              /etc/s6-overlay/s6-rc.d/init-nologin/run \
              /etc/s6-overlay/s6-rc.d/svc-krusader-ready/run \
@@ -448,28 +464,26 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # UI (issue #21), because the base's German LANGUAGE env overrode the correct
 # kdeglobals we write. C.UTF-8 leaves no language in the env, so kdeglobals wins.
 #
-# MAX_RES — the VIRTUAL SCREEN SIZE Xvfb allocates, and by far the biggest
-# single memory item in this container. The base image defaults it to
-# 15360x8640 (8K x 2), and Xvfb allocates that whole framebuffer up front in
-# shared memory regardless of how large the browser window actually is:
-# 15360 x 8640 x 4 bytes = 530 MB, resident, forever. Measured on a live
-# container (Unraid, one connected client at 2528x1324):
+# NO MAX_RES DEFAULT HERE, ON PURPOSE. The screen size is the container's
+# biggest single memory item: Xvfb allocates the whole framebuffer up front in
+# shared memory, about 4 bytes per pixel, regardless of the browser window.
+# Measured on a live container (Unraid, one client at 2528x1324):
 #
-#   MAX_RES (default) 15360x8640  ->  Xvfb RSS 578 MB, container 778 MiB
-#   MAX_RES           5120x2880   ->  Xvfb RSS 119 MB, container 252 MiB
-#   MAX_RES           3840x2160   ->  Xvfb RSS  93 MB, container 266 MiB
+#   15360x8640 (base default)  ->  Xvfb RSS 578 MB, container 778 MiB
+#   5120x2880                  ->  Xvfb RSS 119 MB, container 252 MiB
+#   3840x2160                  ->  Xvfb RSS  93 MB, container 266 MiB
 #
-# So capping it saves ~520 MB with no effect on image quality below the cap —
-# and that huge default is what made this image look heavy next to the noVNC
-# ones (reported in the Unraid support thread). 5120x2880 covers every 4K and
-# 5K display plus every ultrawide, and costs 26 MB more than a 4K cap. Users
-# with a browser window wider/taller than this (e.g. one window spanning two
-# 4K monitors) can raise it in the Unraid template; the streamed image is
-# scaled to fit the window above the cap, so it stays usable either way.
+# Tempting as it is to bake a small default in, the full resolution range has
+# to stay AVAILABLE, so the choice belongs to the user rather than to this
+# line: the image leaves the base default alone and the Unraid template offers
+# the size as a preset dropdown (MAX_RES) plus a free field (MAX_RES_CUSTOM)
+# whose value wins. init-krusader-res settles the two before svc-xorg starts;
+# krusader-resolution.sh holds the rules and tests/test-krusader-resolution.sh
+# pins them. Anyone who wants the small footprint picks a preset; anyone who
+# wants a 16K desktop can have one.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     KEYBOARD_LAYOUT=us \
-    MAX_RES=5120x2880 \
     LANG=C.UTF-8 \
     QT_QPA_PLATFORMTHEME=qt5ct \
     QT_STYLE_OVERRIDE=Breeze

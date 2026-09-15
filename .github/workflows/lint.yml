@@ -67,9 +67,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run behaviour tests
-        # Runs the real krusader-session against a stub krusader on PATH:
-        # restart-after-quit, no restart after SIGTERM, and the crash guard.
-        run: bash tests/test-krusader-session.sh
+        # krusader-session: restart-after-quit, no restart after SIGTERM, the
+        # quit-before-signal order and both spin guards, all against a stub
+        # krusader on PATH. krusader-resolution: which screen size wins and
+        # what happens to a malformed one.
+        run: |
+          bash tests/test-krusader-session.sh
+          bash tests/test-krusader-resolution.sh
 
   xml-validate:
     name: XML Validation
