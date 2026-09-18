@@ -228,10 +228,12 @@ values as a plain dropdown with no way to type into it:
   example `3440x1440` or `6016x3384`. When it has a value it wins. A typo is
   ignored with a note in the container log rather than stopping the container.
 
-Your browser window can be any size up to the screen you picked. Above it the
-picture is scaled to the window rather than cut off. GPU rendering (`DRI_NODE`)
-changes where frames are *encoded*, not this allocation, which is why enabling
-it does not move the number much.
+Pick a size at least as big as the largest browser window you open the WebUI
+in, counted in physical pixels: a 1600x1000 window on a laptop set to 200 %
+needs 3200x2000. A bigger window does not get a bigger desktop: the desktop
+keeps its last size in the top-left corner and the rest of the window stays
+black. GPU rendering (`DRI_NODE`) changes where frames are *encoded*, not this
+allocation, which is why enabling it does not move the number much.
 
 > **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
 
