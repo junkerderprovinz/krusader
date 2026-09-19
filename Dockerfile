@@ -108,22 +108,26 @@ LABEL org.opencontainers.image.source="https://github.com/junkerderprovinz/krusa
 LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
-# TITLE feeds the PWA manifest; SELKIES_UI_TITLE is the visible tab/sidebar
-# title of the Selkies web client — both must be set on this base.
+# TITLE feeds the PWA manifest and SELKIES_UI_TITLE the tab and sidebar title
+# of the Selkies client; this base needs both.
 #
-# SELKIES_ENABLE_BASIC_AUTH=false: Selkies' server enables basic auth by DEFAULT
-# with the well-known default credentials (ubuntu / mypasswd), which would pop a
-# login on a container that never set a password — worse, an insecure default
-# one. The KasmVNC base required no login unless CUSTOM_USER/PASSWORD were set,
-# so we keep that: no login by default. The base's nginx would still turn a
-# merely-SET (even empty) PASSWORD into a login, so the init-nologin oneshot
-# drops an empty PASSWORD/CUSTOM_USER before nginx starts. Selkies binds to
-# localhost only, so when a user DOES set a real CUSTOM_USER/PASSWORD the base's
-# nginx enforces HTTP-basic-auth on the proxy (the single reachable entry
-# point), exactly as before.
+# Selkies turns basic auth on by default with the well-known ubuntu/mypasswd
+# credentials, so SELKIES_ENABLE_BASIC_AUTH=false keeps a container without a
+# password free of a login. The base's nginx would still turn a set but empty
+# PASSWORD into one, which is why init-nologin drops an empty PASSWORD and
+# CUSTOM_USER before nginx starts. Selkies listens on localhost only, so a real
+# CUSTOM_USER/PASSWORD is enforced by nginx, the one reachable entry point.
 ENV TITLE="Krusader" \
     SELKIES_UI_TITLE="Krusader" \
     SELKIES_ENABLE_BASIC_AUTH="false"
+
+# Qt draws a window's contents at the DPI Selkies hands a HiDPI browser but
+# keeps the window at its old size, so a laptop streaming in physical pixels
+# gets clipped dialogs under tiny window frames. Streaming every browser at its
+# CSS size with the DPI fixed at 96 keeps one consistent size on any display.
+# HiDPI can still be switched on per browser in the Selkies sidebar.
+ENV SELKIES_USE_CSS_SCALING="true" \
+    SELKIES_SCALING_DPI="96"
 
 # ---------------------------------------------------------------------------
 # Pakete installieren

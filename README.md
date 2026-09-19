@@ -229,11 +229,22 @@ values as a plain dropdown with no way to type into it:
   ignored with a note in the container log rather than stopping the container.
 
 Pick a size at least as big as the largest browser window you open the WebUI
-in, counted in physical pixels: a 1600x1000 window on a laptop set to 200 %
-needs 3200x2000. A bigger window does not get a bigger desktop: the desktop
-keeps its last size in the top-left corner and the rest of the window stays
-black. GPU rendering (`DRI_NODE`) changes where frames are *encoded*, not this
-allocation, which is why enabling it does not move the number much.
+in. A bigger window does not get a bigger desktop: the desktop keeps its last
+size in the top-left corner and the rest of the window stays black. This image
+streams at the size your browser reports, so a 1600x1000 window on a laptop set
+to 200 % counts as 1600x1000. With HiDPI switched on in the Selkies sidebar the
+same window counts in physical pixels, 3200x2000. GPU rendering (`DRI_NODE`)
+changes where frames are *encoded*, not this allocation, which is why enabling
+it does not move the number much.
+
+**Display scaling** follows the browser without any setting. Every browser is
+streamed at the size it reports, with the desktop at 96 DPI, so Krusader looks
+the same on a 100 % desktop and on a laptop set to 200 %. On the laptop the
+picture is a little softer, because the browser stretches it. The **HiDPI**
+switch in the Selkies sidebar is remembered per browser and wins over this
+default. With it on, a high-resolution display gets its physical pixels and
+Krusader is drawn at half size, so if Krusader looks tiny on a laptop, switch
+HiDPI off there.
 
 > **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
 
