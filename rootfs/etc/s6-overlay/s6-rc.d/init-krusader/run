@@ -1,44 +1,30 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# -----------------------------------------------------------------------------
-# init-krusader  –  Krusader Theme & Config Bootstrap
-# -----------------------------------------------------------------------------
-# Laeuft als s6-Init-Skript NACH init-selkies-config (wo /defaults/autostart
-# in /config/.config/openbox/autostart kopiert wird). ACHTUNG Selkies-Base:
-# init-selkies-config RESTAURIERT /etc/xdg/openbox/rc.xml bei JEDEM Start aus
-# einer .bak und wendet dann NO_DECOR/NO_FULL-seds an - unser Komplett-Override
-# in 2d gewinnt trotzdem (wir laufen per Dependency danach), aber die
-# Base-Features NO_DECOR/NO_FULL wirken auf UNSERE rc.xml nicht.
+# Theme and config bootstrap for Krusader. Runs after init-selkies-config, which
+# copies /defaults/autostart into /config/.config/openbox/autostart and restores
+# /etc/xdg/openbox/rc.xml from a .bak on every start before applying its
+# NO_DECOR/NO_FULL seds. The full rc.xml override in 2d still wins because this
+# runs afterwards, but NO_DECOR/NO_FULL have no effect on it.
 #
-# WARUM SO KOMPLEX:
-# Krusader ist eine KDE-Frameworks-App. KDE-Apps benutzen die "KColorScheme"-
-# Engine, die nur funktioniert, wenn:
-#   (a) das Qt-Plattform-Theme-Plugin "kde" geladen wird
-#       (geliefert vom Paket plasma-integration, libkdeplatformtheme.so)
-#   (b) die Color-Scheme-Datei im offiziellen KDE-Format unter dem Standard-
-#       Suchpfad liegt (~/.local/share/color-schemes/ oder
-#       /usr/share/color-schemes/)
-#   (c) kdeglobals den ColorScheme-Namen referenziert
-#   (d) XDG_CURRENT_DESKTOP=KDE gesetzt ist, sonst greift das KDE-Plugin nicht
-#
-# qt5ct funktioniert NICHT mit KDE-.colors-Files — qt5ct hat ein anderes
-# Format (single-line active_colors=#aarrggbb,...) und liefert bei einer
-# KDE-Datei eine leere weisse Default-Palette zurueck. Genau das hat zur
-# hellen UI mit Linien-Optik gefuehrt.
-# -----------------------------------------------------------------------------
+# KDE apps colour themselves through KColorScheme, which works only when
+#   (a) the "kde" Qt platform theme plugin is loaded (libkdeplatformtheme.so
+#       from plasma-integration),
+#   (b) the colour scheme file is in KDE format on the standard search path
+#       (~/.local/share/color-schemes/ or /usr/share/color-schemes/),
+#   (c) kdeglobals names the ColorScheme, and
+#   (d) XDG_CURRENT_DESKTOP=KDE is set, otherwise the plugin stays inactive.
+# qt5ct cannot read KDE .colors files (its format is a single
+# active_colors=#aarrggbb,... line) and returns a blank white palette for them.
 set -e
 
 log() { echo "[init-krusader] $*"; }
 
-# -- Theme selection (KRUSADER_THEME = dark | light) --------------------------
-# Everything that differs between the two themes is derived ONCE here so the
-# whole script stays consistent. dark = our Dark Mode (Carbon greyscale, shipped
-# as DarkMode.colors); light = KDE Breeze Light (shipped by the 'breeze' /
-# 'plasma-workspace' packages at /usr/share/color-schemes/BreezeLight.colors).
-# This MUST drive the palette merge below — merging the dark palette regardless
-# of KRUSADER_THEME is what previously made light mode stay dark.
-# Normalize: accept light|Light|breeze|BreezeLight etc. (matches the READY
-# banner's accepted spellings, so init and banner agree on the same theme).
+# Everything that differs between the two themes is derived here, so the rest
+# of the script stays consistent. dark is our Dark Mode (Carbon greyscale,
+# DarkMode.colors); light is KDE Breeze Light, shipped by breeze and
+# plasma-workspace at /usr/share/color-schemes/BreezeLight.colors. The palette
+# merge below has to follow this choice, or light mode stays dark. The accepted
+# spellings match the READY banner's, so init and banner agree on the theme.
 THEME_LC="$(echo "${KRUSADER_THEME:-dark}" | tr '[:upper:]' '[:lower:]')"
 case "${THEME_LC}" in
     light|breeze|breezelight)
@@ -55,46 +41,36 @@ case "${THEME_LC}" in
         ;;
 esac
 
-# The house ASCII brand banner is printed later, right above the "KRUSADER IS
-# READY" box (see svc-krusader-ready/run), so brand + ready status sit together
-# as the log's final block instead of scrolling off the top during startup.
-
-# -- 1) ENV-Propagation via s6 ------------------------------------------------
-# /run/s6/container_environment/<NAME>=<VALUE> ist der offizielle Weg, ENV in
-# alle s6-Services zu injizieren. Jedes File = eine Variable.
+# 1) Environment for every s6 service: each file in
+# /run/s6/container_environment is one variable.
 mkdir -p /run/s6/container_environment
 
 set_env() {
     printf "%s" "$2" > "/run/s6/container_environment/$1"
 }
 
-# *** KERN-FIX: KDE-Plattform-Theme-Plugin aktivieren ***
-# QT_QPA_PLATFORMTHEME=kde + XDG_CURRENT_DESKTOP=KDE laed das Plugin
-# libkdeplatformtheme.so aus plasma-integration. Das Plugin liest dann
-# kdeglobals direkt UND kennt das KDE-.colors-Format.
+# QT_QPA_PLATFORMTHEME=kde with XDG_CURRENT_DESKTOP=KDE loads the plugin from
+# plasma-integration, which reads kdeglobals and knows the KDE .colors format.
 set_env QT_QPA_PLATFORMTHEME      "kde"
 set_env XDG_CURRENT_DESKTOP       "KDE"
 set_env XDG_SESSION_DESKTOP       "KDE"
 set_env DESKTOP_SESSION           "plasma"
 
-# QT_STYLE_OVERRIDE=Breeze sorgt dafuer, dass auch Qt-Apps OHNE KDE-Plugin
-# (hypothetisch) den Breeze-Style verwenden.
+# Breeze also for Qt apps that do not load the KDE plugin.
 set_env QT_STYLE_OVERRIDE         "Breeze"
 set_env QT_AUTO_SCREEN_SCALE_FACTOR "1"
 
-# Pfad zum Color-Scheme — KDE-Plugin findet es ueber kdeglobals,
-# Variable als zusaetzlicher Hint.
+# The plugin finds the scheme through kdeglobals; this is only a hint.
 set_env KDE_COLOR_SCHEME_PATH     "/usr/share/color-schemes/${THEME_SCHEME}.colors"
 
-# GTK + Cursor + Icons (fuer GTK-Dialoge, die Krusader z.B. fuer Datei-
-# Operationen oeffnet).
+# For the GTK dialogs Krusader opens, during file operations for example.
 set_env GTK_THEME                 "${THEME_GTK}"
 set_env XCURSOR_THEME             "breeze_cursors"
 set_env ICON_THEME                "${THEME_ICONS}"
 
 log "ENV in /run/s6/container_environment gesetzt (KDE-Plugin-Mode)"
 
-# -- 2) Theme-/Config-Files (immer frisch) ------------------------------------
+# 2) Theme and config files
 DEFAULTS="/defaults"
 CONFIG_HOME="/config/.config"
 LOCAL_SHARE="/config/.local/share"
@@ -112,30 +88,25 @@ mkdir -p "${CONFIG_HOME}/qt5ct" \
 
 LOCK="/config/.krusader-firstrun.done"
 
-# 2a) User-geschuetzt: nur First-Run
+# 2a) Files the user may edit are seeded on the first run only.
 if [[ ! -f "${LOCK}" ]]; then
-    log "First-run – seeding user-editable defaults"
+    log "First run: seeding user-editable defaults"
     [[ ! -e "${CONFIG_HOME}/krusaderrc"      ]] && cp -a "${DEFAULTS}/krusaderrc"      "${CONFIG_HOME}/krusaderrc"
     [[ ! -e "${CONFIG_HOME}/katerc"          ]] && cp -a "${DEFAULTS}/katerc"          "${CONFIG_HOME}/katerc"
     [[ ! -e "${LOCAL_SHARE}/krusader/useractions.xml" ]] && cp -a "${DEFAULTS}/useractions.xml.template" "${LOCAL_SHARE}/krusader/useractions.xml"
     touch "${LOCK}"
 fi
 
-# 2a-bis) Idempotenter Key-Injector fuer krusaderrc.
-# Krusader generiert beim allerersten Programmstart selbst eine krusaderrc,
-# bevor unser First-Run-cp greifen kann (Race auf den ersten WebUI-Open).
-# Damit fehlen kritische Keys (Statusleiste/Fenstergroesse persistieren),
-# auch nach Image-Update. Wir injizieren sie hier idempotent — bestehende
-# User-Werte werden NICHT ueberschrieben.
+# Krusader can write its own krusaderrc on its very first start, before the
+# first-run copy lands, and that file lacks the keys below. ensure_ini_key adds
+# a missing key and leaves an existing value alone.
 ensure_ini_key() {
     local file="$1" section="$2" key="$3" value="$4"
     [[ -f "$file" ]] || return 0
-    # Section vorhanden?
     if ! grep -qE "^\[${section}\]" "$file"; then
         printf '\n[%s]\n%s=%s\n' "$section" "$key" "$value" >> "$file"
         return 0
     fi
-    # Key in Section vorhanden?
     if awk -v s="[${section}]" -v k="$key" '
         $0==s {in_s=1; next}
         /^\[/ && in_s {in_s=0}
@@ -144,7 +115,6 @@ ensure_ini_key() {
     ' "$file"; then
         return 0
     fi
-    # Key fehlt -> direkt nach Section-Header einfuegen
     sed -i "/^\[${section}\]/a ${key}=${value}" "$file"
 }
 
@@ -155,42 +125,31 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show statusbar"      "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Cmd Line"       "true"
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Startup" "Show Function Keys"  "true"
-    # openbox ships no system tray (no StatusNotifierHost). Krusader's "Show and
-    # close to tray" would withdraw the window into a tray that does not exist, and
-    # it could not be recovered (issue #26) - keep it off.
+    # openbox has no system tray, so "Show and close to tray" would hide the
+    # window with no way to get it back (#26).
     ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Look&Feel" "Minimize To Tray"   "false"
     log "krusaderrc: Startup-Keys idempotent gesichert"
-    # Hide statusbar + command line by default. IMPORTANT: krusader only
-    # RESPECTS the Show statusbar / Show Cmd Line settings when "User Save
-    # Settings" is ON (with it OFF it ignores them and shows the bars). So keep
-    # it ON and FORCE the two bars off here. The container never gives krusader
-    # a clean exit, so save-on-exit can't re-enable them; these forced values
-    # win on every start, so the bars stay hidden.
+    # Status bar and command line start hidden. Krusader honours Show statusbar
+    # and Show Cmd Line only while User Save Settings is on, so that stays on
+    # and the two bars are forced off on every start.
     sed -i 's|^User Save Settings=.*|User Save Settings=true|'  "${CONFIG_HOME}/krusaderrc"
     sed -i 's|^Show statusbar=.*|Show statusbar=false|'         "${CONFIG_HOME}/krusaderrc"
     sed -i 's|^Show Cmd Line=.*|Show Cmd Line=false|'           "${CONFIG_HOME}/krusaderrc"
-    # Force "Show and close to tray" off on every start (issue #26): even if a user
-    # turned it on, the window must stay a normal, Alt+Tab-recoverable window since
-    # there is no system tray under openbox.
+    # Tray mode is forced off even when a user turned it on (#26).
     sed -i 's|^Minimize To Tray=.*|Minimize To Tray=false|'     "${CONFIG_HOME}/krusaderrc"
     log "krusaderrc: statusbar + command line hidden, tray disabled (issue #26)"
 fi
 
-# 2b) Theme-Infrastruktur: jeden Start frisch
+# 2b) Theme files are redeployed on every start.
 log "Theme-Infrastruktur (re)deploy"
-# tr -d '\r': ein lokal (Windows-Checkout) gebautes Image koennte CRLF in der
-# Default-Datei tragen — KConfig parst "[Icons]\r" dann als fremde Gruppe und
-# der Icon-Theme-Switch bricht still. CI-Builds sind LF; das hier macht es
-# unabhaengig von der Build-Umgebung deterministisch.
+# An image built from a Windows checkout can carry CRLF here; KConfig then reads
+# "[Icons]\r" as a different group and the icon theme switch fails silently.
 tr -d '\r' < "${DEFAULTS}/kdeglobals" > "${CONFIG_HOME}/kdeglobals"
 tr -d '\r' < "${DEFAULTS}/kdeglobals" > "${KDEDEFAULTS}/kdeglobals"
 
-# Merge the colour sections from the SELECTED scheme INTO kdeglobals. KColorScheme
-# (plasma-integration + the Breeze widget style) builds the Qt palette and the
-# View focus/hover decoration — the file-panel frame — from kdeglobals' [Colors:*]
-# groups; a separate .colors file alone is NOT read for the palette. This MUST be
-# theme-aware: merging the dark palette regardless of KRUSADER_THEME is exactly
-# what made light mode stay dark.
+# KColorScheme builds the Qt palette and the view focus and hover decoration
+# (the file panel frame) from kdeglobals' [Colors:*] groups; a separate .colors
+# file is not read for the palette, so the selected scheme is merged in.
 if [[ -f "${THEME_COLORS}" ]]; then
     _colors="$(awk '/^\[General\]/{exit} /^\[Color/{p=1} p{print}' "${THEME_COLORS}")"
     for _kg in "${CONFIG_HOME}/kdeglobals" "${KDEDEFAULTS}/kdeglobals"; do
@@ -198,26 +157,23 @@ if [[ -f "${THEME_COLORS}" ]]; then
     done
     log "kdeglobals: [Colors:*] merged from ${THEME_COLORS##*/} (palette source)"
 else
-    log "WARNING: palette source ${THEME_COLORS} not found — colours may be wrong"
+    log "WARNING: palette source ${THEME_COLORS} not found, colours may be wrong"
 fi
 
-# Color-Scheme an BEIDE Pfade ausrollen — User UND System.
-# KDE-Plugin sucht in dieser Reihenfolge:
-#   1. ~/.local/share/color-schemes/<Name>.colors
-#   2. /usr/share/color-schemes/<Name>.colors
+# The KDE plugin looks in ~/.local/share/color-schemes/ first, then in
+# /usr/share/color-schemes/; both get the scheme.
 if [[ -f "${DEFAULTS}/color-schemes/DarkMode.colors" ]]; then
     cp -af "${DEFAULTS}/color-schemes/DarkMode.colors" "${USER_COLOR_SCHEMES}/DarkMode.colors"
     cp -af "${DEFAULTS}/color-schemes/DarkMode.colors" "${SYSTEM_COLOR_SCHEMES}/DarkMode.colors" 2>/dev/null || true
 fi
 
-# qt5ct/qt6ct nur als Fallback — wir setzen QT_QPA_PLATFORMTHEME=kde, aber
-# falls das Plugin mal nicht laedt (z.B. fehlendes plasma-integration in
-# einer abgespeckten Variante), greift qt5ct mit eigenem Format.
+# qt5ct/qt6ct only matter when the KDE plugin fails to load, in a build without
+# plasma-integration for example.
 if [[ -f "${DEFAULTS}/qt5ct.conf" ]]; then
     cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt5ct/qt5ct.conf"
     cp -af "${DEFAULTS}/qt5ct.conf" "${CONFIG_HOME}/qt6ct/qt6ct.conf"
 fi
-# qt5ct-eigenes Color-Scheme-Format (anders als KDE!)
+# qt5ct has its own colour scheme format.
 mkdir -p "${CONFIG_HOME}/qt5ct/colors" "${CONFIG_HOME}/qt6ct/colors"
 if [[ -f "${DEFAULTS}/qt5ct-colors/DarkMode.conf" ]]; then
     cp -af "${DEFAULTS}/qt5ct-colors/DarkMode.conf" "${CONFIG_HOME}/qt5ct/colors/DarkMode.conf"
@@ -233,31 +189,28 @@ if [[ -f "${DEFAULTS}/syntax-themes/DarkMode.theme" ]]; then
     log "Kate Dark Mode syntax theme deployed"
 fi
 
-# 2c) openbox/autostart IMMER ueberschreiben
+# 2c) The openbox autostart is replaced on every start.
 cp -af "${DEFAULTS}/autostart" "${CONFIG_HOME}/openbox/autostart"
 chmod 0755 "${CONFIG_HOME}/openbox/autostart"
 
-# 2d) openbox rc.xml ueberschreiben — entfernt den LinuxServer-baseimage-Patch
-# der jedes Fenster (auch Dialoge wie "Datei loeschen?") maximiert oeffnet.
-# Wir wollen, dass Dialoge in ihrer natuerlichen / zuletzt verwendeten Groesse
-# erscheinen, nicht bildschirmfuellend.
+# 2d) The base patches openbox's rc.xml to open every window maximised, dialogs
+# such as "Delete file?" included. Dialogs should keep their natural or last
+# used size.
 if [[ -f "${DEFAULTS}/openbox-rc.xml" ]]; then
     install -m 0644 "${DEFAULTS}/openbox-rc.xml" /etc/xdg/openbox/rc.xml
     log "openbox rc.xml overridden (no force-maximize for dialogs)"
 fi
 
-# -- 3) Sprache & Theme-Switch (env-driven, idempotent) -----------------------
+# 3) Language and theme
 /usr/local/bin/krusader-language.sh "${KRUSADER_LANG:-de}" || log "language hook failed"
 
-# Propagate locale into s6 container environment so every process
-# (krusader, kate, KIO workers) inherits the correct LANG/LC_ALL.
-# krusader-language.sh writes the values to a profile snippet; we read
-# them back here and push them via set_env so they override the static
-# Docker-ENV defaults (e.g. LANG=de_DE.UTF-8).
+# krusader-language.sh writes LANG/LANGUAGE/LC_ALL to a profile snippet. Reading
+# them back into the s6 environment lets every process (krusader, kate, KIO
+# workers) inherit them over the image's ENV defaults.
 if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
-    # Die Snippet-Werte sind QUOTED (dash-Schutz beim Sourcen) — beim Readback
-    # muessen die Literal-Quotes runter, sonst landet LANG='"de_DE.UTF-8"' im
-    # s6-Env und jeder Service warnt 'cannot change locale ("de_DE.UTF-8")'.
+    # The snippet quotes its values for dash. Strip the quotes, or
+    # LANG='"de_DE.UTF-8"' lands in the s6 env and every service warns
+    # 'cannot change locale ("de_DE.UTF-8")'.
     _unq() { local v="$1"; v="${v#\"}"; v="${v%\"}"; printf '%s' "$v"; }
     _L=$(_unq "$(grep  '^export LANG='     /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)")
     _A=$(_unq "$(grep  '^export LC_ALL='   /config/.profile.d/krusader-lang.sh | head -1 | cut -d= -f2-)")
@@ -268,20 +221,19 @@ if [[ -f /config/.profile.d/krusader-lang.sh ]]; then
     log "Locale -> s6 env: LANG=${_L:-unchanged}"
 fi
 
-# Apply the selected scheme name / look-and-feel / Kate theme. The matching
+# Apply the selected scheme name, look-and-feel and Kate theme. The matching
 # [Colors:*] palette was already merged into kdeglobals above.
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${CONFIG_HOME}/kdeglobals" || true
-# Dieselben seds auch auf die kdedefaults-Kopie — sonst traegt die Defaults-
-# Ebene unter light eine widerspruechliche Identitaet (helle Palette + dunkler
-# Scheme-Name).
+# The kdedefaults copy too, or under light it pairs a light palette with the
+# dark scheme name.
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${KDEDEFAULTS}/kdeglobals" || true
 sed -i "s/^Name=.*/Name=${THEME_NAME}/"                            "${KDEDEFAULTS}/kdeglobals" || true
 sed -i "s/^LookAndFeelPackage=.*/LookAndFeelPackage=${THEME_LNF}/"  "${KDEDEFAULTS}/kdeglobals" || true
-# [Icons] Theme MUST follow the selected theme too — the shipped kdeglobals
-# hardcodes breeze-dark, so without this sed EVERY icon (file list AND status
-# bar) kept its dark-theme tint under KRUSADER_THEME=light and never "switched".
+# The shipped kdeglobals sets the breeze-dark icon theme; without this every
+# icon, in the file list and the status bar, keeps its dark tint under
+# KRUSADER_THEME=light.
 sed -i "s/^Theme=.*/Theme=${THEME_ICONS}/"                          "${CONFIG_HOME}/kdeglobals" || true
 sed -i "s/^Theme=.*/Theme=${THEME_ICONS}/"                          "${KDEDEFAULTS}/kdeglobals" || true
 sed -i "s/^ColorScheme=.*/ColorScheme=${THEME_SCHEME}/"             "${CONFIG_HOME}/krusaderrc"  || true
@@ -290,21 +242,19 @@ if [[ -f "${CONFIG_HOME}/katerc" ]]; then
     sed -i "s/^Schema=.*/Schema=${THEME_KATE}/"                    "${CONFIG_HOME}/katerc" || true
 fi
 
-# 2b-ter) MediaButton-Icon folgt der KONFIGURIERTEN Statusleisten-Farbe (#22).
-# Der Geraete-Button sitzt auf Krusaders Statusleiste, deren Farben der User
-# frei einstellt (Konfigurator -> Farben, krusaderrc [Colors] "Statusbar
-# Foreground/Background Active"). KIconLoader toent currentColor-Icons aber aus
-# der GLOBALEN Palette, die von dieser lokalen Balkenfarbe nichts weiss — auf
-# einem hell konfigurierten Balken blieb das Icon hell. Darum brennen wir hier
-# bei jedem Start die konfigurierte Statusbar-VORDERGRUNDFARBE (die Farbe, in
-# der der Balken-Text ohnehin steht — also garantiert lesbar) fest ins Icon,
-# aus den unberuehrten Build-Kopien. Farbwechsel im Konfigurator greifen beim
-# naechsten Container-Start. Fixierter Fill + umbenannte Stylesheet-Id, damit
-# KIconLoader nicht wieder aus der Palette uebertoent.
-# "R,G,B" (dezimal) -> "#rrggbb"; leere Ausgabe bei allem Ungueltigen
-# (fehlende/zu viele Komponenten, Nicht-Ziffern, >255, fuehrende Nullen werden
-# als Dezimal gelesen). Haertet gegen handeditierte krusaderrc-Werte, die sonst
-# printf zum Abbruch braechten (set -e) oder kaputte Hexwerte einbrennen wuerden.
+# The MediaButton icon follows the configured status bar colour (#22). The
+# button sits on Krusader's status bar, whose colours the user sets in the
+# Konfigurator (krusaderrc [Colors] "Statusbar Foreground/Background Active"),
+# but KIconLoader tints currentColor icons from the global palette, which knows
+# nothing about that bar, so on a light bar the icon stayed light. The
+# configured foreground is the colour of the bar's text and therefore readable;
+# it is baked into the icon from the pristine build copies on every start, so a
+# colour change applies on the next container start.
+#
+# rgb_to_hex turns a decimal "R,G,B" into "#rrggbb" and prints nothing for
+# anything else (wrong component count, non-digits, values over 255; leading
+# zeros read as decimal). A hand-edited krusaderrc would otherwise stop printf
+# under set -e or bake a broken colour.
 rgb_to_hex() {
     case ",$1," in *[!0-9,]*|*,,*) echo ""; return ;; esac
     case "$1" in *,*,*,*) echo ""; return ;; *,*,*) : ;; *) echo ""; return ;; esac
@@ -315,8 +265,8 @@ rgb_to_hex() {
     printf '#%02x%02x%02x' "${_r}" "${_g}" "${_b}"
 }
 
-# Eingebrannter Fill + neutralisierte Stylesheet-Id, damit KIconLoader nicht
-# aus der Palette uebertoent; "currentcolor" (lowercase, gueltiges CSS) mit.
+# The fixed fill and the renamed stylesheet id keep KIconLoader from tinting over
+# it from the palette; lowercase "currentcolor" is valid CSS too.
 bake_svg() { # $1=src $2=dst $3=hex
     sed -e "s/currentColor/$3/g" -e "s/currentcolor/$3/g" \
         -e 's/id="current-color-scheme"/id="frozen-color-scheme"/' \
@@ -337,8 +287,8 @@ if [[ -d "${MB_STORE}" ]]; then
         if [[ -n "${FG_HEX}" ]]; then
             bake_svg "${mb_src}" "${mb_dst}" "${FG_HEX}"
         else
-            # keine (gueltige) konfigurierte Farbe -> Stock restaurieren, die
-            # Palette toent dann themengerecht (kein hartkodierter Fallback-Hex)
+            # no valid colour configured: restore the stock icon and let the
+            # palette tint it for the theme
             cp -f "${mb_src}" "${mb_dst}"
         fi
         mb_n=$((mb_n + 1))
@@ -346,26 +296,22 @@ if [[ -d "${MB_STORE}" ]]; then
     if [[ -n "${FG_HEX}" ]]; then
         log "MediaButton-Icon auf Statusbar-Foreground ${FG_HEX} getoent (${mb_n} Dateien)"
     else
-        log "MediaButton-Icon: keine Statusbar-Farbe gesetzt — Stock-Icon restauriert (${mb_n})"
+        log "MediaButton-Icon: keine Statusbar-Farbe gesetzt, Stock-Icon restauriert (${mb_n})"
     fi
 fi
 
-# 2b-quater) DATEILISTEN-Ordner-Icons folgen der konfigurierten Listen-Farbe.
-# Gleicher Mechanismus wie der MediaButton, nur mit der Panel-Farbe aus dem
-# Konfigurator (krusaderrc [Colors]): bevorzugt "Directory Foreground"
-# (Krusaders eigene Ordner-Textfarbe), sonst "Foreground" (Standard-Text).
-# Ist eine gesetzt, wird sie in places/<sz>/folder.svg eingebrannt (die
-# inode-directory-Symlinks der Liste zeigen genau dorthin). Ohne eigene Farbe
-# werden die unberuehrten Build-Kopien restauriert (Stock: Palette/Theme).
-# Section-scoped: Keys nur aus [Colors] lesen; leere Werte (Key ohne Wert,
-# schreibt der Konfigurator fuer "Default") zaehlen als nicht gesetzt.
+# Folder icons in the file list follow the configured panel colour the same
+# way: "Directory Foreground" from krusaderrc [Colors], else "Foreground", is
+# baked into places/<sz>/folder.svg, where the list's inode-directory symlinks
+# point. Without a colour the pristine copies are restored. Keys are read from
+# [Colors] only, and an empty value (what the Konfigurator writes for
+# "Default") counts as unset.
 PF_STORE="/usr/local/share/krusader-panelfolder"
 if [[ -d "${PF_STORE}" ]]; then
-    # Gepatchter Source-Build (Per-Row-Icon-Tint, /usr/share/krusader/.icontint):
-    # Krusader rendert die Listen-Icons dann selbst live in der jeweiligen
-    # Zeilen-Textfarbe (normal/aktuell/markiert). Die statische Bake wuerde das
-    # SABOTIEREN (frozen-color-scheme = KIconLoader kann nicht mehr faerben) —
-    # also immer Stock restaurieren und den Bake-Teil ueberspringen.
+    # The patched source build tints the list icons itself, in each row's text
+    # colour (normal, current, selected). A baked icon would defeat that, since
+    # KIconLoader cannot recolour a frozen scheme, so it always gets the stock
+    # icons.
     if [[ -f /usr/share/krusader/.icontint ]]; then
         pf_n=0
         for pf_src in "${PF_STORE}"/*/*.svg; do
@@ -377,11 +323,10 @@ if [[ -d "${PF_STORE}" ]]; then
             cp -f "${pf_src}" "${pf_dst}"
             pf_n=$((pf_n + 1))
         done
-        log "Per-Row-Icon-Tint aktiv (gepatchter Krusader) — Stock-Ordner-Icons restauriert (${pf_n}), Bake uebersprungen"
+        log "Per-Row-Icon-Tint aktiv (gepatchter Krusader), Stock-Ordner-Icons restauriert (${pf_n}), Bake uebersprungen"
     else
-    # "KDE Default=true" (Konfigurator-Haken "KDE-Standardfarben") deaktiviert
-    # ALLE Farb-Keys darunter — der Konfigurator loescht sie aber nicht. Stale
-    # Werte duerfen dann nicht eingebrannt werden: Flag=true == keine Farbe.
+    # "KDE Default=true" (the Konfigurator's KDE default colours box) disables
+    # every colour key below it without deleting them, so it means no colour.
     PF_KDEDEF="$(sed -n '/^\[Colors\]/,/^\[/{s/^KDE Default=//p}' "${CONFIG_HOME}/krusaderrc" 2>/dev/null | head -1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
     PF_RGB=""
     if [[ "${PF_KDEDEF}" != "true" ]]; then
@@ -408,17 +353,15 @@ if [[ -d "${PF_STORE}" ]]; then
     if [[ -n "${PF_HEX}" ]]; then
         log "Dateilisten-Ordner-Icons auf Panel-Foreground ${PF_HEX} getoent (${pf_n} Dateien)"
     else
-        log "Dateilisten-Ordner-Icons: keine eigene Panel-Farbe gesetzt — Stock-Icons restauriert (${pf_n})"
+        log "Dateilisten-Ordner-Icons: keine eigene Panel-Farbe gesetzt, Stock-Icons restauriert (${pf_n})"
     fi
-    fi # Ende Bake-Zweig (nur ungepatchter apt-Krusader)
+    fi # bake branch, unpatched apt Krusader only
 fi
 
-# 2c) File associations (Issue #22): register Kate as the default text handler so
-# a double-click opens Kate DIRECTLY instead of the "Open With" dialog, and Kate
-# is offered in Open With. Deployed to the XDG config-home AND the legacy
-# data-home applications dir; the kbuildsycoca6 rebuild below bakes it into
-# KSycoca. Deployed on EVERY start (not first-run) so existing /config installs
-# get the fix too.
+# File associations (#22): Kate is the default text handler, so a double-click
+# opens it instead of the Open With dialog, and Open With offers it. Deployed
+# to the XDG config home and the legacy data home on every start, so existing
+# /config volumes get it too; the kbuildsycoca6 run below bakes it into KSycoca.
 if [[ -f "${DEFAULTS}/mimeapps.list" ]]; then
     cp -af "${DEFAULTS}/mimeapps.list" "${CONFIG_HOME}/mimeapps.list"
     mkdir -p "${LOCAL_SHARE}/applications"
@@ -426,57 +369,42 @@ if [[ -f "${DEFAULTS}/mimeapps.list" ]]; then
     log "mimeapps.list deployed (text/* default -> Kate)"
 fi
 
-# Permissions
 chown -R abc:abc /config/.config /config/.local 2>/dev/null || true
 
-# -- 3b) KService-Cache (kbuildsycoca6) fuer "Open With..." (Issue #22) -------
-# KOpenWithDialog (Rechtsklick -> "Oeffnen mit...") wird NICHT aus den .desktop-
-# Dateien direkt gefuellt, sondern aus KSycoca — einem binaeren Cache, den
-# KApplicationTrader abfragt. In einer vollen Plasma-Session baut kded6 diesen
-# Cache beim eigenen Start automatisch auf (kded6(8): "Those tasks are also
-# run when kded6 is started to ensure that the user configuration is up to
-# date."). Dieses Image faehrt openbox statt Plasma; kded6 wird hier bestenfalls
-# spaet und beilaeufig per D-Bus-Aktivierung gestartet, wenn zufaellig ein KIO-
-# Call es ausloest (im Box-Test beobachtet, siehe Kommentar in defaults/autostart:
-# "Doppel-kded/KIO-Effekte") — es gibt aber KEINE Garantie, dass das VOR dem
-# ersten "Oeffnen mit..." des Users passiert ist. Ohne fertigen Cache liefert
-# KApplicationTrader eine leere Liste: KOpenWithDialog zeigt dann eine KOMPLETT
-# leere Anwendungsliste UND eine leere Text-Combobox — nicht nur "Kate fehlt".
-# Gleiches, dokumentiertes Verhalten ausserhalb einer vollen KDE-Session ist
-# u.a. fuer Dolphin unter Hyprland belegt (kbuildsycoca6 manuell noetig, bis
-# die Anwendungsliste wieder Eintraege zeigt).
-# kbuildsycoca6 selbst baut den Cache SYNCHRON im aufrufenden Prozess (kein
-# Daemon/D-Bus-Umweg noetig, siehe KService-Quellcode), ist bei unveraenderten
-# .desktop-Verzeichnissen ein guenstiger No-Op, und liegt bereits im Image
-# (libkf6service-bin, Pflichtabhaengigkeit von plasma-workspace/kde-cli-tools).
-# Wir bauen ihn hier proaktiv bei JEDEM Start, ALS abc (damit der Cache unter
-# $HOME/.cache abc-gehoert ist, genau wie alles andere, was Krusader/Kate
-# selbst als abc anlegen) — das schliesst die Race komplett, statt auf die
-# zufaellige kded-Aktivierung zu hoffen.
+# 3b) KService cache for Open With (#22). KOpenWithDialog is filled from
+# KSycoca, a binary cache that KApplicationTrader queries, not from the
+# .desktop files. A full Plasma session has kded6 build it at startup; under
+# openbox kded6 starts late if at all, through D-Bus activation when some KIO
+# call happens to trigger it, with no guarantee that this happens before the
+# user's first Open With. Without the cache the dialog shows an empty
+# application list and an empty command box, the same as reported for Dolphin
+# under Hyprland outside a full KDE session.
+# kbuildsycoca6 builds the cache synchronously in the calling process, is a
+# cheap no-op when the .desktop directories did not change, and ships with
+# libkf6service-bin. Running it on every start as abc, so the cache is owned by
+# abc like everything Krusader and Kate create, closes the race.
 mkdir -p /config/.cache
 chown abc:abc /config/.cache
-# Purge the stale KF5 ksycoca5_* leftover — KF6 krusader only reads ksycoca6_*.
+# KF6 krusader reads only ksycoca6_*; the KF5 ksycoca5_* files are leftovers.
 rm -f /config/.cache/ksycoca5_* 2>/dev/null || true
-# Purge KIconLoader's shared pixmap cache: it persists in the /config volume
-# across image updates and keeps serving the OLD pixmap keyed to the previous
-# icon files, so a changed system-file-manager (= folder) icon would look like a
-# no-op ("nothing changed"). gtk-update-icon-cache does NOT touch this KDE cache.
-# KIconLoader rebuilds it lazily on next start.
+# KIconLoader's pixmap cache survives image updates in /config and keeps serving
+# the old icons, so a changed folder icon would not show. gtk-update-icon-cache
+# does not touch it, and KIconLoader rebuilds it lazily.
 rm -f /config/.cache/icon-cache.kcache 2>/dev/null || true
-# HOME/XDG_CACHE_HOME explizit: s6-setuidgid wechselt nur uid/gid, NICHT das
-# Environment — der Cache MUSS unter /config/.cache landen (persistent, dort
-# sucht ihn Krusader-als-abc), nicht unter einem geerbten Root-HOME.
+# s6-setuidgid changes only uid and gid, not the environment, so HOME and
+# XDG_CACHE_HOME are set explicitly to put the cache in /config/.cache, where
+# Krusader running as abc looks for it.
 if command -v kbuildsycoca6 >/dev/null 2>&1; then
     if env HOME=/config XDG_CACHE_HOME=/config/.cache s6-setuidgid abc kbuildsycoca6 --noincremental >/tmp/kbuildsycoca6.log 2>&1; then
         log "kbuildsycoca6: KService-Cache aufgebaut (Open With.../KApplicationTrader)"
     else
-        log "WARNING: kbuildsycoca6 ist fehlgeschlagen — 'Oeffnen mit...' bleibt evtl. leer (siehe /tmp/kbuildsycoca6.log)"
+        log "WARNING: kbuildsycoca6 ist fehlgeschlagen, 'Oeffnen mit...' bleibt evtl. leer (siehe /tmp/kbuildsycoca6.log)"
     fi
 else
-    log "WARNING: kbuildsycoca6 nicht gefunden — 'Oeffnen mit...' zeigt eine leere Liste (Issue #22)"
+    log "WARNING: kbuildsycoca6 nicht gefunden, 'Oeffnen mit...' zeigt eine leere Liste (Issue #22)"
 fi
 
-# -- 4) Diagnose-Output -------------------------------------------------------
+# 4) Diagnostics
 log "=== Diagnose ==="
 log "ColorScheme in kdeglobals: $(grep -E '^ColorScheme=' "${CONFIG_HOME}/kdeglobals" | head -n 1)"
 log "theme=${KRUSADER_THEME:-dark} scheme=${THEME_SCHEME}; palette source ${THEME_COLORS} ($(ls -la "${THEME_COLORS}" 2>/dev/null | awk '{print $5}') bytes)"

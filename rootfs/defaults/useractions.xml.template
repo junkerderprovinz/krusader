@@ -1,11 +1,8 @@
 <!--
-  Krusader UserActions – right-click menu entries.
-  Copied to /config/.local/share/krusader/useractions.xml on first run
-  (only if no file exists there yet).
-
-  Krusader natively recognizes RAR/7z/ZIP archives via its KIO slave
-  (krarc) once unrar / p7zip-rar are present in PATH.  These actions
-  add quick-access right-click workflows for power users.
+  Krusader user actions (right-click menu entries), copied to
+  /config/.local/share/krusader/useractions.xml on the first run when no file
+  exists there yet. Krusader opens RAR/7z/ZIP archives through its krarc KIO
+  worker once the archivers are on PATH; these actions add shortcuts on top.
 -->
 <!DOCTYPE KrusaderUserActions>
 <KrusaderUserActions>

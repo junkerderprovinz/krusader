@@ -1,10 +1,9 @@
-# Dark Mode — monochrome IBM-Carbon greyscale (base #161616), NO colour accent.
-# Selection/focus is a lighter grey (#525252); the only non-grey tones are the
-# functional error/warning colours. House standard, see the vault note
-# "Style Guide - Docker Container". Replaces the previous KDE colour scheme.
+# Dark Mode: monochrome IBM Carbon greyscale (base #161616) with no colour
+# accent. Selection and focus are a lighter grey (#525252); the only other tones
+# are the functional error and warning colours.
 #
-# NOTE: KDE matches the scheme by this file's BASENAME (DarkMode) — keep the
-# [General] ColorScheme value and every reference as "DarkMode" (no space).
+# KDE matches the scheme by this file's basename, so the [General] ColorScheme
+# value and every reference stay "DarkMode", without a space.
 
 [ColorEffects:Disabled]
 Color=31,31,31
@@ -83,14 +82,14 @@ ForegroundPositive=141,141,141
 ForegroundVisited=141,141,141
 
 [Colors:Selection]
-# Selection/highlight = dark-native grey (#525252), NOT a colour accent. This is
-# the Qt "Highlight" role, which the user CANNOT change from inside Krusader, so
-# per house rule it stays true to Dark Mode. It colours the app chrome: the
-# active-panel tab indicator line, the Konfigurator page-nav highlight, checkbox
-# marks and menu highlights. The friendly green is applied ONLY where the user
-# CAN change it (Krusader > Settings > Colors): the file-list selection and the
-# active status bar, both set in krusaderrc [Colors]. ForegroundNormal stays
-# near-white so selected text is readable on the grey bar.
+# Selection and highlight are grey (#525252) rather than a colour accent. This is
+# the Qt Highlight role, which the user cannot change from inside Krusader, so
+# it stays in the Dark Mode greys. It colours the app chrome: the active panel's
+# tab indicator, the Konfigurator page navigation, checkbox marks and menu
+# highlights. The green goes only where the user can change it (Settings >
+# Colors): the file list selection and the active status bar, both set in
+# krusaderrc [Colors]. ForegroundNormal stays near-white so selected text reads
+# on the grey bar.
 BackgroundAlternate=82,82,82
 BackgroundNormal=82,82,82
 DecorationFocus=82,82,82

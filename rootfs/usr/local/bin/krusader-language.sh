@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
 # krusader-language.sh <iso-code|system>
-# -----------------------------------------------------------------------------
-# Activates the requested UI language for Krusader / Kate / KDE.
-# Called by the cont-init firstrun hook on every container start so the user
-# can switch via the Unraid template variable KRUSADER_LANG without touching
-# the appdata folder.
 #
-# Mechanism:
-#   * Set kdeglobals[Translations].Language=<code>
-#   * Export LANG / LANGUAGE / LC_ALL via /config/.profile.d snippet
-#     (NUR Uebergabemedium: init-krusader liest das Snippet zurueck und pusht
-#     die Werte via set_env ins s6-Container-Env; Selkies' startwm.sh sourced
-#     KEINE Profile - nicht auf Shell-Sourcing verlassen)
-#   * Persist a hint file for the s6-overlay env layer
-# -----------------------------------------------------------------------------
+# Activates the requested UI language for Krusader, Kate and KDE. init-krusader
+# runs it on every container start, so KRUSADER_LANG in the Unraid template
+# switches the language without touching the appdata folder. It sets
+# kdeglobals [Translations] Language and writes LANG/LANGUAGE/LC_ALL to a
+# /config/.profile.d snippet. The snippet only carries the values: init-krusader
+# reads it back into the s6 environment and the openbox autostart sources it,
+# because Selkies' startwm.sh sources no profile.
 set -e
 
 CODE="${1:-de}"
@@ -26,18 +19,17 @@ log() { echo "[krusader-language] $*"; }
 
 mkdir -p "${CONFIG_HOME}" "${PROFILE_D}"
 
-# Map ISO-Code → (Locale, Language-Chain, KDE-Translation-Code)
-# 30 Sprachen unterstützt. "system" → keine erzwungene Sprache.
+# ISO code → locale, LANGUAGE chain and KDE translation code; "system" forces
+# no language.
 LOCALE=""; CHAIN=""; KDE=""
 
-# Normalize input — strip suffixes, lowercase, special-case CJK variants.
 NORM="$(echo "${CODE}" | tr '[:upper:]' '[:lower:]')"
 NORM="${NORM%% *}"   # Unraid dropdown passes the full label "de = Deutsch" → keep the leading code
 NORM="${NORM%%.*}"   # de_DE.UTF-8 → de_de
 NORM="${NORM%%@*}"
 
 case "${NORM}" in
-    # ----- Westeuropa -----
+    # Western Europe
     de|de_de)        LOCALE="de_DE.UTF-8"; KDE="de";;
     en|en_us)        LOCALE="en_US.UTF-8"; KDE="en_US";;
     en_gb)           LOCALE="en_GB.UTF-8"; KDE="en_GB";;
@@ -50,13 +42,13 @@ case "${NORM}" in
     ca|ca_es)        LOCALE="ca_ES.UTF-8"; KDE="ca";;
     eu|eu_es)        LOCALE="eu_ES.UTF-8"; KDE="eu";;
     ga|ga_ie)        LOCALE="ga_IE.UTF-8"; KDE="ga";;
-    # ----- Nordeuropa -----
+    # Northern Europe
     da|da_dk)        LOCALE="da_DK.UTF-8"; KDE="da";;
     sv|sv_se)        LOCALE="sv_SE.UTF-8"; KDE="sv";;
     nb|nb_no|no)     LOCALE="nb_NO.UTF-8"; KDE="nb";;
     fi|fi_fi)        LOCALE="fi_FI.UTF-8"; KDE="fi";;
     is|is_is)        LOCALE="is_IS.UTF-8"; KDE="is";;
-    # ----- Mittel-/Osteuropa -----
+    # Central and Eastern Europe
     pl|pl_pl)        LOCALE="pl_PL.UTF-8"; KDE="pl";;
     cs|cs_cz)        LOCALE="cs_CZ.UTF-8"; KDE="cs";;
     sk|sk_sk)        LOCALE="sk_SK.UTF-8"; KDE="sk";;
@@ -69,18 +61,18 @@ case "${NORM}" in
     uk|uk_ua)        LOCALE="uk_UA.UTF-8"; KDE="uk";;
     ru|ru_ru)        LOCALE="ru_RU.UTF-8"; KDE="ru";;
     el|el_gr)        LOCALE="el_GR.UTF-8"; KDE="el";;
-    # ----- Nahost -----
+    # Middle East
     tr|tr_tr)        LOCALE="tr_TR.UTF-8"; KDE="tr";;
     he|he_il)        LOCALE="he_IL.UTF-8"; KDE="he";;
     ar|ar_sa)        LOCALE="ar_SA.UTF-8"; KDE="ar";;
-    # ----- Asien / CJK -----
+    # Asia
     ja|ja_jp)        LOCALE="ja_JP.UTF-8"; KDE="ja";;
     ko|ko_kr)        LOCALE="ko_KR.UTF-8"; KDE="ko";;
     zh|zh_cn|zh_hans)LOCALE="zh_CN.UTF-8"; KDE="zh_CN";;
     zh_tw|zh_hant)   LOCALE="zh_TW.UTF-8"; KDE="zh_TW";;
-    # ----- system / unbekannt -----
+    # no forced language, or a best-effort guess for an unknown code
     system|"")       LOCALE=""; KDE="";;
-    *)               LOCALE="${NORM}.UTF-8"; KDE="${NORM}";;  # Best-effort (NORM: Label/Spaces/Suffixe bereits gestrippt)
+    *)               LOCALE="${NORM}.UTF-8"; KDE="${NORM}";;
 esac
 
 # Build LANGUAGE chain so missing translations fall back to English
@@ -94,13 +86,11 @@ if [[ -n "${LOCALE}" ]]; then
     fi
 fi
 
-# -- system / unset ----------------------------------------------------------
 if [[ -z "${LOCALE}" ]]; then
-    log "KRUSADER_LANG=system – removing forced language."
+    log "KRUSADER_LANG=system, removing forced language."
     rm -f "${ENV_FILE}"
     rm -f /etc/profile.d/zz-krusader-lang.sh 2>/dev/null || true
     if [[ -f "${CONFIG_HOME}/kdeglobals" ]]; then
-        # Remove [Translations] block (best-effort)
         sed -i '/^\[Translations\]/,/^\[/{/^Language=/d}' "${CONFIG_HOME}/kdeglobals" || true
     fi
     exit 0
@@ -108,19 +98,17 @@ fi
 
 log "Activating language: ${LOCALE} (KDE=${KDE})"
 
-# -- 1) Profile snippet (sourced by interactive shells & dbus session) --------
 cat > "${ENV_FILE}" <<EOF
-# Auto-generated by krusader-language.sh – do not edit by hand.
-# Values QUOTED: the snippet is dot-sourced by DASH inside the openbox
-# autostart; an unquoted value with spaces would make 'export' fail fatally
-# there and abort the whole session start.
+# Generated by krusader-language.sh, do not edit by hand.
+# The values are quoted because the openbox autostart dot-sources this file
+# with dash, where an unquoted value with spaces makes export fail and aborts
+# the session start.
 export LANG="${LOCALE}"
 export LANGUAGE="${CHAIN}"
 export LC_ALL="${LOCALE}"
 EOF
 chmod 644 "${ENV_FILE}"
 
-# -- 2) Update kdeglobals [Translations] section ------------------------------
 if [[ -f "${CONFIG_HOME}/kdeglobals" ]]; then
     if grep -q '^\[Translations\]' "${CONFIG_HOME}/kdeglobals"; then
         sed -i '/^\[Translations\]/,/^\[/{/^Language=/d}' "${CONFIG_HOME}/kdeglobals"
@@ -135,10 +123,9 @@ Language=${KDE}
 EOF
 fi
 
-# -- 3) Make sure the autostart script picks up the env -----------------------
-# The Selkies base image sources /etc/profile.d/* before running /defaults/autostart.
-# We drop a system-wide snippet symlinked from our user-config so resets are easy.
+# A system-wide link for shells that read /etc/profile.d. It points at the
+# snippet in /config, so removing that one file resets both.
 ln -sf "${ENV_FILE}" /etc/profile.d/zz-krusader-lang.sh 2>/dev/null || true
 
-log "Language set – LANG=${LOCALE} LANGUAGE=${CHAIN}"
+log "Language set: LANG=${LOCALE} LANGUAGE=${CHAIN}"
 exit 0

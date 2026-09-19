@@ -1,12 +1,7 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# -----------------------------------------------------------------------------
-# svc-krusader-ready — print a loud "READY" banner to the container log once the
-# WebUI is actually serving, so the user knows the (multi-second) first start has
-# finished and the WebUI is usable. House standard, see the vault note
-# "Style Guide - Docker Container" (every own-image container prints an
-# "<APP> IS READY" log banner alongside the ASCII init banner).
-# -----------------------------------------------------------------------------
+# Prints a READY banner to the container log once the WebUI is serving, so the
+# user knows the first start has finished and the WebUI is usable.
 FLAG="/run/krusader-ready.printed"
 
 # /run is tmpfs (wiped on every container start) -> banner prints once per start.
@@ -30,26 +25,22 @@ done
 # Small settle so Krusader's window is actually drawn before we announce.
 [[ "${ready}" -eq 1 ]] && sleep 4
 
-# House ASCII brand banner, printed here so it sits directly above the status box
-# (brand + "<APP> IS READY" as the log's final block). Subtitle tracks the active
-# theme, matching what the init banner used to show.
+# The brand banner is printed here so that it and the status line form the log's
+# final block. The subtitle names the active theme.
 case "${KRUSADER_THEME:-dark}" in
     light | Light | breeze | Breeze | BreezeLight) TH="Breeze Light" ;;
     *) TH="Dark Mode" ;;
 esac
 /usr/local/bin/print-banner.sh "Krusader for Unraid" "${TH} · Selkies · KDE" 2>/dev/null || true
 
-# Colored via plain ANSI SGR codes, not tput (tput needs a terminfo database
-# that may not exist in a minimal container): 32 green / 31 red, reset with 0.
-# docker logs passes stdout bytes through untouched, so any ANSI-aware viewer
-# (a real terminal, Unraid's log panel) renders the color; a viewer that does
-# not understand SGR codes just shows them as inert text.
+# Plain ANSI SGR codes rather than tput, which needs a terminfo database a
+# minimal container may lack. docker logs passes the bytes through, so an
+# ANSI-aware viewer (a terminal, Unraid's log panel) shows the colour.
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Clean one-line status (house look: no rule/box walls, label + detail on the
-# same line). print-banner.sh already left one blank line above this.
+# print-banner.sh already left a blank line above this.
 if [[ "${ready}" -eq 1 ]]; then
     echo -e "  ${GREEN}✓ KRUSADER IS READY${NC} - Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
 else

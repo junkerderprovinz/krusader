@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
-# krusader-session — KDE session starter (called by autostart via dbus-launch)
-# -----------------------------------------------------------------------------
-# Starts ksmserver BEFORE krusader so both share the same D-Bus session bus.
-# ksmserver registers as org.kde.ksmserver and emits saveYourself on logout,
-# which causes KMainWindow::saveAutoSaveSettings() to persist window geometry
-# and panel state to krusaderrc (Bug #1 fix). The same session bus path also
-# fixes Kate's close-event routing (Bug #2 fix).
+# KDE session starter, run by autostart through dbus-launch.
 #
-# If ksmserver is not installed (image built without plasma-workspace) the
-# script falls through and just starts krusader — no regression.
+# ksmserver starts before krusader so both share the session bus. It registers
+# as org.kde.ksmserver and emits saveYourself on logout, which makes
+# KMainWindow::saveAutoSaveSettings() persist window geometry and panel state to
+# krusaderrc (bug #1); the shared bus also routes Kate's close events (bug #2).
+# Without ksmserver (an image built without plasma-workspace) krusader simply
+# starts on its own.
 #
-# Clean shutdown (UI-state persistence): krusader only writes its "Save settings
-# on exit" state (statusbar/toolbar visibility, geometry) when it quits CLEANLY.
-# `docker stop` kills the process before that happens, so a hidden statusbar
-# re-appears on the next start (which re-applies [Startup] Show statusbar=true).
-# To fix this we run krusader in the background and trap the shutdown signal,
-# then quit krusader cleanly (kquitapp) so its exit-save runs before the kill.
-# -----------------------------------------------------------------------------
+# krusader runs in the background with the shutdown signal trapped, so that
+# `docker stop` asks it to quit before killing it (see _save_and_quit).
 
 if command -v ksmserver >/dev/null 2>&1; then
     echo "[krusader-session] starting ksmserver for D-Bus session management" >&2
@@ -26,52 +18,44 @@ if command -v ksmserver >/dev/null 2>&1; then
     sleep 0.5
 fi
 
-# --- KSycoca service cache (Issue #22) ---------------------------------------
-# "Open With..." (KOpenWithDialog/KApplicationTrader) is filled from the BINARY
-# KSycoca cache, not the .desktop files. Build it HERE — in the live session,
-# as the very uid/$HOME this krusader runs under — so it lands in the same
-# ${XDG_CACHE_HOME:-$HOME/.cache} the process actually reads. Correct regardless
-# of uid: with PUID=0 the session runs as literal root (LSIO cannot remap abc
-# onto uid 0), whose $HOME/.cache is NOT the abc-owned /config/.cache that
-# init-krusader populated — which is why #22 stayed empty under root. Purge any
-# stale KF5 ksycoca5_* first (KF6 only reads ksycoca6_*; the leftover never
-# blocks the rebuild, we just clean it up).
+# Open With (KOpenWithDialog/KApplicationTrader) is filled from the binary
+# KSycoca cache, not from the .desktop files (#22). Building it here, in the
+# live session as the uid and $HOME this krusader runs under, puts it in the
+# ${XDG_CACHE_HOME:-$HOME/.cache} the process reads. That matters under PUID=0,
+# where the session runs as literal root (LSIO cannot remap abc onto uid 0) and
+# $HOME/.cache is not the abc-owned /config/.cache that init-krusader filled.
+# KF6 reads only ksycoca6_*, so a KF5 ksycoca5_* leftover is removed first.
 _kr_cache="${XDG_CACHE_HOME:-$HOME/.cache}"
 rm -f "${_kr_cache}"/ksycoca5_* 2>/dev/null || true
-# Purge KDE's shared icon pixmap cache too (persists in /config across image
-# updates and would keep serving the old MediaButton icon). Relevant for the
-# running uid under PUID=0. KIconLoader rebuilds it lazily.
+# KDE's icon pixmap cache survives image updates in /config and would keep
+# serving the old MediaButton icon; KIconLoader rebuilds it lazily.
 rm -f "${_kr_cache}"/icon-cache.kcache 2>/dev/null || true
 if command -v kbuildsycoca6 >/dev/null 2>&1; then
     # --noincremental: a timestamp-based incremental rebuild can skip newly
     # deployed mimeapps.list associations on the persistent /config volume.
     kbuildsycoca6 --noincremental >/dev/null 2>&1 \
         && echo "[krusader-session] kbuildsycoca6: KSycoca cache built in ${_kr_cache}" >&2 \
-        || echo "[krusader-session] WARNING: kbuildsycoca6 failed — 'Open With...' may be empty (#22)" >&2
+        || echo "[krusader-session] WARNING: kbuildsycoca6 failed, 'Open With...' may be empty (#22)" >&2
 else
-    echo "[krusader-session] WARNING: kbuildsycoca6 not found — 'Open With...' will be empty (#22)" >&2
+    echo "[krusader-session] WARNING: kbuildsycoca6 not found, 'Open With...' will be empty (#22)" >&2
 fi
 
 KR_PID=""
 
 _save_and_quit() {
-    echo "[krusader-session] shutdown — quitting krusader cleanly so it saves" >&2
-    # Ask krusader to quit ITSELF first: quitting through the application runs
-    # aboutToQuit -> "Save settings on exit", a signal does not. It is
+    echo "[krusader-session] shutdown, quitting krusader cleanly so it saves" >&2
+    # Ask krusader to quit itself first: quitting through the application runs
+    # aboutToQuit and "Save settings on exit", a signal does not. The call is
     # addressed by D-Bus service name rather than by PID, so it also reaches
-    # the running instance when KR_PID is stale or unset (a signal can arrive
-    # in the gap between starting krusader and recording its PID).
+    # the instance when KR_PID is stale or unset (a signal can arrive between
+    # starting krusader and recording its PID).
     #
-    # MEASURED on the built image, 2026-09-14: this does NOT fire today.
-    # Krusader registers no name on the session bus — `qdbus6` lists only
-    # org.kde.ksmserver — so the call returns "Service 'org.kde.krusader' does
-    # not exist" and the SIGTERM below is what actually ends it. The chain
-    # that used to stand here also tried kquitapp6/kquitapp5/qdbus first, none
-    # of which exist in this image; only qdbus6 does. One attempt is kept
-    # because it costs a single failed lookup and starts working on its own
-    # the day krusader registers a name. Do NOT describe it as the thing that
-    # saves the settings: Krusader 2.9.0 writes its state as it goes, and that
-    # is what survives a container stop.
+    # In the built image the call does not succeed yet: Krusader registers no
+    # name on the session bus (qdbus6 lists only org.kde.ksmserver), so it
+    # returns "Service 'org.kde.krusader' does not exist" and the SIGTERM below
+    # ends krusader. The attempt costs one failed lookup and starts working the
+    # day krusader registers a name. Settings survive a container stop because
+    # Krusader 2.9.0 writes its state as it goes, not because of this call.
     qdbus6 org.kde.krusader /MainApplication quit 2>/dev/null \
         || { [ -n "${KR_PID}" ] && kill -0 "${KR_PID}" 2>/dev/null && kill -TERM "${KR_PID}" 2>/dev/null; }
     [ -n "${KR_PID}" ] && wait "${KR_PID}" 2>/dev/null
@@ -79,29 +63,27 @@ _save_and_quit() {
 }
 trap _save_and_quit TERM INT HUP
 
-# --- Supervised restart loop -------------------------------------------------
 # Krusader is the container's only window. When the user quits it (File > Quit,
-# the window X, Ctrl+Q) openbox keeps running with an empty desktop, so the
-# WebUI goes black and the only way back is a container restart. Restarting
-# krusader here gives the user a fresh session instead, matching what people
-# expect from a browser-hosted file manager.
+# the window's close button, Ctrl+Q), openbox keeps running on an empty desktop
+# and the WebUI stays black until the container restarts, so krusader is
+# restarted here instead.
 #
-# Two guards against a spin, both counting only runs shorter than
-# KR_MIN_RUNTIME seconds and both reset by any run that lasts longer:
+# Two guards stop a spin. Both count only runs shorter than KR_MIN_RUNTIME
+# seconds, and both reset after any longer run:
 #
-#   KR_MAX_FAILS   non-zero exits in a row — krusader cannot start at all
-#                  (broken config, no X, a missing library). Few, because this
-#                  is unambiguous: a failing start is never the user's doing.
-#   KR_MAX_QUICK   instant exits of ANY kind in a row, clean ones included.
-#                  Catches the case where krusader keeps exiting 0 at once
-#                  (e.g. a second instance handing over to a unique-instance
-#                  owner that is already gone), which the failure counter
-#                  would never see. Deliberately high, so a user who quits a
-#                  few times in quick succession keeps their session.
+#   KR_MAX_FAILS   non-zero exits in a row: krusader cannot start at all
+#                  (broken config, no X, a missing library). Kept low, since a
+#                  failing start is never the user's doing.
+#   KR_MAX_QUICK   instant exits of any kind in a row, clean ones included.
+#                  Catches a krusader that keeps exiting 0 at once (a second
+#                  instance handing over to a unique-instance owner that is
+#                  already gone, say), which the failure counter never sees.
+#                  Kept high, so a user who quits a few times in quick
+#                  succession keeps the session.
 #
-# NOTE: these lines go to the session's stderr, which startwm.sh sends to
+# These messages go to the session's stderr, which startwm.sh sends to
 # /dev/null so nothing trails the READY banner in `docker logs`. They are for
-# the debugging case where that redirect is temporarily removed.
+# debugging with that redirect removed.
 KR_MIN_RUNTIME=5
 KR_MAX_FAILS=5
 KR_MAX_QUICK=20
@@ -121,11 +103,11 @@ while : ; do
         [ "${_rc}" -ne 0 ] && _fails=$((_fails + 1))
 
         if [ "${_fails}" -ge "${KR_MAX_FAILS}" ]; then
-            echo "[krusader-session] krusader failed ${_fails} times in a row within ${KR_MIN_RUNTIME}s each (last exit code ${_rc}) — giving up instead of looping. Fix the cause and restart the container." >&2
+            echo "[krusader-session] krusader failed ${_fails} times in a row within ${KR_MIN_RUNTIME}s each (last exit code ${_rc}), giving up instead of looping. Fix the cause and restart the container." >&2
             exit "${_rc}"
         fi
         if [ "${_quick}" -ge "${KR_MAX_QUICK}" ]; then
-            echo "[krusader-session] krusader exited within ${KR_MIN_RUNTIME}s ${_quick} times in a row (last exit code ${_rc}) — giving up instead of looping. Fix the cause and restart the container." >&2
+            echo "[krusader-session] krusader exited within ${KR_MIN_RUNTIME}s ${_quick} times in a row (last exit code ${_rc}), giving up instead of looping. Fix the cause and restart the container." >&2
             exit 1
         fi
     else
@@ -133,6 +115,6 @@ while : ; do
         _quick=0
     fi
 
-    echo "[krusader-session] krusader exited (code ${_rc}, ran ${_ran}s) — restarting it so the WebUI does not stay black" >&2
+    echo "[krusader-session] krusader exited (code ${_rc}, ran ${_ran}s), restarting it so the WebUI does not stay black" >&2
     sleep 1
 done

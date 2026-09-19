@@ -1,7 +1,5 @@
-# Default Krusader-Settings
-# Wird beim ersten Start nach /config/.config/krusaderrc kopiert,
-# falls dort noch keine Datei existiert. Bestehende User-Configs
-# werden NICHT überschrieben.
+# Krusader defaults, copied to /config/.config/krusaderrc on the first start
+# when no file exists there; an existing config is left alone.
 
 [General]
 Editor=kate
@@ -28,11 +26,10 @@ fallback_extractor=true
 [Startup]
 Show splashscreen=false
 Start To Tray=false
-# Save last position, size and panel settings -> Window-Geometrie persistieren
+# Save last position, size and panel settings
 Remember Position=true
-# Save component settings on exit -> Statusleiste/Toolbar/Menubar-State
-# beim Schliessen persistieren. Ohne diesen Schluessel ignoriert Krusader
-# Aenderungen an View > Show Statusbar / Show Toolbar etc. nach dem Neustart.
+# Save component settings on exit. Without it Krusader forgets View > Show
+# Statusbar, Show Toolbar and the like after a restart.
 User Save Settings=true
 Show statusbar=true
 Show Cmd Line=true
@@ -43,31 +40,30 @@ Show Terminal Emulator=false
 RememberPos=true
 
 [Colors]
-# Krusader's OWN file-panel colours — editable at runtime under
-# Settings > Configure Krusader > Colors. We preset ONLY the green accents the
-# user can re-edit there; every key left unset inherits the dark KDE colour
-# scheme (Qt palette). The app chrome (active-tab line, Konfigurator page nav,
-# checkbox marks, menus) is NOT a Krusader colour and is not editable here — it
-# stays dark-native grey via the colour scheme's [Colors:Selection].
+# Krusader's own file panel colours, editable under Settings > Configure
+# Krusader > Colors. Only the green accents are preset; every key left unset
+# inherits the dark KDE colour scheme (Qt palette). The app chrome (active tab
+# line, Konfigurator page navigation, checkbox marks, menus) is not a Krusader
+# colour and stays grey through the scheme's [Colors:Selection].
 #
-# Gotchas (verified against Krusader's KF6 source, app/Panel/krcolorcache.cpp):
-#   * the flag key is "KDE Default" WITH a space — "KDEDefault" is silently
-#     ignored, which leaves the flag at its true default and disables every key
-#     below, so the space is mandatory.
-#   * colour values must be decimal R,G,B; a #hex string has no commas and is
+# Checked against Krusader's KF6 source (app/Panel/krcolorcache.cpp):
+#   * the flag key is "KDE Default" with a space; "KDEDefault" is silently
+#     ignored, which leaves the flag at its default of true and disables every
+#     key below.
+#   * colour values are decimal R,G,B; a #hex string has no commas and is
 #     discarded.
-#   * the scheme itself is applied via kdeglobals + KDE_COLOR_SCHEME_PATH (set by
-#     init-krusader), NOT from here, so no ColorScheme= line is needed.
+#   * the scheme itself comes from kdeglobals and KDE_COLOR_SCHEME_PATH (set by
+#     init-krusader), so no ColorScheme= line is needed here.
 KDE Default=false
-# File-list selection = Krusader's "Marked" item: green (Carbon #198038) + near-
-# white text. Shown in the dialog as "Selected background / foreground".
+# File list selection, Krusader's "Marked" item: Carbon green #198038 with
+# near-white text, shown in the dialog as "Selected background / foreground".
 Marked Background=25,128,56
 Marked Foreground=244,244,244
-# Cursor / current row = a subtle grey so the cursor stays visible on the dark
-# base and reads as distinct from the green selection ("Current background/…").
+# Current row: a subtle grey that stays visible on the dark base and differs
+# from the green selection ("Current background / foreground").
 Current Background=57,57,57
 Current Foreground=244,244,244
-# Active panel's bottom status line = the same green. Read by ListPanelFrame
-# INDEPENDENT of "KDE Default"; only the ACTIVE panel, inactive stays neutral.
+# The active panel's status line in the same green. ListPanelFrame reads it
+# regardless of "KDE Default", and for the active panel only.
 Statusbar Background Active=25,128,56
 Statusbar Foreground Active=244,244,244
