@@ -1,5 +1,5 @@
-# Default Kate-Settings (Dark Mode, sinnvolle Editor-Defaults)
-# Wird beim ersten Start nach /config/.config/katerc kopiert.
+# Kate defaults (Dark Mode and editor settings), copied to
+# /config/.config/katerc on the first start.
 
 [General]
 Days Meta Infos=30

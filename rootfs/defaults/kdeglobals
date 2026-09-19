@@ -1,10 +1,9 @@
-# Default KDE-Settings für das Krusader-Image
-# Wird von init-krusader bei JEDEM Start nach /config/.config/kdeglobals
-# UND /config/.config/kdedefaults/kdeglobals ausgerollt.
+# KDE defaults for the Krusader image. init-krusader deploys this file on every
+# start to /config/.config/kdeglobals and /config/.config/kdedefaults/kdeglobals.
 #
-# Das libkdeplatformtheme.so (aus plasma-integration) liest dieses File
-# direkt und erkennt darueber den ColorScheme-Namen "DarkMode", den es
-# dann in /usr/share/color-schemes/DarkMode.colors aufloest.
+# libkdeplatformtheme.so (from plasma-integration) reads it directly and takes
+# the ColorScheme name "DarkMode" from it, which it resolves to
+# /usr/share/color-schemes/DarkMode.colors.
 
 [General]
 ColorScheme=DarkMode

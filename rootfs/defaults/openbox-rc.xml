@@ -649,17 +649,15 @@
 </menu>
 
 <applications>
-  <!-- Krusader MAIN window: start maximised to fill the Selkies viewport.
-       type="normal" is REQUIRED. Krusader's dialogs (copy/move/overwrite
-       confirmations, KIO prompts) share WM_CLASS=krusader, so a class-only rule
-       force-maximizes them too — and openbox re-applies it on every map, so a
-       manual resize never sticks. Restricting to type="normal" matches only the
-       top-level window; dialogs are type="dialog" and stay at their natural /
-       remembered size. (Regression from v1.1.0 when this rule was first added.) -->
+  <!-- Krusader's main window starts maximised to fill the Selkies viewport.
+       type="normal" is needed because Krusader's dialogs (copy, move and
+       overwrite confirmations, KIO prompts) share WM_CLASS=krusader: a
+       class-only rule would force-maximise them too, and openbox re-applies it
+       on every map, so a manual resize would never stick. Dialogs are
+       type="dialog" and keep their natural or remembered size. -->
   <application class="krusader" type="normal">
-    <!-- <decor>no</decor> hides the openbox title bar (minimise/maximise/close)
-         on the main window for a clean kiosk look — same approach as the
-         jdownloader container. Dialogs (type="dialog") keep their decorations. -->
+    <!-- No title bar on the main window, for a kiosk look; dialogs keep their
+         decorations. -->
     <decor>no</decor>
     <maximized>yes</maximized>
   </application>

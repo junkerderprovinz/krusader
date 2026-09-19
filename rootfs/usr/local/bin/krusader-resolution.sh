@@ -1,29 +1,22 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
-# krusader-resolution.sh
-# -----------------------------------------------------------------------------
 # Prints the screen size the X server should be started with, or nothing when
 # neither variable is set (then the base image's own default applies).
 #
-# Why two variables: Unraid renders a template variable as a plain <select> as
-# soon as its Default contains a "|" (see CreateDocker.php, addConfig()), so a
-# dropdown of presets and a free-text field cannot be the same field. The
-# template therefore offers MAX_RES as the preset dropdown and MAX_RES_CUSTOM
-# as a free field, and this script decides between them:
+# Unraid renders a template variable as a plain <select> as soon as its Default
+# contains a "|" (CreateDocker.php, addConfig()), so a dropdown of presets and a
+# free-text field cannot be the same field. The template offers MAX_RES as the
+# preset dropdown and MAX_RES_CUSTOM as a free field, and this script decides:
 #
 #   MAX_RES_CUSTOM set and usable  -> that value wins
 #   otherwise                      -> MAX_RES as chosen in the dropdown
 #
-# A malformed custom value is REPORTED AND IGNORED rather than passed on. Xvfb
-# takes the screen size as a literal command line argument, so a typo like
-# "1920*1080" would stop the X server from starting at all and the container
-# would come up with no desktop. Falling back to the dropdown keeps a working
-# session and says what happened; the opposite trade (fail hard on a typo)
-# turns a five-second mistake into a dead container.
+# A malformed value is reported and ignored rather than passed on. Xvfb takes
+# the screen size as a literal command line argument, so a typo like
+# "1920*1080" would stop the X server from starting and the container would
+# come up with no desktop. Falling back keeps a working session and says what
+# happened, instead of turning a typo into a dead container.
 #
-# Spellings people actually type are accepted: surrounding spaces, spaces
-# around the separator, and a capital X.
-# -----------------------------------------------------------------------------
+# Surrounding spaces, spaces around the separator and a capital X are accepted.
 set -u
 
 log() { echo "[krusader-resolution] $*" >&2; }
@@ -31,19 +24,18 @@ log() { echo "[krusader-resolution] $*" >&2; }
 normalise() {
     # An Unraid dropdown hands over the whole label it shows, so a preset
     # arrives as "3840x2160 (4K, ~93 MB)" and the size has to be read out of
-    # it — the same reason krusader-language.sh strips "de = Deutsch" down to
-    # "de". Drop everything from the first "(", then strip whitespace and
-    # lowercase the separator so a hand-typed " 1920 X 1080 " works too.
+    # it, just as krusader-language.sh strips "de = Deutsch" down to "de".
+    # Drop everything from the first "(", then strip whitespace and lowercase
+    # the separator so a hand-typed " 1920 X 1080 " works too.
     printf '%s' "${1%%(*}" | tr -d '[:space:]' | tr 'X' 'x'
 }
 
-# Largest edge either side may have. This is NOT a product decision about how
-# big a desktop may be — the full 15360x8640 and more stay available. It only
-# catches a digit slip: "15360x86400" is a well-formed WIDTHxHEIGHT that would
-# have the X server ask for a 5 GB framebuffer, so the container would be
-# OOM-killed on every single boot with nothing in the log pointing at the typo.
-# 16384 is the ceiling X drivers and GL implementations conventionally carry,
-# and it sits above the base image's own default.
+# Largest edge either side may have. It is not a limit on desktop size (the
+# full 15360x8640 stays available) but a catch for a digit slip: "15360x86400"
+# is a well-formed WIDTHxHEIGHT that would have the X server ask for a 5 GB
+# framebuffer, and the container would be OOM-killed on every boot with nothing
+# in the log pointing at the typo. 16384 is the ceiling X drivers and GL
+# implementations conventionally carry, and it sits above the base default.
 KR_MAX_EDGE=16384
 
 valid() {
