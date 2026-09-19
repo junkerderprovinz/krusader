@@ -1,6 +1,4 @@
-# justfile — Krusader for Unraid (Selkies)
-# Recipes mirror the real CI flows (see .github/workflows/).
-# Run `just --list` to see everything. POSIX sh recipes.
+# Recipes mirror the CI workflows in .github/workflows/.
 
 set shell := ["sh", "-euc"]
 
@@ -11,15 +9,11 @@ IMAGE := "krusader:dev"
 default:
     @just --list
 
-# ---------------------------------------------------------------------------
-# Build
-# ---------------------------------------------------------------------------
-
 # Build the image for the local arch.
 build:
     docker build -t {{IMAGE}} .
 
-# Multi-arch build (amd64 + arm64) — needs buildx.
+# Multi-arch build (amd64 + arm64), needs buildx.
 build-multi:
     docker buildx build --platform linux/amd64,linux/arm64 -t {{IMAGE}} --load .
 
@@ -27,11 +21,7 @@ build-multi:
 build-noscr:
     docker build --build-arg KRUSADER_SOURCE_BUILD=0 -t {{IMAGE}} .
 
-# ---------------------------------------------------------------------------
-# Smoke / run  (mirrors the CI smoke gate)
-# ---------------------------------------------------------------------------
-
-# Assert the patched source-built Krusader landed, then boot and probe the WebUI.
+# Assert the patched Krusader landed, then boot and probe the WebUI (as in CI).
 smoke: build
     #!/usr/bin/env sh
     set -eu
@@ -58,23 +48,15 @@ run:
     docker run --rm -it -p 3000:3000 -p 3001:3001 \
         -v "$PWD/.dev-config:/config" -v "$PWD:/storage" {{IMAGE}}
 
-# ---------------------------------------------------------------------------
-# Lint  (mirrors lint.yml)
-# ---------------------------------------------------------------------------
-
-# All lint checks.
+# All lint checks, as in lint.yml.
 lint: hadolint shellcheck xmllint
-
-# ---------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------
 
 # Behaviour tests for the shipped shell scripts (no container needed).
 test:
     bash tests/test-krusader-session.sh
     bash tests/test-krusader-resolution.sh
 
-# Hadolint the Dockerfile (same ignores as CI).
+# Hadolint the Dockerfile (the CI ignores plus DL3059).
 hadolint:
     hadolint --ignore DL3008 --ignore DL3009 --ignore DL3059 --ignore SC2086 Dockerfile
 
@@ -83,7 +65,7 @@ shellcheck:
     #!/usr/bin/env sh
     set -eu
     scripts=$(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' -o -name 'krusader-session' \))
-    [ -n "$scripts" ] || { echo "no shell scripts found — find pattern broken"; exit 1; }
+    [ -n "$scripts" ] || { echo "no shell scripts found, find pattern broken"; exit 1; }
     echo "$scripts"
     shellcheck -S warning -x -e SC1091 $scripts
 
@@ -95,10 +77,6 @@ xmllint:
         echo "checking $f"; xmllint --noout "$f"
     done
 
-# ---------------------------------------------------------------------------
-# Security
-# ---------------------------------------------------------------------------
-
 # Scan the working tree for committed secrets.
 secrets:
     gitleaks detect --no-banner --redact
@@ -106,10 +84,6 @@ secrets:
 # Scan the built image for HIGH/CRITICAL CVEs (report-only, like CI).
 trivy: build
     trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 {{IMAGE}}
-
-# ---------------------------------------------------------------------------
-# Aggregate + assets
-# ---------------------------------------------------------------------------
 
 # Full pre-push check: lint + tests + secrets.
 check: lint test secrets
