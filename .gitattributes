@@ -1,14 +1,15 @@
-# Shell scripts + the init banner run on Linux — always store and check out LF.
+# Shell scripts and the init banner run on Linux, so they are stored and checked
+# out with LF.
 *.sh text eol=lf
 .github/assets/banner-raw.txt text eol=lf
 
 # Everything under rootfs/ ships into the Linux image: extensionless s6 service
-# scripts (run), the openbox autostart, and configs. No binaries live here —
-# pin the whole tree to LF so CRLF checkouts can't break shebangs.
+# scripts (run), the openbox autostart and configs. There are no binaries, so
+# the whole tree is pinned to LF and a CRLF checkout cannot break a shebang.
 rootfs/** text eol=lf
 patches/*.patch text eol=lf
 selkies-patches/*.py text eol=lf
 
-# Generated banner assets: the generator writes LF, so pin them - otherwise a fresh
-# CRLF checkout makes every generator run report unchanged files as modified.
+# The banner generator writes LF; without the pin a fresh CRLF checkout makes
+# every generator run report unchanged files as modified.
 .github/assets/*.svg text eol=lf

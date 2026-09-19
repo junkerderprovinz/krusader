@@ -1,55 +1,47 @@
 # syntax=docker/dockerfile:1.26
 #
-# Krusader for Unraid – community edition (Selkies)
-# --------------------------------------------------
-# Built on the LinuxServer Selkies base image (successor of their EOL KasmVNC
-# packaging): X11 + openbox as before, streamed via a hybrid VNC/H.264 pipeline
-# with a modern web client. Far smoother than the legacy noVNC stacks.
+# Krusader for Unraid, community edition, on the LinuxServer Selkies base image
+# (successor of their KasmVNC packaging): X11 and openbox streamed to a web
+# client over a hybrid VNC/H.264 pipeline.
 #
-# Features added on top of the base image:
+# Added on top of the base image:
 #   * Krusader (twin-pane file manager)
-#   * Kate (KDE editor) – also wired up as Krusader's default editor
-#   * Kompare (diff viewer) – drives Krusader's "Compare by content"
-#   * Full archive support including RAR (unrar), 7z, ARJ, ACE, LHA …
-#   * Pre-configured Dark Mode theme (Krusader, Kate, KDE)
+#   * Kate (KDE editor), also Krusader's default editor
+#   * Kompare (diff viewer), used by Krusader's "Compare by content"
+#   * Archive support including RAR (unrar), 7z, ARJ, ACE, LHA
+#   * Dark Mode theme for Krusader, Kate and KDE
 #   * Right-click "Extract RAR here", "Open with Kate", "Open Konsole here"
-#   * Selectable UI language via KRUSADER_LANG (de, en, fr, es, it, …)
-#   * KDE i18n language packs for every selectable language
+#   * UI language via KRUSADER_LANG, with KDE language packs for each choice
 #
 # Repository:  https://github.com/junkerderprovinz/krusader
-# License:     AGPL-3.0-only (this wrapper)  –  Krusader upstream is GPL-3.0
+# License:     AGPL-3.0-only (this wrapper); Krusader upstream is GPL-3.0
 #
-# dev (statt des gepinnten ubunturesolute) liefert dieselbe Ubuntu-Resolute-Serie
-# (Krusader 2.9.0/KF6 bleibt, siehe Issue #16 oben), baut aber selkies-project/
-# selkies live von main statt vom eingefrorenen lsio-Pin – das ist der einzige
-# Weg, den Firefox/Safari-Clipboard-Bug aus Issue #27 zu bekommen, ohne auf den
-# lsio-Port von PR #301/#302 zu warten (byte-genau gegen den gebauten Container
-# verifiziert: echter _typeText()-Pfad statt Shift_L-Retype + natives paste-Event
-# statt Async-Clipboard-Workaround). Tradeoff bewusst akzeptiert: kein manuell
-# geprueftes Pin-Bump-Review mehr, dev floated auf jedem Rebuild mit main mit.
+# BASE_TAG=dev carries the same Ubuntu resolute series as the pinned
+# ubunturesolute tag (Krusader 2.9.0 on KF6, #16), but builds selkies from its
+# main branch instead of the frozen lsio pin. That is the only way to get the
+# Firefox/Safari clipboard fix for #27 (the real _typeText() path and a native
+# paste event instead of the Shift_L retype and the async clipboard workaround)
+# without waiting for lsio to port upstream PR #301/#302. The price is that the
+# base follows selkies main on every rebuild instead of a reviewed pin bump.
 ARG BASE_TAG=dev
-# Source-build switch: 1 = build Krusader 2.9.0 from source WITH our panel-
-# icon-tint patches (patches/) and install it over the apt package; 0 = plain
-# apt Krusader (emergency fallback, no rebuild of the patch toolchain).
+# 1 builds Krusader from source with the panel icon tint patches in patches/
+# and installs it over the apt package; 0 keeps the plain apt Krusader as an
+# emergency fallback.
 ARG KRUSADER_SOURCE_BUILD=1
 ARG KRUSADER_VERSION=2.9.0
-# sha256 of krusader-${KRUSADER_VERSION}.tar.xz — download.kde.org redirects to
-# arbitrary third-party mirrors, so the tarball is hash-pinned. Overriding
-# KRUSADER_VERSION requires overriding this hash too.
+# download.kde.org redirects to arbitrary third-party mirrors, so the tarball
+# is hash-pinned; a different KRUSADER_VERSION needs its own hash.
 ARG KRUSADER_SHA256=c9b79bfade6cc69fe0e341ecef932fcac8afd9fe94e8cbcfbd729feb54394e04
 
-# ---------------------------------------------------------------------------
-# Builder: patched Krusader from the official KDE source tarball
-# ---------------------------------------------------------------------------
-# Deliberately ubuntu:resolute (same Ubuntu archive as the Selkies base) so the
-# Qt6/KF6 ABI matches the runtime libs in the final image — but as a SEPARATE
-# base, so this expensive layer survives the weekly Selkies base bumps in the
-# gha cache; it only rebuilds when patches/, KRUSADER_VERSION or the ubuntu
-# image digest change.
-# COUPLING: this series MUST match BASE_TAG's Ubuntu series. If BASE_TAG is
-# ever moved to a different series (e.g. rollback to noble), build with
-# KRUSADER_SOURCE_BUILD=0 — a resolute-ABI binary over another series' runtime
-# would not start (the CI smoke gate asserts the patched binary runs).
+# Builder: patched Krusader from the official KDE source tarball. It uses
+# ubuntu:resolute, the same archive as the Selkies base, so the Qt6/KF6 ABI
+# matches the runtime libraries, but as a separate base so this expensive layer
+# survives the weekly Selkies base bumps in the gha cache and only rebuilds when
+# patches/, KRUSADER_VERSION or the ubuntu image digest change.
+# The series has to match BASE_TAG's Ubuntu series. If BASE_TAG moves to
+# another one (a rollback to noble, say), build with KRUSADER_SOURCE_BUILD=0:
+# a resolute binary over another series' runtime would not start, and the CI
+# smoke gate checks that the patched binary runs.
 FROM ubuntu:resolute AS krusader-build
 ARG KRUSADER_VERSION
 ARG KRUSADER_SHA256
@@ -79,26 +71,26 @@ RUN set -eux; \
 COPY patches/ /patches/
 RUN set -eux; \
     for p in /patches/*.patch; do patch -d /src -p1 < "$p"; done; \
-    # KDE_INSTALL_USE_QT_SYS_PATHS: mandatory so the krarc KIO worker lands in
-    # the Qt plugin path the runtime actually searches (CMakeLists warns).
+    # KDE_INSTALL_USE_QT_SYS_PATHS puts the krarc KIO worker in the Qt plugin
+    # path the runtime searches (CMakeLists warns without it).
     cmake -S /src -B /build -G Ninja -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr -DKDE_INSTALL_USE_QT_SYS_PATHS=true; \
     cmake --build /build; \
     DESTDIR=/staging cmake --install /build; \
-    # marker: init-krusader detects the patched build (skips the folder-icon
-    # bake so KIconLoader can tint), and the CI smoke gate asserts it exists.
+    # init-krusader looks for this marker to skip the folder icon bake so
+    # KIconLoader can tint, and the CI smoke gate asserts it exists.
     mkdir -p /staging/usr/share/krusader; \
     touch /staging/usr/share/krusader/.icontint
 
-# Switch: KRUSADER_SOURCE_BUILD=0 -> empty staging, apt krusader stays as-is.
+# KRUSADER_SOURCE_BUILD=0 selects an empty staging tree, so the apt krusader stays.
 FROM ubuntu:resolute AS krusader-artifact-0
 RUN mkdir -p /staging
 FROM krusader-build AS krusader-artifact-1
 # hadolint ignore=DL3006
 FROM krusader-artifact-${KRUSADER_SOURCE_BUILD} AS krusader-artifact
 
-# Flavor tag deliberately pinned (never :latest) — the Selkies base makes
-# breaking changes between versions by design; bump BASE_TAG consciously.
+# BASE_TAG names a flavor rather than :latest, because the Selkies base makes
+# breaking changes between versions.
 FROM ghcr.io/linuxserver/baseimage-selkies:${BASE_TAG}
 
 LABEL maintainer="junkerderprovinz"
@@ -129,122 +121,84 @@ ENV TITLE="Krusader" \
 ENV SELKIES_USE_CSS_SCALING="true" \
     SELKIES_SCALING_DPI="96"
 
-# ---------------------------------------------------------------------------
-# Pakete installieren
-# ---------------------------------------------------------------------------
-# Krusader + Kate + Theme + Archive-Tools + i18n-Pakete für alle wichtigen
-# Sprachen, die wir später im Unraid-Template als Dropdown anbieten.
-#
-# Hinweis:
-#   * `unrar` lebt im "multiverse" Repo (Ubuntu) bzw. "non-free" (Debian).
-#     Das Baseimage basiert auf Ubuntu Noble (24.04) – multiverse muss
-#     aktiviert werden.
-#   * KDE-i18n: in Ubuntu paketiert als `kde-l10n-<code>` (Legacy)
-#     bzw. heutzutage als individuelle Pakete:
-#       - `language-pack-kde-<code>`     für KDE-Übersetzungen
-#       - `language-pack-<code>`         für allgemeine Locale-Daten
-#     Wir installieren beide Schichten.
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# Phase 1: Pflichtpakete (Build bricht ab, wenn etwas fehlt)
-# ---------------------------------------------------------------------------
+# Phase 1: required packages, the build fails if one is missing. unrar lives in
+# Ubuntu's multiverse component, which the sed below enables.
 RUN set -eux; \
-    # multiverse + universe + restricted aktivieren
     sed -i '/^Components:/ s/$/ multiverse universe restricted/' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        # File-Manager + Editor
+        # file manager and editor
         krusader kate konsole ark krename \
-        # Diff viewer for Krusader's "Compare by content" (F10 / File menu).
-        # Krusader looks for kdiff3, kompare, xxdiff in that order via
-        # KrServices::supportedTools() and disables the action when it finds
-        # none; kompare is the KDE-native one and the lightest of the three
-        # (~2.6 MB, its KF6 deps are already in the image). No config needed —
-        # KrServices::fullPathName() picks it up from PATH on first use and
-        # records it under krusaderrc [Dependencies] "diff utility", so a user
-        # who mounts another differ can still point that key elsewhere.
+        # Diff viewer for "Compare by content". Krusader looks for kdiff3,
+        # kompare and xxdiff in that order and disables the action when it
+        # finds none. kompare is the lightest (its KF6 deps are already in the
+        # image); Krusader picks it up from PATH on first use and records it
+        # under krusaderrc [Dependencies] "diff utility", so a user who mounts
+        # another differ can point that key elsewhere.
         kompare \
-        # Theme / Icons
+        # theme and icons
         breeze breeze-icon-theme kde-style-breeze \
-        # Archiv-Tools (wichtig für Krusader)
-        # p7zip-rar existiert ab resolute nicht mehr — der RAR-Codec fuers
-        # neue 7zip heisst dort 7zip-rar (p7zip-full bleibt als Uebergangspaket).
+        # Archive tools. From resolute on the RAR codec for 7zip is 7zip-rar;
+        # p7zip-rar is gone and p7zip-full is a transitional package.
         unrar p7zip-full 7zip-rar \
         zip unzip bzip2 lzma xz-utils \
         lhasa arj unace rpm cpio \
-        # KDE/Qt Runtime essentials
+        # KDE/Qt runtime
         dbus-x11 kde-cli-tools kdialog keditbookmarks \
-        # x11-xkb-utils (setxkbmap) + xkb-data: the Selkies base ships Xvfb with
+        # x11-xkb-utils (setxkbmap) and xkb-data: the Selkies base ships Xvfb with
         # no keymap, so autostart loads a full keymap at session start to bind
         # Shift and keep pasted uppercase from collapsing to lowercase (#27).
         x11-xkb-utils xkb-data \
-        # Sonnet-Hunspell-Plugin: macht KDE-Apps (Kate, KMail, ...) die
-        # Hunspell-Woerterbuecher als Spell-Backend zugaenglich. Ohne dieses
-        # Plugin meckert Sonnet "No speller backends available!".
+        # Sonnet's hunspell backend; without it KDE apps report "No speller
+        # backends available!".
         sonnet-plugins \
-        # Qt-Theme-Bridge fuer KDE-Apps:
-        # plasma-integration liefert das offizielle 'kde' Qt-Platformtheme-
-        # Plugin (libkdeplatformtheme.so). Damit liest Krusader/Kate die
-        # KDE-Color-Schemes (DarkMode.colors) NATIV — qt5ct kann diese
-        # KDE-Files nicht parsen (Format-Mismatch) und liefert eine leere
-        # weisse Default-Palette zurueck. Genau dieser Fehler hat zuvor
-        # zur hellen UI mit Linien-Optik gefuehrt.
+        # plasma-integration provides the 'kde' Qt platform theme plugin
+        # (libkdeplatformtheme.so), which reads KDE .colors schemes such as
+        # DarkMode.colors. qt5ct cannot parse that format and falls back to a
+        # blank white palette.
         plasma-integration kde-config-gtk-style \
-        # KDE Session Manager — ksmserver persistiert Fenstergeometrie und
-        # UI-Zustand (Bugs #1/#2). Ist Teil von plasma-workspace (~150 MB).
-        # ksmserver registriert sich als org.kde.ksmserver auf dem D-Bus und
-        # sendet saveYourself an alle KMainWindow-Apps beim Beenden.
+        # ksmserver (part of plasma-workspace, ~150 MB) registers as
+        # org.kde.ksmserver on D-Bus and sends saveYourself to KMainWindow apps
+        # on exit, which persists window geometry and UI state (bugs #1/#2).
         plasma-workspace \
-        # qt5ct/qt6ct trotzdem als Fallback fuer Nicht-KDE-Qt-Apps
+        # fallback theme for Qt apps without the KDE plugin
         qt5ct qt6ct \
-        # Hunspell + Fonts (ohne Sprach-Wörterbücher – die kommen in Phase 2)
+        # hunspell; the dictionaries come in phase 2
         hunspell \
-        # WICHTIG: fontconfig + Standard-Fonts. Ohne fontconfig + fc-cache
-        # rendern Qt/KDE-Apps Text als leere Striche (Glyphen-Lookup
-        # schlägt fehl). Plus fonts-dejavu/liberation als robuste Defaults
-        # für UI-Render, fonts-hack als Monospace-Fallback.
+        # Without fontconfig and a font cache Qt/KDE apps render text as empty
+        # lines. DejaVu and Liberation are the UI defaults, Hack the monospace
+        # fallback.
         fontconfig \
         fonts-noto fonts-noto-cjk fonts-noto-color-emoji \
         fonts-dejavu fonts-dejavu-core fonts-dejavu-extra \
         fonts-liberation fonts-liberation2 \
         fonts-hack fonts-freefont-ttf \
-        # Locale-Werkzeuge
+        # locale tools
         locales coreutils sed; \
-    # arj-Symlink (manche Tools erwarten "unarj")
+    # some tools look for unarj
     [ -e /usr/bin/unarj ] || ln -s /usr/bin/arj /usr/bin/unarj; \
-    # Font-Cache JETZT aufbauen, damit Qt/KDE die Fonts beim ersten
-    # Container-Start sofort findet. Sonst rendert Krusader die Texte
-    # als leere Linien.
+    # Build the font cache now so the first container start finds the fonts.
     fc-cache -f -v >/dev/null 2>&1 || true; \
-    # apt-Listen nicht in den Layer backen — Phase 2 macht ihr eigenes
-    # apt-get update (frische Listen statt stale Layer-Cache).
+    # Phase 2 runs its own apt-get update, so the lists stay out of this layer.
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# ---------------------------------------------------------------------------
-# Patched Krusader over the apt package (see builder stage at the top)
-# ---------------------------------------------------------------------------
-# Install-over instead of dpkg -r: the apt package keeps providing all runtime
-# dependencies (KF6 libs, KIO workers, icons); our staging overwrites the
-# binary, the krarc KIO worker and the data files. With KRUSADER_SOURCE_BUILD=0
-# the staging directory is empty and this is a no-op.
+# Patched Krusader over the apt package (see the builder stage). Installing
+# over it instead of dpkg -r keeps the apt package providing the runtime
+# dependencies (KF6 libs, KIO workers, icons) while the staging tree replaces
+# the binary, the krarc KIO worker and the data files. With
+# KRUSADER_SOURCE_BUILD=0 the staging tree is empty and this is a no-op.
 COPY --from=krusader-artifact /staging/ /
 
-# ---------------------------------------------------------------------------
-# Phase 2: Optionale i18n + Hunspell-Pakete (Build läuft weiter, wenn ein
-# einzelnes Paket nicht existiert / umbenannt wurde – z.B. Finnisch nutzt
-# voikko statt hunspell, manche Sprachen haben keine KDE-Translation).
-# ---------------------------------------------------------------------------
-# Wir filtern die Wunschliste mit `apt-cache search` und installieren nur
-# das, was tatsächlich existiert. So sind wir robust gegen Renamings in
-# zukünftigen Ubuntu-Releases.
-# ---------------------------------------------------------------------------
-# Trick: locale-gen per dpkg-trigger ausschalten, sonst ruft jedes der
-# folgenden language-pack-* Pakete locale-gen ueber ALLE bisher aktivierten
-# Locales auf (quadratische Explosion → 50min+ Build-Zeit). Wir generieren
-# die Locales spaeter EINMAL gezielt.
+# Phase 2: optional i18n and hunspell packages. Each wanted package is checked
+# with apt-cache first and only the ones that exist are installed, so a renamed
+# or missing package (Finnish uses voikko instead of hunspell, some languages
+# have no KDE translation) does not fail the build.
+#
+# locale-gen is stubbed out meanwhile: otherwise every language-pack-* package
+# runs it over all locales enabled so far, which pushes the build past 50
+# minutes. The locales are generated once, further down.
 RUN set -eux; \
-    # locale-gen-Hook neutralisieren
     if [ -x /usr/sbin/locale-gen ]; then \
         mv /usr/sbin/locale-gen /usr/sbin/locale-gen.real; \
         printf '#!/bin/sh\nexit 0\n' > /usr/sbin/locale-gen; \
@@ -252,8 +206,8 @@ RUN set -eux; \
     fi
 
 RUN set -eux; \
-    # Eigenes apt-get update: Phase 1 raeumt seine Listen weg, und mit dem
-    # gha-Layer-Cache waeren mitgeschleppte Listen ohnehin veraltet (stale).
+    # Phase 1 removed its lists, and lists carried over in the gha layer cache
+    # would be stale anyway.
     apt-get update; \
     WANT=" \
         hunspell-de-de hunspell-en-us hunspell-en-gb \
@@ -311,21 +265,15 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# ---------------------------------------------------------------------------
-# Locales generieren (EINMAL, gezielt fuer unsere 35 Locales)
-# ---------------------------------------------------------------------------
+# Generate the locales once, one per supported language.
 RUN set -eux; \
-    # locale-gen-Hook reaktivieren
     if [ -f /usr/sbin/locale-gen.real ]; then \
         mv -f /usr/sbin/locale-gen.real /usr/sbin/locale-gen; \
     fi; \
-    # Ubuntus language-pack-* Pakete registrieren unter
-    # /var/lib/locales/supported.d/ ALLE Regionalvarianten (de_AT, de_CH,
-    # de_LI, ...), und locale-gen liest diese Dateien ZUSAETZLICH zu
-    # /etc/locale.gen. Leeren, damit wirklich nur die kuratierte Liste
-    # unten generiert wird — eine Locale pro Sprache haelt das Image schlank.
+    # language-pack-* registers every regional variant (de_AT, de_CH, de_LI,
+    # ...) under /var/lib/locales/supported.d/, which locale-gen reads on top
+    # of /etc/locale.gen. Clearing it keeps the image to the list below.
     rm -f /var/lib/locales/supported.d/*; \
-    # /etc/locale.gen frisch schreiben — nur unsere gewuenschten Locales
     : > /etc/locale.gen; \
     for L in \
         de_DE en_US en_GB fr_FR es_ES it_IT pt_PT pt_BR \
@@ -337,83 +285,55 @@ RUN set -eux; \
     done; \
     locale-gen
 
-# ---------------------------------------------------------------------------
-# Skeleton-Configs + s6-overlay init scripts
-# ---------------------------------------------------------------------------
-# Das LinuxServer-Baseimage benutzt s6-overlay v3. Init-Scripts liegen unter
-# /etc/s6-overlay/s6-rc.d/ und werden vor den Services ausgeführt.
 COPY rootfs/ /
 
-# Init-Log-Banner: single source at .github/assets/banner-raw.txt (CR stripped
-# so the figlet renders cleanly regardless of the editor's line endings).
+# The init log banner has one source, .github/assets/banner-raw.txt. CR is
+# stripped so figlet output renders whatever the checkout's line endings, and
+# the base's own brand banner (init-adduser/branding) is emptied so the log
+# shows only the one from print-banner.sh.
 COPY .github/assets/banner-raw.txt /usr/local/share/banner-raw.txt
-# Strip CR so figlet renders cleanly, AND empty the LinuxServer base's OWN brand
-# banner (init-adduser/branding) so the log shows only our print-banner.sh banner
-# instead of a messy double banner (this is why the init banner looked "incomplete").
 RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt \
     && : > /etc/s6-overlay/s6-rc.d/init-adduser/branding
 
-# ---------------------------------------------------------------------------
-# Browser-tab favicon / branding (issue #12, radically simpler on Selkies)
-# ---------------------------------------------------------------------------
-# Selkies has ONE branding path: /usr/share/selkies/www/icon.png. The base's
-# init-nginx copies it on every container start to web/favicon.ico, web/icon.png
-# and references it from the generated manifest.json — no more multi-path
-# kclient surgery. The build fails loudly if the path is gone (base layout
-# changed), so CI / the weekly rebuild surfaces the regression.
+# Browser tab favicon (#12). Selkies has one branding path,
+# /usr/share/selkies/www/icon.png, which the base's init-nginx copies to
+# web/favicon.ico and web/icon.png on every start and references from the
+# generated manifest.json. The build fails if the path is gone, so a changed
+# base layout shows up in CI and the weekly rebuild.
 COPY .github/assets/icon.png /usr/local/share/krusader-icon.png
 RUN set -eux; \
     dst=/usr/share/selkies/www/icon.png; \
-    [ -f "$dst" ] || { echo "ERROR: $dst missing — selkies base layout changed, update the branding override"; exit 1; }; \
+    [ -f "$dst" ] || { echo "ERROR: $dst missing, the selkies base layout changed; update the branding override"; exit 1; }; \
     cp /usr/local/share/krusader-icon.png "$dst"; \
     echo "krusader: branded selkies icon at $dst"
 
-# ---------------------------------------------------------------------------
-# Assert the X service we hook the screen size onto is really the base's
-# ---------------------------------------------------------------------------
-# rootfs/ ships svc-xorg/dependencies.d/init-krusader-res so that our oneshot
-# settles MAX_RES before Xvfb reads it. If a base bump ever renames that
-# service, COPY rootfs/ / would CREATE /etc/s6-overlay/s6-rc.d/svc-xorg as a
-# service directory with a dependency and no `type` file. s6-rc-compile then
-# aborts in stage 2 and EVERY container exits at boot, while the build itself
-# stays green — the failure would only show up in users' logs. Checking for the
-# base's own `type` file here turns that into a build error instead.
+# rootfs/ ships svc-xorg/dependencies.d/init-krusader-res so the screen size is
+# settled before Xvfb reads it. If a base bump renamed that service, COPY
+# rootfs/ / would create svc-xorg as a service directory without a type file;
+# s6-rc-compile would then abort and every container would exit at boot while
+# the build stays green. Checking for the base's own type file makes that a
+# build error.
 RUN set -eux; \
     t=/etc/s6-overlay/s6-rc.d/svc-xorg/type; \
-    [ -f "$t" ] || { echo "ERROR: $t missing — the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-krusader-res at the new service"; exit 1; }; \
+    [ -f "$t" ] || { echo "ERROR: $t missing, the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-krusader-res at the new service"; exit 1; }; \
     echo "krusader: screen-size oneshot ordered before $(cat "$t") service svc-xorg"
 
-# The Shift-on-function-keys bridge that lived here is gone: the base now
-# carries the upstream fix (selkies 720fad27, is_function_keysym() in the
-# neutralize derivation), which covers the whole X function block and the XF86
-# vendor block, so Shift+Arrow and Shift+Home keep their Shift too. The patch
-# script stopped the build to say so, exactly as it was built to. See
-# TROUBLESHOOTING.md Bug #6.
-
-# ---------------------------------------------------------------------------
-# MediaButton icon = the SAME icon the panel shows for a directory
-# ---------------------------------------------------------------------------
-# Krusader's status-bar "show available devices" button (MediaButton) uses the
-# "system-file-manager" icon. The file panel renders a directory from its
-# mimetype: inode/directory -> icon name "inode-directory", which Breeze ships
-# as a symlink to places/<size>/folder.svg. We stamp that exact art (symlink
-# dereferenced with cp -L) onto system-file-manager SIZE-FOR-SIZE, so the button
-# is byte-identical to the folder icon in the file list at every size — instead
-# of the old approach that copied one arbitrary file onto all sizes. Done in
-# both breeze-dark and its parent breeze, because KIconLoader falls back to the
-# parent for any size breeze-dark does not itself ship (otherwise the
-# un-overridden parent icon would win and the button would look unchanged).
+# The status bar's MediaButton uses the system-file-manager icon, while the
+# file panel draws a directory as inode-directory, which Breeze ships as a
+# symlink to places/<size>/folder.svg. Copying that art (dereferenced with
+# cp -L) onto system-file-manager size for size makes the button identical to
+# the folder icon in the list. Both breeze-dark and its parent breeze get it,
+# because KIconLoader falls back to the parent for any size breeze-dark does
+# not ship itself.
 RUN set -eux; \
     n=0; \
     for theme in /usr/share/icons/breeze-dark /usr/share/icons/breeze; do \
         [ -d "$theme" ] || continue; \
         store="/usr/local/share/krusader-mediabutton/$(basename "$theme")"; \
         mkdir -p "$store"; \
-        # pristine copies of the PANEL folder icon too (places/<sz>/folder.svg,
-        # which inode-directory symlinks to): init-krusader tints the file-list
-        # folder icons to the CONFIGURED panel foreground the same way as the
-        # MediaButton, and restores these pristine files when no custom colour
-        # is set.
+        # Pristine copies of the panel folder icon, which init-krusader tints
+        # to the configured panel foreground and restores when no colour is
+        # set.
         pstore="/usr/local/share/krusader-panelfolder/$(basename "$theme")"; \
         mkdir -p "$pstore"; \
         pn=0; \
@@ -422,7 +342,7 @@ RUN set -eux; \
             cp -L "${pdir}folder.svg" "$pstore/$(basename "$pdir").svg"; \
             pn=$((pn + 1)); \
         done; \
-        [ "$pn" -gt 0 ] || { echo "ERROR: no places/*/folder.svg in $theme — panel-folder tint store empty, breeze layout changed"; exit 1; }; \
+        [ "$pn" -gt 0 ] || { echo "ERROR: no places/*/folder.svg in $theme, the panel folder tint store is empty; breeze layout changed"; exit 1; }; \
         for appdir in "$theme"/apps/*/; do \
             [ -e "${appdir}system-file-manager.svg" ] || continue; \
             sz="$(basename "$appdir")"; \
@@ -430,17 +350,17 @@ RUN set -eux; \
             [ -e "$src" ] || src="$theme/places/$sz/folder.svg"; \
             [ -e "$src" ] || continue; \
             cp -L "$src" "${appdir}system-file-manager.svg"; \
-            # pristine copy for the runtime tint (init-krusader recolors the
-            # button to the CONFIGURED statusbar foreground on every start)
+            # pristine copy for init-krusader, which tints the button to the
+            # configured status bar foreground on every start
             cp -L "$src" "$store/$sz.svg"; \
             n=$((n + 1)); \
         done; \
         gtk-update-icon-cache -f -t "$theme" 2>/dev/null || true; \
     done; \
-    [ "$n" -gt 0 ] || { echo "ERROR: no apps/*/system-file-manager.svg overridden — breeze layout changed"; exit 1; }; \
+    [ "$n" -gt 0 ] || { echo "ERROR: no apps/*/system-file-manager.svg overridden, breeze layout changed"; exit 1; }; \
     echo "krusader: MediaButton icon matched to the panel folder icon ($n file(s)) + pristine store"
 
-# Berechtigungen für init-scripts
+# The scripts are committed without the executable bit.
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
              /usr/local/bin/print-banner.sh \
@@ -452,40 +372,32 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
              /defaults/autostart \
              /defaults/startwm.sh
 
-# ---------------------------------------------------------------------------
-# Standard-ENV (durch Unraid-Template überschreibbar)
-# ---------------------------------------------------------------------------
-# KRUSADER_LANG  – UI-Sprache: ISO-Code (de, en, fr, …) oder "system"
-# KRUSADER_THEME – dark | light
-# CUSTOM_PORT    – HTTP-Port  (Selkies-Standard 3000)
-# CUSTOM_HTTPS_PORT – HTTPS-Port (Selkies-Standard 3001)
-# Locale: keep the boot env LANGUAGE-NEUTRAL (C.UTF-8) and let KRUSADER_LANG drive
-# the UI language via krusader-language.sh (kdeglobals [Translations] + a matching
-# LANG/LANGUAGE pushed into the s6 env). We must NOT hardcode a German LANG/
-# LANGUAGE/LC_ALL here: the Selkies base's init-selkies-config derives
-# LANGUAGE=${LC_ALL%.UTF-8} + LANG=${LC_ALL} into the container env whenever LC_ALL
-# is set, and KDE gives that LANGUAGE env priority over kdeglobals [Translations].
-# With a German LC_ALL baked in, a user who set KRUSADER_LANG=en still got a German
-# UI (issue #21), because the base's German LANGUAGE env overrode the correct
-# kdeglobals we write. C.UTF-8 leaves no language in the env, so kdeglobals wins.
+# KRUSADER_LANG (an ISO code or "system"), KRUSADER_THEME (dark or light) and
+# KEYBOARD_LAYOUT are meant to be set from the Unraid template. The base serves
+# HTTP on CUSTOM_PORT (3000) and HTTPS on CUSTOM_HTTPS_PORT (3001).
 #
-# NO MAX_RES DEFAULT HERE, ON PURPOSE. The screen size is the container's
-# biggest single memory item: Xvfb allocates the whole framebuffer up front in
-# shared memory, about 4 bytes per pixel, regardless of the browser window.
+# The boot locale stays language-neutral (C.UTF-8) and KRUSADER_LANG drives the
+# UI language through krusader-language.sh (kdeglobals [Translations] plus a
+# matching LANG/LANGUAGE in the s6 env). A German LANG/LANGUAGE/LC_ALL here
+# would override that: the base's init-selkies-config derives
+# LANGUAGE=${LC_ALL%.UTF-8} and LANG=${LC_ALL} whenever LC_ALL is set, and KDE
+# gives that LANGUAGE priority over kdeglobals, so a user with KRUSADER_LANG=en
+# would get a German UI (#21).
+#
+# There is no MAX_RES default here. The screen size is the container's biggest
+# single memory item: Xvfb allocates the whole framebuffer up front in shared
+# memory, about 4 bytes per pixel, whatever the size of the browser window.
 # Measured on a live container (Unraid, one client at 2528x1324):
 #
 #   15360x8640 (base default)  ->  Xvfb RSS 578 MB, container 778 MiB
 #   5120x2880                  ->  Xvfb RSS 119 MB, container 252 MiB
 #   3840x2160                  ->  Xvfb RSS  93 MB, container 266 MiB
 #
-# Tempting as it is to bake a small default in, the full resolution range has
-# to stay AVAILABLE, so the choice belongs to the user rather than to this
-# line: the image leaves the base default alone and the Unraid template offers
-# the size as a preset dropdown (MAX_RES) plus a free field (MAX_RES_CUSTOM)
-# whose value wins. init-krusader-res settles the two before svc-xorg starts;
-# krusader-resolution.sh holds the rules and tests/test-krusader-resolution.sh
-# pins them. Anyone who wants the small footprint picks a preset; anyone who
-# wants a 16K desktop can have one.
+# The full range has to stay available, so the choice is the user's: the image
+# keeps the base default and the Unraid template offers a preset dropdown
+# (MAX_RES) plus a free field (MAX_RES_CUSTOM) that wins. init-krusader-res
+# settles the two before svc-xorg starts; krusader-resolution.sh holds the
+# rules and tests/test-krusader-resolution.sh pins them.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     KEYBOARD_LAYOUT=us \
@@ -493,15 +405,7 @@ ENV KRUSADER_LANG=de \
     QT_QPA_PLATFORMTHEME=qt5ct \
     QT_STYLE_OVERRIDE=Breeze
 
-# Ports werden vom Baseimage freigegeben (3000/HTTP, 3001/HTTPS).
-# Der Entrypoint kommt vom Baseimage – Selkies wird automatisch gestartet
-# und führt /defaults/autostart aus (siehe rootfs/defaults/autostart).
-
-# ---------------------------------------------------------------------------
-# Healthcheck: WebUI (Selkies/nginx) antwortet auf dem HTTPS-Port.
-# curl kommt aus dem Baseimage (baseimage-ubuntu installiert es im Runtime-
-# Layer). Jeder HTTP-Statuscode zaehlt als "up" — nur "000" (keine Antwort /
-# Verbindung verweigert) markiert den Container als unhealthy.
-# ---------------------------------------------------------------------------
+# Any HTTP status counts as up; only 000 (no answer, connection refused) marks
+# the container unhealthy. curl comes with the base image.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD ["/bin/sh", "-c", "c=$(curl -ks -o /dev/null -w '%{http_code}' --max-time 5 https://127.0.0.1:${CUSTOM_HTTPS_PORT:-3001}/); [ \"$c\" != \"000\" ] || exit 1"]
