@@ -1,23 +1,19 @@
 /**
- * Generates the Krusader README banners (house theme-adaptive pair):
- *   krusader-banner.svg / .png      : light 1600x500 - white bg, dark wordmark
- *   krusader-banner-dark.svg / .png : dark 1600x500 - GitHub-dark bg, light wordmark
- * Both embed the SAME Breeze-recoloured logo verbatim (blue panes + white cursor
- * read on both backgrounds - no hell/dunkel masters exist); only the background
- * and text colours flip. The README serves the pair via <picture>.
+ * Generates the theme-adaptive pair of README banners:
+ *   krusader-banner.svg / .png       light, 1600x500, white background, dark wordmark
+ *   krusader-banner-dark.svg / .png  dark, 1600x500, GitHub dark background, light wordmark
+ * Both embed the same Breeze-recoloured logo, whose blue panes and white cursor
+ * read on either background, so only the background and text colours flip. The
+ * README serves the pair via <picture>.
  *
- * The official Krusader wordmark (krusader.org header) is lowercase "krusader"
- * in DejaVu Sans Bold Oblique - the classic Bitstream-Vera-era Linux face. We
- * replicate it faithfully; the claim uses DejaVu Sans Book. Both fonts are free
- * (Bitstream Vera / DejaVu licence), fetched at runtime from the dejavu-fonts-ttf
- * npm package via jsDelivr, cached in the OS temp dir, and never committed.
+ * The official wordmark (krusader.org header) is a lowercase "krusader" in
+ * DejaVu Sans Bold Oblique; the claim uses DejaVu Sans Book. Both fonts are
+ * free, fetched at runtime from the dejavu-fonts-ttf npm package via jsDelivr,
+ * cached in the OS temp dir and never committed. The text becomes SVG paths
+ * (opentype.js), so the SVG is self-contained.
  *
- * The text is converted to SVG paths (opentype.js) so the SVG is self-contained.
- * NOTE: DejaVu's GSUB ccmp lookups crash opentype.js's feature engine, so glyph
- * runs are shaped with features disabled (plain Latin text - no loss).
- *
- * The OLD logo-only banner is preserved as krusader-banner-logo.png - support
- * threads use that one; do not delete it. (build_logo.py regenerates it.)
+ * The support threads use the logo-only krusader-banner-logo.png, which
+ * build_logo.py generates; keep it.
  *
  * Deps: `npm i -g @resvg/resvg-js opentype.js`. Run: node .github/assets/gen-banner.mjs
  */
@@ -35,12 +31,10 @@ const opentype = require(`${gRoot}/opentype.js`);
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 
-// ---- content + styling -----------------------------------------------------
 const NAME = "krusader"; // lowercase, exactly like the official wordmark
 const CLAIM = "Drag it. Drop it. In the dark.";
-// Theme pair (house rule): same logo in both, only bg + text colours flip.
-// Light: Breeze dark grey wordmark (the logo's frame colour) + house claim grey.
-// Dark:  GitHub dark-canvas bg, light wordmark, muted light claim.
+// Light: Breeze dark grey wordmark (the logo's frame colour) and the house claim grey.
+// Dark:  GitHub dark canvas, light wordmark, muted light claim.
 const THEMES = [
   { suffix: "", bg: "#ffffff", name: "#1f2328", claim: "#5a5d5e" },
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad" },
@@ -49,12 +43,11 @@ const W = 1600, H = 500;
 const LH = 400; // logo height (the source is square, 200x200 units)
 // House banner standard: name 132 / claim 44, logo-to-text gap 70, name-to-claim gap 8.
 const nameSize = 132, claimSize = 44, gap = 70, lineGap = 8;
-// ---------------------------------------------------------------------------
 
 // DejaVu's ccmp GSUB lookups crash opentype.js's feature engine even with
-// features disabled (the Bidi pipeline always applies ccmp). For plain Latin
-// text we shape glyph-by-glyph instead - charToGlyph + manual pair kerning -
-// which bypasses that pipeline entirely with no visual loss.
+// features disabled (the Bidi pipeline always applies ccmp). Plain Latin text
+// is shaped glyph by glyph instead, with charToGlyph and manual pair kerning,
+// which bypasses that pipeline with no visual loss.
 function shapeRun(font, text, size) {
   const scale = size / font.unitsPerEm;
   const run = [];
@@ -113,9 +106,8 @@ const claimBaseline = nameBaseline + nameDesc + lineGap + claimAsc;
 const namePath = runPathData(nameFont, NAME, textX, nameBaseline, nameSize);
 const claimPath = runPathData(claimFont, CLAIM, textX, claimBaseline, claimSize);
 
-// Embed the Breeze-recoloured logo verbatim. Its root <svg> has width/height but
-// NO viewBox, so the positioned wrapper adds one (same 200x200 unit space) -
-// attribute-only change, the artwork inside is untouched.
+// The logo's root <svg> has width/height but no viewBox, so the positioned
+// wrapper adds one in the same 200x200 unit space; the artwork is untouched.
 let logo = readFileSync(join(__dir, "krusader-logo-breeze.svg"), "utf8")
   .replace(/<\?xml[^>]*\?>\s*/, "");
 logo = logo.replace(
