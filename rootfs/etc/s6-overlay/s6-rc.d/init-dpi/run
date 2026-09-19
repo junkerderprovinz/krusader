@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# Selkies stores the last DPI it applied in /config, and the desktop loads it
+# again on the next start, before any browser connects. The image fixes the
+# DPI at 96 (SELKIES_SCALING_DPI), so this puts the stored value back to 96;
+# otherwise one laptop session at 192 DPI returns with every restart and draws
+# the desktop at twice the size.
+for f in /config/.Xresources /config/.xsettingsd; do
+    [ -f "${f}" ] || continue
+    sed -i -e 's/^Xft\.dpi:.*/Xft.dpi: 96/' -e 's|^Xft/DPI .*|Xft/DPI 98304|' "${f}"
+    chown abc:abc "${f}"
+done

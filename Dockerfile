@@ -445,6 +445,7 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
              /usr/local/bin/print-banner.sh \
              /etc/s6-overlay/s6-rc.d/init-krusader-res/run \
+             /etc/s6-overlay/s6-rc.d/init-dpi/run \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
              /etc/s6-overlay/s6-rc.d/init-nologin/run \
              /etc/s6-overlay/s6-rc.d/svc-krusader-ready/run \
