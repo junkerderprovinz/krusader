@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
-# Behaviour tests for rootfs/usr/local/bin/krusader-resolution.sh
-# -----------------------------------------------------------------------------
-# The script decides which screen size the X server should get: the free-text
-# variable wins over the template dropdown, and anything unusable falls back
-# instead of killing the container.
+# Behaviour tests for rootfs/usr/local/bin/krusader-resolution.sh, which decides
+# the screen size the X server gets: the free-text variable wins over the
+# template dropdown, and anything unusable falls back instead of killing the
+# container.
 #
 # Run: tests/test-krusader-resolution.sh   (or `just test`)
-# -----------------------------------------------------------------------------
 set -uo pipefail
 
 RES="$(cd "$(dirname "$0")/.." && pwd)/rootfs/usr/local/bin/krusader-resolution.sh"
@@ -17,7 +14,7 @@ PASS=0
 FAIL=0
 
 ok() { echo "  PASS: $1"; PASS=$((PASS + 1)); }
-no() { echo "  FAIL: $1 — expected [$2], got [$3]"; FAIL=$((FAIL + 1)); }
+no() { echo "  FAIL: $1: expected [$2], got [$3]"; FAIL=$((FAIL + 1)); }
 
 # run <custom> <dropdown> -> prints the chosen value (stderr dropped)
 run() { MAX_RES_CUSTOM="$1" MAX_RES="$2" bash "${RES}" 2>/dev/null; }
@@ -32,12 +29,12 @@ echo "== krusader-resolution =="
 eq "keeps the dropdown value when no custom one is set" \
    "15360x8640" "$(run "" "15360x8640")"
 
-# 2) A custom value wins over the dropdown — the whole point of the second field.
+# 2) A custom value wins over the dropdown.
 eq "a custom value overrides the dropdown" \
    "3440x1440" "$(run "3440x1440" "5120x2880")"
 
-# 3) Garbage must not reach Xvfb: an unusable custom value would stop the X
-#    server from starting at all, so fall back to the dropdown instead.
+# 3) Garbage does not reach Xvfb: an unusable custom value would stop the X
+#    server from starting at all, so it falls back to the dropdown instead.
 eq "falls back to the dropdown on a malformed custom value" \
    "5120x2880" "$(run "1920*1080" "5120x2880")"
 eq "falls back on a value with no height" \
@@ -45,7 +42,7 @@ eq "falls back on a value with no height" \
 eq "falls back on a non-numeric value" \
    "5120x2880" "$(run "big" "5120x2880")"
 
-# 4) A rejected value must say so — a silent fallback would leave the user
+# 4) A rejected value is reported; a silent fallback would leave the user
 #    wondering why their resolution did nothing.
 if warns "1920*1080" "5120x2880" | grep -qi 'ignor'; then
     ok "warns when it ignores a malformed custom value"
@@ -62,7 +59,7 @@ eq "accepts a capital X" "2560x1440" "$(run "2560X1440" "5120x2880")"
 #    own default alone.
 eq "prints nothing when neither variable is set" "" "$(run "" "")"
 
-# 6b) A malformed value in the DROPDOWN has to be rejected too, not just in the
+# 6b) A malformed value in the dropdown is rejected too, not just in the
 #     custom field. Whatever this prints is what the caller writes into the X
 #     server's environment, so passing garbage through would stop X from
 #     starting and leave the user with no desktop at all.
@@ -76,8 +73,8 @@ fi
 # 6c) Shape is not enough: a digit slip like 86400 instead of 8640 is a
 #     well-formed WIDTHxHEIGHT that would make the X server ask for a
 #     multi-gigabyte framebuffer and the container die on every boot. The full
-#     base size must still pass — this guards against typos, it does not cap
-#     what a user may legitimately choose.
+#     base size still passes: this guards against typos, it does not cap what
+#     a user may choose.
 eq "accepts the full base screen size" "15360x8640" "$(run "15360x8640" "")"
 eq "rejects a size beyond what the X server can do" "3840x2160" "$(run "20000x10000" "3840x2160")"
 eq "rejects an absurd square size" "3840x2160" "$(run "99999x99999" "3840x2160")"
