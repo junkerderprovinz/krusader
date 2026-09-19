@@ -1,7 +1,6 @@
 name: Registry Cleanup
 
-# Manual maintenance tool: deletes ONE image tag from GHCR and Docker Hub
-# (used e.g. to retire the accidentally published 2.0.1 tag). Safety: refuses
+# Manual maintenance: deletes one image tag from GHCR and Docker Hub. It refuses
 # to delete a GHCR version that also carries the "latest" tag.
 
 on:
@@ -28,13 +27,13 @@ jobs:
           set -euo pipefail
           api="/users/${{ github.repository_owner }}/packages/container/${IMAGE_NAME}"
           if ! versions=$(gh api --paginate "${api}/versions"); then
-            echo "::warning::GHCR: listing versions failed (token scope?) — skipping GHCR"
+            echo "::warning::GHCR: listing versions failed (token scope?), skipping GHCR"
             exit 0
           fi
           id=$(echo "$versions" | jq -r --arg t "$TAG" \
             '.[] | select(.metadata.container.tags | index($t)) | .id' | head -1)
           if [ -z "$id" ]; then
-            echo "GHCR: no version tagged '$TAG' — nothing to do"
+            echo "GHCR: no version tagged '$TAG', nothing to do"
             exit 0
           fi
           tags=$(echo "$versions" | jq -r --arg t "$TAG" \
@@ -58,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$DH_PASS" ]; then
-            echo "::warning::DOCKERHUB_TOKEN not set — skipping Docker Hub"
+            echo "::warning::DOCKERHUB_TOKEN not set, skipping Docker Hub"
             exit 0
           fi
           jwt=$(curl -s -X POST -H "Content-Type: application/json" \

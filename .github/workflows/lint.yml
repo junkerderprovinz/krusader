@@ -16,13 +16,13 @@ jobs:
       - uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6 # v3.4.0
         with:
           dockerfile: Dockerfile
-          # DL3008 = pin apt versions – we deliberately skip pinning since
-          #          the base image moves with Ubuntu Noble.
-          # DL3009 = clean apt lists after install – we clean once after
-          #          phase 2 (final RUN), not after each layer, to keep
-          #          the multi-phase pattern readable.
-          # SC2086 = unquoted $WANT – we deliberately rely on word splitting
-          #          to expand the package wishlist into individual args.
+          # DL3008 (pin apt versions): the base image moves with Ubuntu, so
+          #         versions are not pinned.
+          # DL3009 (clean apt lists after install): the lists are cleaned
+          #         once per phase, not after each layer, which keeps the
+          #         multi-phase pattern readable.
+          # SC2086 (unquoted $WANT): word splitting expands the package
+          #         wishlist into individual arguments.
           ignore: DL3008,DL3009,SC2086
           failure-threshold: warning
 
@@ -37,12 +37,12 @@ jobs:
           sudo apt-get install -y shellcheck
           # All shell scripts shipped in the image: *.sh, the extensionless
           # s6-rc.d service scripts (run), the session starter and the openbox
-          # autostart. Shebangs are honored (no forced --shell); the two
+          # autostart. Shebangs are honoured (no forced --shell); the
           # with-contenv scripts carry a "shellcheck shell=bash" directive.
           SCRIPTS=$(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' -o -name 'krusader-session' \))
 
           if [ -z "${SCRIPTS}" ]; then
-            echo "ERROR: no shell scripts found — the find pattern is broken." >&2
+            echo "ERROR: no shell scripts found, the find pattern is broken." >&2
             exit 1
           fi
 

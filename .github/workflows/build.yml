@@ -1,27 +1,24 @@
 name: Build & Push
 
-# -----------------------------------------------------------------------------
-# Builds the Krusader-on-Selkies image (with the patched, source-built Krusader
-# — see patches/ and the Dockerfile builder stage) and pushes it to:
+# Builds the Krusader-on-Selkies image with the patched, source-built Krusader
+# (patches/ and the Dockerfile builder stage) and pushes it to
 #   * GitHub Container Registry  (ghcr.io/junkerderprovinz/krusader)
-#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/krusader)
-#     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
-#       secret are set together; until then the build stays GHCR-only.
+#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/krusader),
+#     once the DOCKERHUB_USERNAME variable and the DOCKERHUB_TOKEN secret are
+#     both set; until then the build stays GHCR-only.
 #
-# Architecture: one NATIVE build job per platform (amd64 on ubuntu-latest,
-# arm64 on ubuntu-24.04-arm — free for public repos). Compiling Krusader from
-# source under QEMU would take 1-2 h; natively it is ~10 min per arch. Each job
-# boots its image as a smoke gate (WebUI + patched-Krusader marker), pushes by
-# digest, and a merge job assembles the multi-arch manifest under the final
-# tags for both registries.
+# One native build job per platform (amd64 on ubuntu-latest, arm64 on
+# ubuntu-24.04-arm, free for public repos): compiling Krusader under QEMU would
+# take 1-2 h, natively it is about 10 min per arch. Each job boots its image as
+# a smoke gate, pushes by digest, and the merge job assembles the multi-arch
+# manifest under the final tags for both registries.
 #
 # Triggers:
-#   * Push to main           → tags: edge, main, sha-<short>
-#   * Tag v*.*.*             → tags: <version>, <major>, <major.minor>, plus
-#                              latest when that tag is the newest release
-#   * Weekly cron (Sun 04 UTC) – picks up upstream Selkies base updates
-#   * Manual workflow_dispatch
-# -----------------------------------------------------------------------------
+#   * push to main           → edge, main, sha-<short>
+#   * tag v*.*.*             → <version>, <major>, <major.minor>, and latest
+#                              when that tag is the newest release
+#   * weekly cron (Sun 04 UTC), which picks up Selkies base updates
+#   * manual workflow_dispatch
 
 on:
   push:
@@ -84,22 +81,21 @@ jobs:
           tags: krusader:smoke-${{ matrix.arch }}
           cache-from: type=gha,scope=build-${{ matrix.arch }}
 
-      # Smoke-test gate: boot the image and require the Selkies WebUI to
-      # respond before anything is pushed. Runs NATIVELY on both arches now.
-      # Additionally asserts the patched source-built Krusader actually landed
-      # in the image (marker file from the builder stage) — a green build with
-      # the stock apt binary would silently drop the per-row icon tint.
-      - name: Smoke test — ${{ matrix.arch }} must boot and serve the WebUI
+      # Boot the image and require the Selkies WebUI to respond before anything
+      # is pushed. It also asserts that the patched Krusader landed (the
+      # builder stage's marker file), because a green build with the stock apt
+      # binary would silently drop the per-row icon tint.
+      - name: Smoke test (${{ matrix.arch }} must boot and serve the WebUI)
         run: |
           set -euo pipefail
           img=krusader:smoke-${{ matrix.arch }}
           echo "== patched-Krusader marker =="
           docker run --rm --entrypoint sh "$img" -c 'test -f /usr/share/krusader/.icontint' \
-            || { echo "❌ /usr/share/krusader/.icontint missing — source-built Krusader not in image"; exit 1; }
-          # HARD assert: the patched binary must actually run and report the
-          # +icontint version marker. Catches an ABI-skewed builder artifact
-          # (e.g. base-series mismatch) that the marker file alone would hide.
-          # timeout guards against a hang under the offscreen platform.
+            || { echo "❌ /usr/share/krusader/.icontint missing, the source-built Krusader is not in the image"; exit 1; }
+          # The patched binary has to run and report the +icontint version
+          # marker. That catches an ABI-skewed builder artifact (a base series
+          # mismatch) the marker file alone would hide; timeout guards against
+          # a hang under the offscreen platform.
           ver=$(docker run --rm --entrypoint sh "$img" -c 'timeout 30 env QT_QPA_PLATFORM=offscreen krusader --version 2>/dev/null' || true)
           echo "krusader --version: ${ver:-<none>}"
           echo "$ver" | grep -q 'icontint' \
@@ -117,8 +113,8 @@ jobs:
             { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
             return 1
           }
-          # real 150s wall-clock deadline (each probe can spend up to ~10s in
-          # curl timeouts, so an iteration counter would overshoot massively)
+          # A wall-clock deadline, because each probe can spend up to ~10s in
+          # curl timeouts and an iteration counter would overshoot.
           deadline=$((SECONDS + 150))
           while [ "$SECONDS" -lt "$deadline" ]; do
             if up; then
@@ -127,20 +123,19 @@ jobs:
               exit 0
             fi
             if [ -z "$(docker ps -q --filter "name=$name")" ]; then
-              echo "❌ container exited early — logs:"; docker logs "$name" || true
+              echo "❌ container exited early, logs:"; docker logs "$name" || true
               docker rm -f "$name" >/dev/null; exit 1
             fi
             sleep 1
           done
-          echo "❌ WebUI did not respond within 150s — logs:"
+          echo "❌ WebUI did not respond within 150s, logs:"
           docker logs "$name" || true
           docker rm -f "$name" >/dev/null
           exit 1
 
-      # CVE scan of the locally-loaded smoke image. Report-only: exit-code 0
-      # so a HIGH/CRITICAL finding never blocks the build — results land in the
-      # repo's Security tab (Code scanning) for triage. ignore-unfixed hides
-      # CVEs with no upstream fix yet (nothing actionable on our side).
+      # Report-only CVE scan of the smoke image: a HIGH/CRITICAL finding does
+      # not block the build, the results land in the repo's Security tab for
+      # triage. ignore-unfixed hides CVEs with no upstream fix yet.
       - name: Scan image for CVEs (Trivy)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -158,8 +153,8 @@ jobs:
           sarif_file: trivy-results-${{ matrix.arch }}.sarif
           category: trivy-${{ matrix.arch }}
 
-      # Push this arch by digest (no tags yet — the merge job assembles the
-      # multi-arch manifest under the final tags).
+      # Push this arch by digest; the merge job assembles the multi-arch
+      # manifest under the final tags.
       - name: Push ${{ matrix.arch }} by digest
         id: push
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
@@ -211,9 +206,9 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Docker Hub mirror — active only once DOCKERHUB_USERNAME (variable) and
-      # DOCKERHUB_TOKEN (secret) are set together. Until then this step is
-      # skipped and the manifest stays GHCR-only, so CI is unaffected.
+      # Docker Hub mirror, active once DOCKERHUB_USERNAME (variable) and
+      # DOCKERHUB_TOKEN (secret) are both set. Until then this step is skipped
+      # and the manifest stays GHCR-only.
       - name: Login to Docker Hub
         if: ${{ vars.DOCKERHUB_USERNAME != '' }}
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
@@ -259,35 +254,22 @@ jobs:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
-          # `latest` means "the newest released version", and nothing else.
+          # `latest` is set only by a tag build of the newest release (see the
+          # step above). {{is_default_branch}} would not do: it is true for
+          # every push to main, and metadata-action counts a tag cut from the
+          # default branch as the default branch too.
           #
-          # It used to say enable={{is_default_branch}}, which reads like that
-          # and is not: the tip of main got `latest` the moment it was pushed,
-          # and metadata-action counts a tag cut from the default branch as the
-          # default branch too, so every tag build moved it as well. On
-          # 2026-09-14 a 23-commit merge to main put an unreleased build in
-          # front of everyone pulling `latest` before any release existed, and
-          # the first bug report against it arrived before the release notes.
+          # The tip of main, including the weekly cron rebuild, goes to `edge`:
+          # built, smoke-tested and pullable, but nobody gets it without asking
+          # for it. `edge` names the branch instead of using
+          # {{is_default_branch}} for the same reason, since `edge` on a
+          # release build would make the name meaningless.
           #
-          # So: a tag build sets `latest`, and only when that tag is the newest
-          # release (see the step above). Gating on the tag alone would bring
-          # back the opposite accident: on 2026-09-02 a re-cut of an old version
-          # tag pulled `latest` backwards onto it, long after a newer version
-          # had shipped. That is why there are two conditions and not one.
-          #
-          # `edge` is where the tip of main goes now, including the weekly cron
-          # rebuild. Still built, still smoke-tested, still pullable; nobody
-          # just gets it without asking for it. It spells the default branch out
-          # instead of using {{is_default_branch}} for the reason above: that
-          # expression is also true on a tag build, and `edge` on a release
-          # build would make the name mean nothing.
-          #
-          # STILL SHARP, deliberately: {{major}} and {{major}}.{{minor}} below
-          # are moved by whichever tag built last, so re-cutting an old version
-          # drags `2` back with it. Correct for a normal forward release and
-          # wrong only while folding, which is rare enough to handle by hand.
-          # After folding, re-run the NEWEST tag's build and check that
-          # latest/2/2.<minor> all resolve to the same digest.
+          # {{major}} and {{major}}.{{minor}} follow whichever tag built last,
+          # so re-cutting an old version drags `2` back with it. That is right
+          # for a normal forward release and rare enough otherwise to fix by
+          # hand: re-run the newest tag's build and check that latest, 2 and
+          # 2.<minor> resolve to the same digest.
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -299,13 +281,14 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true' }}
             type=sha,format=short
 
-      # Assemble the multi-arch manifest for EVERY tag (both registries) from
-      # the per-arch digests pushed to GHCR. imagetools copies the platform
-      # images across registries where needed (Docker Hub tags).
+      # Assemble the multi-arch manifest for every tag in both registries from
+      # the per-arch digests on GHCR; imagetools copies the platform images to
+      # Docker Hub where needed.
       - name: Create multi-arch manifests
         working-directory: /tmp/digests
-        # tags come from the DOCKER_METADATA_OUTPUT_TAGS env the metadata action
-        # exports — no ${{ }} interpolation inside the script (injection hygiene)
+        # The tags are read from DOCKER_METADATA_OUTPUT_TAGS instead of being
+        # interpolated into the script with ${{ }}, to keep them out of the
+        # shell source.
         run: |
           set -euo pipefail
           src="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
@@ -331,12 +314,9 @@ jobs:
         run: |
           docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
-      # Mirror the GitHub README to the Docker Hub repo's full description (same
-      # text as on GitHub; relative image/link paths completed to absolute so they
-      # render on Docker Hub). Editing the description needs a credential the push
-      # token (DOCKERHUB_TOKEN) lacks — it returns 403 — so this uses a separate
-      # DOCKERHUB_PASSWORD secret (Docker Hub account password, or a PAT scoped to
-      # edit repos). Skipped until that secret is set, so a missing credential
+      # Mirror the README to the Docker Hub repo's full description, with
+      # relative image and link paths completed to absolute ones so they render
+      # there. Skipped while DOCKERHUB_TOKEN is unset, so a missing credential
       # never fails the build.
       - name: Checkout (README for Docker Hub sync)
         if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
@@ -348,7 +328,7 @@ jobs:
         env:
           PW: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_TOKEN not set — skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_TOKEN not set, skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Sync README to Docker Hub
         if: ${{ steps.dhdesc.outputs.go == 'true' }}
