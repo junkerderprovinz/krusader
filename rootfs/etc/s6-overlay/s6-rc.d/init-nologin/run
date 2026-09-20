@@ -1,11 +1,10 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# The template exposes optional WebUI auth through CUSTOM_USER and PASSWORD.
-# Unraid passes blank fields as empty variables, and the base image's init-nginx
-# enables basic auth whenever PASSWORD is set at all, even to "", which pops a
-# login prompt with an unusable empty password although the template promises
-# no login when the fields are empty. The empty values are dropped here, before
-# init-nginx runs; a real password still enables basic auth as documented.
+# Unraid passes blank CUSTOM_USER and PASSWORD fields as empty variables, and
+# the base image's init-nginx enables basic auth whenever PASSWORD is set at
+# all, even to "", which prompts for a login nobody can pass. Dropping the empty
+# values before init-nginx runs keeps the template's "leave empty for no login";
+# a real password still enables basic auth.
 if [ -z "${PASSWORD}" ]; then
   rm -f /run/s6/container_environment/PASSWORD
 fi
