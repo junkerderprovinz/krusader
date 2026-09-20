@@ -11,5 +11,3 @@ Thumbs.db
 *.tar.gz
 *.log
 
-# Assistant scratch files never belong in a public repo (standing rule:
-# no reference to any assistant, anywhere).
