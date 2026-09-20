@@ -22,7 +22,7 @@
 <p align="center">
 A modern, plug-and-play Docker image for <b>Krusader</b> on Unraid. Twin-pane file
 management in your browser, powered by Selkies, with Dark Mode, Kate as
-external editor, full archive support and 33 UI languages — all configurable
+external editor, full archive support and 33 UI languages, all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
 
@@ -69,22 +69,22 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 ## 1. Overview
 
-This image packages [Krusader](https://krusader.org) — KDE's twin-pane file manager — into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (a hybrid VNC/H.264 pipeline) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
+This image packages [Krusader](https://krusader.org), KDE's twin-pane file manager, into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (a hybrid VNC/H.264 pipeline) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
 
 What's included beyond bare Krusader:
 
-- **Selkies** instead of noVNC — a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
+- **Selkies** instead of noVNC: a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
 - **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
-- **Row-aware panel icons** — Krusader is built from source with our icon-tint patch: the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
+- **Row-aware panel icons**: Krusader is built from source with our icon-tint patch, the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
-- **krename** — KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
-- **Kompare** — a side-by-side diff viewer bundled, so **File → Compare by Content…** opens two selected files in a real diff instead of the "cannot find any of the supported diff-frontends" error
-- **Quit and come back** — closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
-- **Full archive support** — RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
+- **krename**: KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
+- **Kompare**: a side-by-side diff viewer bundled, so **File → Compare by Content…** opens two selected files in a real diff instead of the "cannot find any of the supported diff-frontends" error
+- **Quit and come back**: closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
+- **Full archive support**: RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **33 UI languages** picked from a dropdown in the Unraid template
-- **Your screen size, your call** — pick it from a dropdown of presets or type your own. It is what the container's memory use hangs on: the full size costs 530 MB of framebuffer, 1440p costs 30 MB, and everything in between is one field away (see [Screen size and memory use](#screen-size-and-memory-use))
-- **Update-safe configs** — first-run-only seeding, your customisations in `/config` survive every `docker pull`
-- **Multi-arch** — amd64 and arm64
+- **Your screen size, your call**: pick it from a dropdown of presets or type your own. It is what the container's memory use hangs on: the full size costs 530 MB of framebuffer, 1440p costs 30 MB, and everything in between is one field away (see [Screen size and memory use](#screen-size-and-memory-use))
+- **Update-safe configs**: first-run-only seeding, your customisations in `/config` survive every `docker pull`
+- **Multi-arch**: amd64 and arm64
 
 | | **This image** | binhex | jlesage | ich777 |
 |---|:---:|:---:|:---:|:---:|
@@ -106,13 +106,13 @@ What's included beyond bare Krusader:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
-  <br><em>Twin-pane file manager — Dark Mode, F-key shortcuts, in-browser via Selkies.</em>
+  <br><em>Twin-pane file manager: Dark Mode, F-key shortcuts, in-browser via Selkies.</em>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-3.png" alt="Krusader configurator — Colors" width="90%">
+  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-3.png" alt="Krusader configurator: Colors" width="90%">
   <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
 </p>
 
@@ -120,7 +120,7 @@ What's included beyond bare Krusader:
 
 ## 3. Quick Start
 
-### Step 1 — Install the template
+### Step 1: Install the template
 
 On Unraid: **Apps** → search for **Krusader** → click **Install**. The Community Applications
 template is published from the
@@ -135,24 +135,24 @@ curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
   https://raw.githubusercontent.com/junkerderprovinz/unraid-apps/main/krusader/krusader.xml
 ```
 
-### Step 2 — Add the container
+### Step 2: Add the container
 
 In the Unraid Web UI: **Docker** tab → **Add Container** → in the **Template** dropdown, pick **Krusader** under *User templates*. All fields are pre-filled.
 
-### Step 3 — Adjust paths and start
+### Step 3: Adjust paths and start
 
 The defaults work out of the box, but you may want to tweak:
 
-- **Storage (`/storage`)** — defaults to `/mnt`, which exposes all shares and disks. Restrict to e.g. `/mnt/user` if you want.
-- **UI Language** — dropdown, default `de`.
-- **Theme** — `dark` or `light`.
-- **WebUI Password** — leave empty for LAN-only, set anything for exposure beyond the LAN.
+- **Storage (`/storage`)**: defaults to `/mnt`, which exposes all shares and disks. Restrict to e.g. `/mnt/user` if you want.
+- **UI Language**: dropdown, default `de`.
+- **Theme**: `dark` or `light`.
+- **WebUI Password**: leave empty for LAN-only, set anything for exposure beyond the LAN.
 
-Hit **Apply**. The first start takes 30–60 seconds while the container seeds its config and Selkies generates a self-signed certificate.
+Hit **Apply**. The first start takes 30 to 60 seconds while the container seeds its config and Selkies generates a self-signed certificate.
 
-### Step 4 — Open the WebUI
+### Step 4: Open the WebUI
 
-`https://<unraid-ip>:3001/` (HTTPS, self-signed — accept the certificate once). **Use HTTPS:** the Selkies web client requires a secure context, so direct browser access must go through the HTTPS port. Port `3000` (HTTP) is **not** a usable direct fallback — opening `http://<unraid-ip>:3000/` shows a *"requires a secure connection (HTTPS)"* error and won't load. It exists for a reverse proxy that terminates TLS in front of the container (the proxy serves HTTPS to the browser and forwards HTTP to `3000`).
+`https://<unraid-ip>:3001/` (HTTPS, self-signed, accept the certificate once). **Use HTTPS:** the Selkies web client requires a secure context, so direct browser access must go through the HTTPS port. Port `3000` (HTTP) is **not** a usable direct fallback; opening `http://<unraid-ip>:3000/` shows a *"requires a secure connection (HTTPS)"* error and won't load. It exists for a reverse proxy that terminates TLS in front of the container (the proxy serves HTTPS to the browser and forwards HTTP to `3000`).
 
 > Once Community Applications has accepted this image it will also be installable via **Apps** → search `Krusader`.
 
@@ -184,22 +184,22 @@ docker run -d \
 
 | Variable | Default | Description |
 |---|---|---|
-| `PUID` | `99` | User ID — Unraid's *nobody* |
-| `PGID` | `100` | Group ID — Unraid's *users* |
+| `PUID` | `99` | User ID, Unraid's *nobody* |
+| `PGID` | `100` | Group ID, Unraid's *users* |
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
-| `KRUSADER_LANG` | `de` | UI language — see [Languages](#5-languages) |
+| `KRUSADER_LANG` | `de` | UI language, see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
 | `MAX_RES` | `15360x8640` | Virtual screen the container serves, from a dropdown of presets. Costs ~4 bytes of RAM per pixel (see [Screen size and memory use](#screen-size-and-memory-use)) |
 | `MAX_RES_CUSTOM` | *(empty)* | Your own `WIDTHxHEIGHT` instead of a preset, e.g. `3440x1440`. Wins over `MAX_RES` when set |
-| `CUSTOM_USER` | *(empty)* | WebUI login username — leave empty with `PASSWORD` for no login |
-| `PASSWORD` | *(empty)* | WebUI password — **set this if exposed beyond LAN** |
+| `CUSTOM_USER` | *(empty)* | WebUI login username; leave empty with `PASSWORD` for no login |
+| `PASSWORD` | *(empty)* | WebUI password, **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
 | `UMASK` | `000` | File-creation mask. Keeps new files writable for other containers on the same shares |
 
 | Port | Purpose | | Volume | Purpose |
 |---|---|---|---|---|
-| `3001` | Selkies HTTPS *(self-signed)* — **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
-| `3000` | Selkies HTTP *(reverse-proxy only — direct access needs HTTPS)* | | `/storage` | Files to manage — default host `/mnt` |
+| `3001` | Selkies HTTPS *(self-signed)*, **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
+| `3000` | Selkies HTTP *(reverse-proxy only; direct access needs HTTPS)* | | `/storage` | Files to manage, default host `/mnt` |
 
 ### Screen size and memory use
 
@@ -246,13 +246,13 @@ default. With it on, a high-resolution display gets its physical pixels and
 Krusader is drawn at half size, so if Krusader looks tiny on a laptop, switch
 HiDPI off there.
 
-> **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`** — so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose deliberately: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI — and `/storage` defaults to all of `/mnt`.
+> **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`**, so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose with care: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI, and `/storage` defaults to all of `/mnt`.
 
 <br>
 
 ## 5. Languages
 
-The Unraid template ships a **dropdown** with **33 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in — switching is instant after a restart.
+The Unraid template ships a **dropdown** with **33 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in, switching is instant after a restart.
 
 | Region | Languages |
 |---|---|
@@ -261,7 +261,7 @@ The Unraid template ships a **dropdown** with **33 UI languages** (German defaul
 | **Central / Eastern Europe** | 🇵🇱 `pl` Polski · 🇨🇿 `cs` Čeština · 🇸🇰 `sk` Slovenčina · 🇭🇺 `hu` Magyar · 🇷🇴 `ro` Română · 🇸🇮 `sl` Slovenščina · 🇭🇷 `hr` Hrvatski · 🇷🇸 `sr` Српски · 🇧🇬 `bg` Български · 🇺🇦 `uk` Українська · 🇷🇺 `ru` Русский · 🇬🇷 `el` Ελληνικά |
 | **Middle East** | 🇹🇷 `tr` Türkçe · 🇮🇱 `he` עברית · 🇸🇦 `ar` العربية |
 | **Asia / CJK** | 🇯🇵 `ja` 日本語 · 🇰🇷 `ko` 한국어 · 🇨🇳 `zh` 中文 |
-| **Fallback** | `system` — use the container's default locale |
+| **Fallback** | `system`, use the container's default locale |
 
 *Default: `de` (Deutsch). Set via `KRUSADER_LANG` or the Unraid dropdown.*
 
@@ -280,7 +280,7 @@ Krusader's *UserActions* are pre-loaded with extras:
 | **Open with Kate** | Opens the selected file(s) in Kate |
 | **Open Konsole here** | New Konsole tab in the current directory |
 
-> For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in right-click menu — it is already installed and avoids a duplicate "Extract" entry in the context menu.
+> For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in right-click menu; it is already installed and avoids a duplicate "Extract" entry in the context menu.
 
 Edit them via *Krusader → Settings → Configure UserActions*, or directly at `/config/.local/share/krusader/useractions.xml`.
 
@@ -304,7 +304,7 @@ A marker file `/config/.krusader-firstrun.done` is written so subsequent contain
 
 The two env-driven knobs (`KRUSADER_LANG`, `KRUSADER_THEME`) are re-applied on **every** start via a `cont-init.d` hook, so you can flip them freely.
 
-The base image also supports `/config/custom-cont-init.d/` for your own init scripts — see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
+The base image also supports `/config/custom-cont-init.d/` for your own init scripts, see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
 
 <br>
 
@@ -352,8 +352,8 @@ On Unraid: **Docker** tab → click the container → **Force Update**. Your `/c
 
 - Make sure `--shm-size` is at least `512mb` (Unraid template sets `1gb`)
 - Check the container log for Selkies startup errors
-- Make sure you opened `https://<ip>:3001/` (self-signed) and not `http://<ip>:3000/` — over plain HTTP the Selkies client aborts with *"requires a secure connection (HTTPS)"* and the desktop never appears
-- Wait 30–60 seconds on first start; KDE caches need to be built once
+- Make sure you opened `https://<ip>:3001/` (self-signed) and not `http://<ip>:3000/`; over plain HTTP the Selkies client aborts with *"requires a secure connection (HTTPS)"* and the desktop never appears
+- Wait 30 to 60 seconds on first start; KDE caches need to be built once
 </details>
 
 <details>
@@ -364,8 +364,8 @@ starts a fresh Krusader, so refreshing the browser tab brings the file manager
 back instead of an empty desktop. On older versions the desktop kept running
 without any window and only a container restart helped.
 
-If Krusader cannot stay up — five failed starts in a row, or twenty instant
-exits of any kind — the session stops trying instead of looping. That means
+If Krusader cannot stay up (five failed starts in a row, or twenty instant
+exits of any kind) the session stops trying instead of looping. That means
 something is genuinely broken (config, X, a missing library), so restart the
 container and check the log.
 </details>
@@ -395,7 +395,7 @@ container and check the log.
 <details>
 <summary><b>Language change doesn't take effect</b></summary>
 
-- Restart the container — language is applied at start, not live
+- Restart the container; language is applied at start, not live
 - Check the env value matches a code from the [Languages](#5-languages) table
 - The script writes `/etc/profile.d/zz-krusader-lang.sh` and updates `kdeglobals[Translations]`
 </details>
@@ -415,11 +415,11 @@ container and check the log.
 <details>
 <summary><b>WebUI password not accepted</b></summary>
 
-- Open in a private window once — your browser may have cached old credentials.
+- Open in a private window once; your browser may have cached old credentials.
 </details>
 
 <details>
-<summary><b>Container fails to start — "mkdir /etc/localtime: file exists"</b></summary>
+<summary><b>Container fails to start with "mkdir /etc/localtime: file exists"</b></summary>
 
 You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from an old template version). The LSIO base image manages `/etc/localtime` internally as a symlink; a bind-mount on top causes the conflict.
 
@@ -429,23 +429,23 @@ You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from a
 <details>
 <summary><b>Pasted UPPERCASE text arrives lowercase (Firefox)</b></summary>
 
-Known Firefox-specific issue — see [issue #27](https://github.com/junkerderprovinz/krusader/issues/27) and
-[TROUBLESHOOTING.md Bug #5](TROUBLESHOOTING.md#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
+Known Firefox-specific issue, see [issue #27](https://github.com/junkerderprovinz/krusader/issues/27) and
+[TROUBLESHOOTING.md Bug #5](TROUBLESHOOTING.md#bug-5-pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
 for the full root-cause chain. Firefox restricts silent clipboard reads more
-than Chromium, so it falls back to a Selkies retype path with a real bug —
+than Chromium, so it falls back to a Selkies retype path with a real bug,
 already fixed upstream, just not yet on the Selkies branch this image
 builds from. **Workaround:** in Firefox, open `about:config`,
 search for `dom.events.testing.asyncClipboard`, and set it to `true`. This
 gives Firefox the same silent clipboard-sync behaviour Chromium already has,
 which sidesteps the retype path (and its case bug) entirely. No container
-change or restart needed — takes effect on the next paste. Chromium-based
+change or restart needed; it takes effect on the next paste. Chromium-based
 browsers (Brave, Edge, Chrome) are not affected.
 </details>
 
 <details>
 <summary><b>Bottom status bar hides persistently now</b></summary>
 
-Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Statusbar** once and it stays hidden across restarts — Krusader 2.9.0 auto-saves the statusbar state about a second after toggling and also saves settings on `docker stop`, so no clean exit is needed. (On the old KasmVNC image, Krusader 2.8.1 could not persist this.) The per-panel (upper) free-space / device status bar is a different widget and is unaffected.
+Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Statusbar** once and it stays hidden across restarts; Krusader 2.9.0 auto-saves the statusbar state about a second after toggling and also saves settings on `docker stop`, so no clean exit is needed. (On the old KasmVNC image, Krusader 2.8.1 could not persist this.) The per-panel (upper) free-space / device status bar is a different widget and is unaffected.
 </details>
 
 <br>
@@ -476,7 +476,7 @@ Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Status
 
 Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/issues>.
 
-**Licensing — dual:**
+**Licensing, dual:**
 
 - This **wrapper repository** (Dockerfile, `rootfs/`, scripts, Unraid templates, README and banner/icon artwork) is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
 - **Krusader itself** and the bundled KDE / Qt / Selkies / unrar / LSIO base-image components retain their upstream licenses (mostly GPL-2.0+ / GPL-3.0+ / LGPL-2.1+, plus unrar's non-free terms). When you run, redistribute or rebuild the resulting container image, you must comply with **all** of those licenses, not only with this wrapper's AGPL-3.0 license. See the `LICENSE` file for the full notice.
@@ -491,11 +491,11 @@ find . -name '*.xml' -not -path './.git/*' -exec xmllint --noout {} +
 
 ### Credits
 
-- [**Krusader**](https://krusader.org) — KDE community, the actual file manager
-- [**LinuxServer.io**](https://www.linuxserver.io) — for the excellent [`baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies)
-- [**Selkies**](https://github.com/selkies-project/selkies) — for a modern, actively-developed browser desktop stack
-- [**Kate**](https://kate-editor.org) — best lightweight editor on Linux
-- Inspiration: binhex, jlesage and ich777 Krusader containers — they paved the way
+- [**Krusader**](https://krusader.org), KDE community, the actual file manager
+- [**LinuxServer.io**](https://www.linuxserver.io), for [`baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies)
+- [**Selkies**](https://github.com/selkies-project/selkies), for an actively developed browser desktop stack
+- [**Kate**](https://kate-editor.org), a lightweight editor on Linux
+- Inspiration: binhex, jlesage and ich777 Krusader containers, they paved the way
 
 <br>
 

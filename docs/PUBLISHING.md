@@ -1,4 +1,4 @@
-# Publishing Checklist — Krusader for Unraid
+# Publishing Checklist: Krusader for Unraid
 
 Internal notes for getting this image listed on Unraid Community Applications.
 **Not** part of the user-facing docs.
@@ -39,10 +39,10 @@ Replace the placeholder in `unraid-template.xml`:
    ```
    https://raw.githubusercontent.com/junkerderprovinz/krusader/main/unraid-template.xml
    ```
-3. Open a PR. Squid (CA maintainer) reviews — usually within a few days.
+3. Open a PR. Squid (CA maintainer) reviews, usually within a few days.
 4. Once merged, the container shows up in Apps for everyone.
 
-## 4. Optional — DockerHub mirror
+## 4. Optional: DockerHub mirror
 
 If you want broader reach, mirror the image to Docker Hub too:
 

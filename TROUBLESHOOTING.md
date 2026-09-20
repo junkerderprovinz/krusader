@@ -1,4 +1,4 @@
-# Krusader for Unraid — Known Issues & Fix Roadmap
+# Krusader for Unraid: Known Issues & Fix Roadmap
 
 This document collects the **persistent, non-trivial bugs** discovered while
 hardening the container that **were not fixed in v1.0.x** because they require
@@ -15,14 +15,14 @@ in the main [`README.md`](README.md).
 ## Table of Contents
 
 1. [Quick status table](#quick-status-table)
-2. [Bug #1 — UI state is not persisted across `Quit`](#bug-1--ui-state-is-not-persisted-across-quit)
-3. [Bug #2 — Kate opens maximised, window-`X` freezes the editor](#bug-2--kate-opens-maximised-window-x-freezes-the-editor)
-4. [Bug #3 — Krusader window comes back small after a restart](#bug-3--krusader-window-comes-back-small-after-a-restart)
-5. [Bug #4 — Template `KRUSADER_LANG` is ignored by the running app](#bug-4--template-krusader_lang-is-ignored-by-the-running-app)
-6. [Bug #5 — Pasted UPPERCASE arrives lowercase on Firefox (issue #27)](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
-7. [Bug #6 — Shift plus a function key arrives without the Shift](#bug-6--shift-plus-a-function-key-arrives-without-the-shift)
-8. [Bug #7 — Quitting Krusader leaves a black screen](#bug-7--quitting-krusader-leaves-a-black-screen)
-9. [Architectural background — why a session manager is the real fix](#architectural-background--why-a-session-manager-is-the-real-fix)
+2. [Bug #1: UI state is not persisted across `Quit`](#bug-1-ui-state-is-not-persisted-across-quit)
+3. [Bug #2: Kate opens maximised, window-`X` freezes the editor](#bug-2-kate-opens-maximised-window-x-freezes-the-editor)
+4. [Bug #3: Krusader window comes back small after a restart](#bug-3-krusader-window-comes-back-small-after-a-restart)
+5. [Bug #4: Template `KRUSADER_LANG` is ignored by the running app](#bug-4-template-krusader_lang-is-ignored-by-the-running-app)
+6. [Bug #5: Pasted UPPERCASE arrives lowercase on Firefox (issue #27)](#bug-5-pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
+7. [Bug #6: Shift plus a function key arrives without the Shift](#bug-6-shift-plus-a-function-key-arrives-without-the-shift)
+8. [Bug #7: Quitting Krusader leaves a black screen](#bug-7-quitting-krusader-leaves-a-black-screen)
+9. [Architectural background: why a session manager is the real fix](#architectural-background-why-a-session-manager-is-the-real-fix)
 10. [Suggested order of attack](#suggested-order-of-attack)
 11. [Useful debug commands inside the container](#useful-debug-commands-inside-the-container)
 
@@ -36,19 +36,19 @@ in the main [`README.md`](README.md).
 | 2 | Kate opens maximised + window `X` freezes | **Fixed** | Kate filled the full Selkies viewport on launch; clicking close hung for ~10 s | Openbox application rule `<application class="kate">` added to `rootfs/defaults/openbox-rc.xml` (size 1100×750, centered). Freeze fixed by same `ksmserver` work as #1. |
 | 3 | Krusader window comes back small (≈ 800×600) | **Fixed** | Window started at openbox default size rather than full viewport | Openbox application rule `<application class="krusader"><maximized>yes</maximized>` added to `rootfs/defaults/openbox-rc.xml`. |
 | 4 | Template `KRUSADER_LANG` ignored | **Fixed** | User set e.g. `de` in Unraid template, Krusader still came up in English | `init-krusader/run` now reads the locale values written by `krusader-language.sh` and pushes them into `/run/s6/container_environment/` via `set_env`, overriding the static Docker-ENV defaults. `autostart` fallback changed from hardcoded `de_DE.UTF-8` to neutral `en_US.UTF-8`. |
-| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5--pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
-| 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6--shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | Fixed upstream in the base image (selkies `720fad27`, `is_function_keysym()`), which also covers Shift+Home and Shift+Arrow. This repo carried a bridge patch for v2.4.0; it stopped the build when the base caught up, as designed, and was removed in v2.5.0. |
-| 7 | Quitting Krusader leaves a black screen | **Fixed**, see [Bug #7](#bug-7--quitting-krusader-leaves-a-black-screen) | `File → Quit` (or the window `X`) left an empty openbox desktop; reconnecting or refreshing the browser gave the same black viewport, only a container restart brought Krusader back | `krusader-session` supervises krusader in a restart loop: any exit starts a fresh krusader, `SIGTERM` still quits it cleanly and ends the session, and a spin guard (5 failed starts, or 20 instant exits of any kind) stops the loop instead of burning CPU. Pinned by `tests/test-krusader-session.sh`. |
+| 5 | Pasted UPPERCASE arrives lowercase (Firefox) | **Fixed**, see [Bug #5](#bug-5-pasted-uppercase-arrives-lowercase-on-firefox-issue-27) | Copying `Big Chicken A Fast Food Conspiracy` and pasting into a Krusader dialog produces `big chicken a fast food conspiracy` on Firefox; Chromium (Brave, Edge) is unaffected (issue #27). | `BASE_TAG` switched from the frozen `ubunturesolute` pin (built from `selkies-project/selkies`'s `lsio` branch) to `dev` (builds live from `selkies-project/selkies:main` on every rebuild). Verified byte-level against the built image: the retype-path bug is gone (`_handleMobileInput` now calls `_typeText` directly, no `Shift_L` injection) and a native `paste`-event clipboard sync is present, no `about:config` change needed on Firefox/Safari anymore. `setxkbmap` keymap loading stays, it's still a correct, harmless fix for a related failure mode. |
+| 6 | Shift plus a function key loses the Shift | **Fixed**, see [Bug #6](#bug-6-shift-plus-a-function-key-arrives-without-the-shift) | Shift+F4 ran Edit File instead of New Text File, and on a folder only answered that folders cannot be edited. Shift+F2 and the other Shift plus function key shortcuts behaved the same way. | Fixed upstream in the base image (selkies `720fad27`, `is_function_keysym()`), which also covers Shift+Home and Shift+Arrow. This repo carried a bridge patch for v2.4.0; it stopped the build when the base caught up, as designed, and was removed in v2.5.0. |
+| 7 | Quitting Krusader leaves a black screen | **Fixed**, see [Bug #7](#bug-7-quitting-krusader-leaves-a-black-screen) | `File → Quit` (or the window `X`) left an empty openbox desktop; reconnecting or refreshing the browser gave the same black viewport, only a container restart brought Krusader back | `krusader-session` supervises krusader in a restart loop: any exit starts a fresh krusader, `SIGTERM` still quits it cleanly and ends the session, and a spin guard (5 failed starts, or 20 instant exits of any kind) stops the loop instead of burning CPU. Pinned by `tests/test-krusader-session.sh`. |
 
 ---
 
-## Bug #1 — UI state is not persisted across `Quit`
+## Bug #1: UI state is not persisted across `Quit`
 
 ### Symptom
 
 1. Start the container, open the web-UI.
 2. Drag the status bar off, resize a panel column, switch to "Detailed view",
-   `cd` somewhere deep, close the second panel — anything visible.
+   `cd` somewhere deep, close the second panel, anything visible.
 3. `File → Quit` (or hit the X) → wait for Selkies to show "Session ended".
 4. Stop the container, start it again, reopen the web-UI.
 
@@ -70,13 +70,13 @@ The current image has none of:
 
 The idempotent key injector at `rootfs/etc/cont-init.d/30-krusader-keys.sh`
 (introduced in commit `3f2ed7c`) **does** seed sensible startup defaults, but
-it only fires at container start — it cannot observe what the user does in the
+it only fires at container start; it cannot observe what the user does in the
 live session, and it is not a substitute for `saveWindowState()`.
 
 ### Fix sketch
 
 1. **Add `ksmserver`** to the image. On the LSIO Selkies baseimage (Ubuntu-based),
-   the smallest path is to install `plasma-workspace` (~150 MB) or — if available — a
+   the smallest path is to install `plasma-workspace` (~150 MB) or, if available, a
    trimmed `ksmserver` and its hard deps. Avoid `plasma-desktop`, it pulls in too much.
 
    In `Dockerfile`, in the existing apt-install layer:
@@ -122,7 +122,7 @@ what v1.0.x does today.
 
 ---
 
-## Bug #2 — Kate opens maximised, window-`X` freezes the editor
+## Bug #2: Kate opens maximised, window-`X` freezes the editor
 
 ### Symptom
 
@@ -138,7 +138,7 @@ what v1.0.x does today.
   `rootfs/defaults/openbox-rc.xml` has an empty `<applications/>` block (we
   removed the over-eager "force maximize everything" rule). Kate doesn't ship
   its own default geometry, so openbox stretches it.
-- The window-X freeze is — same root cause as Bug #1 — the absence of
+- The window-X freeze has the same root cause as Bug #1: the absence of
   `ksmserver`. Kate's D-Bus `closeMainWindow()` slot is never reached because
   the window manager's close event is not relayed through a session bus that
   knows about the Kate instance. `Ctrl+Q` works because it goes through Kate's
@@ -165,12 +165,12 @@ For the maximise issue alone, add to `rootfs/defaults/openbox-rc.xml`:
   </application>
 </applications>
 ```
-Keep the empty `<applications/>` if you've not fixed Bug #1 yet — the rule is
+Keep the empty `<applications/>` if you've not fixed Bug #1 yet; the rule is
 purely cosmetic until then.
 
 ---
 
-## Bug #3 — Krusader window comes back small after a restart
+## Bug #3: Krusader window comes back small after a restart
 
 ### Symptom
 
@@ -187,7 +187,7 @@ restore the saved geometry), the result is "default openbox size".
 
 ### Fix sketch
 
-Scoped maximise rule for the Krusader window class — add inside
+Scoped maximise rule for the Krusader window class, add inside
 `<applications>` in `rootfs/defaults/openbox-rc.xml`:
 ```xml
 <application class="krusader">
@@ -201,12 +201,12 @@ restore the real geometry, but it's harmless to keep.
 
 ---
 
-## Bug #4 — Template `KRUSADER_LANG` is ignored by the running app
+## Bug #4: Template `KRUSADER_LANG` is ignored by the running app
 
 ### Symptom
 
 1. In the Unraid template, change **Language** from `en` to e.g. `de`.
-2. Hit **Apply** — the container restarts.
+2. Hit **Apply**; the container restarts.
 3. Open the web-UI → Krusader still comes up in English. The Settings → Language
    menu also still shows "English".
 
@@ -216,7 +216,7 @@ The init helper `rootfs/etc/cont-init.d/30-krusader-language.sh` runs at every
 start, but its `sed` writes to `~/.config/krusaderrc` only when the
 `[Language]` group already exists and contains a `Language=` key. On a fresh
 config dir (first start, or a wiped `appdata`), Krusader will create that file
-itself on first run — *after* the helper has already finished — so the new
+itself on first run, *after* the helper has already finished, so the new
 language never takes effect.
 
 Additionally, even if `Language=de` is set in `krusaderrc`, KDE/KF5 i18n
@@ -292,14 +292,14 @@ and the Settings → Language picker should reflect it.
 ### Related but already-fixed
 
 Section 9 of the README already documents the "change Settings → Language in
-the GUI doesn't stick" case — that one **is** caused by Bug #1, because the
+the GUI doesn't stick" case, that one **is** caused by Bug #1, because the
 runtime UI change is never written back. The Unraid-template path described
 here is a **separate code path** (env var → init script → config file), which
 should work even without `ksmserver`.
 
 ---
 
-## Bug #5 — Pasted UPPERCASE arrives lowercase on Firefox (issue #27)
+## Bug #5: Pasted UPPERCASE arrives lowercase on Firefox (issue #27)
 
 **RESOLVED (2026-08-19).** LSIO maintainer `thelamer` pointed out that
 `docker-baseimage-selkies`'s `dev` tag is the same Ubuntu Resolute series as
@@ -312,7 +312,7 @@ keysym fix, commit `4edd73a`) with no `Shift_L` retype path left, and a native
 `paste`-event clipboard sync (`clipboard-sync.js`) is present and working on
 Firefox without the `about:config` flag below. This also means the whole
 `lsio`-porting effort described below (PR #301/#302) is no longer on this
-image's critical path — kept here as-is for the historical record and because
+image's critical path, kept here as-is for the historical record and because
 `dev` trades a manually-reviewed pin for one that floats with upstream `main`,
 so understanding what changed and why remains useful. If `dev` is ever rolled
 back to a pinned tag, this whole analysis becomes relevant again.
@@ -321,7 +321,7 @@ back to a pinned tag, this whole analysis becomes relevant again.
 
 Copy text containing capitals in the **local** browser (e.g. `Big Chicken A
 Fast Food Conspiracy`), paste it into any Krusader dialog inside the streamed
-desktop. On **Firefox** it arrives as `big chicken a fast food conspiracy` —
+desktop. On **Firefox** it arrives as `big chicken a fast food conspiracy`,
 every capital lost. On **Chromium-based browsers** (tested: Brave, Edge) the
 same paste is byte-exact. Reproduces after a fresh image pull, i.e. after the
 v2.3.0 fix (commit `1fc1097`) shipped.
@@ -334,7 +334,7 @@ clipboard paste)". **That claim is false**, verified directly against the
 pinned commit, not inferred from dates. (An earlier draft of this document
 cited `0d134b6e1ffe42a579bc66363b0e7159ab22aacc` as the pin, read from a
 personal fork of `docker-baseimage-selkies` rather than the real upstream
-repo that actually builds the published image — that hash was stale. The
+repo that actually builds the published image; that hash was stale. The
 figures below are re-verified against `linuxserver/docker-baseimage-selkies`
 directly.)
 
@@ -343,14 +343,14 @@ directly.)
 2. `linuxserver/docker-baseimage-selkies`'s **`ubunturesolute`** branch
    Dockerfile (the branch actually built for that tag) clones
    `selkies-project/selkies` and does
-   `git checkout -f 348bc4f61da66198573e7e57db9a266aca1991d5` — for **both**
+   `git checkout -f 348bc4f61da66198573e7e57db9a266aca1991d5`, for **both**
    the web-core JS build stage and the Python backend install stage, so it's a
    single source of truth. That hash is what the currently published
    `ghcr.io/linuxserver/baseimage-selkies:ubunturesolute` image actually
    contains as of this writing.
 3. That commit is dated **2026-08-05** and sits on `selkies-project/selkies`'s
    **`lsio`** branch (confirmed: `git merge-base --is-ancestor <hash>
-   upstream/lsio` succeeds, `... upstream/main` fails — it is not on `main`
+   upstream/lsio` succeeds, `... upstream/main` fails; it is not on `main`
    at all). `selkies-project/selkies` PR #254 ("Comprehensive fixes and
    performance optimizations", which added the `createClipboardGestures`
    native-paste mechanism in `addons/selkies-web-core/lib/clipboard-sync.js`)
@@ -361,7 +361,7 @@ directly.)
    commit krusader actually ships. PR #254's fix was never in the image.
 4. `lsio` and `main` diverged earlier (at merge-base
    `0d134b6e1ffe42a579bc66363b0e7159ab22aacc`) and have moved independently
-   since — `lsio` is not merely "behind" `main`, it carries its own commits
+   since. `lsio` is not merely "behind" `main`, it carries its own commits
    too. `docker-baseimage-selkies` builds from `lsio`, so fixes that land on
    `main` are not carried automatically; someone has to
    backport/re-merge them onto `lsio`, and `docker-baseimage-selkies` then has
@@ -379,18 +379,18 @@ directly.)
    image ships.** PR #296 was closed as superseded by commit
    [`4edd73a`](https://github.com/selkies-project/selkies/commit/4edd73a6c1f865abb236e87c06d40afb3ce76a1c)
    (`fix: Container logic`), which routes `_handleMobileInput` through the
-   shared `_typeText` helper — it looks up each character's own keysym and
+   shared `_typeText` helper; it looks up each character's own keysym and
    sends `kd`/`ku` for it directly, no `Shift_L` injection, so capitals keep
    their case regardless of keymap state. Separately, commit
    [`00ce739`](https://github.com/selkies-project/selkies/commit/00ce7394046eb0b89f2bd1892492a348a23db780)
    (2026-06-13, "Performance optimizations") replaced the
    `navigator.clipboard.readText()` silent-sync path with a synchronous-copy
-   fallback that works on Firefox without any `about:config` change at all —
+   fallback that works on Firefox without any `about:config` change at all,
    upstream's FAQ was rewritten accordingly ("the older Firefox `about:config`
    workaround is no longer required"). **Both fixes are on `main`, neither is
    on `lsio`** (re-verified 2026-08-17: `git compare` shows both commits are
    ancestors of `main` but not of `lsio`, whose tip is still the same
-   `348bc4f6` this document already cites — `lsio` remains actively
+   `348bc4f6` this document already cites; `lsio` remains actively
    maintained, just hasn't cherry-picked these two yet). Until
    `docker-baseimage-selkies` bumps its `ubunturesolute` pin past a `main`
    sync (or someone ports these two commits onto `lsio` directly), the
@@ -404,9 +404,9 @@ directly.)
 `window.addEventListener('focus', ...)` in `selkies-ws-core.js` tries to
 silently sync the local clipboard to the remote X11 `CLIPBOARD` selection via
 `navigator.clipboard.readText()` whenever the tab regains focus. When that
-succeeds, a native `Ctrl+V` inside the streamed app is a plain X11 paste —
+succeeds, a native `Ctrl+V` inside the streamed app is a plain X11 paste,
 byte-exact, untouched by any Selkies JS. Chromium grants this silent,
-gesture-less read; **Firefox does not** — its stricter Async Clipboard API
+gesture-less read; **Firefox does not**, its stricter Async Clipboard API
 permission model is documented directly in this codebase: the merged FAQ
 entry (`selkies-project/selkies` PR #224, by contributor `aliefe04`) tells
 Firefox users to flip `dom.events.testing.asyncClipboard` in `about:config`
@@ -416,7 +416,7 @@ Chromium can read the system clipboard silently \[...] on Firefox and Safari
 \[...] it pops up an ephemeral Paste prompt" (upstream issues #258, #234).
 Without that manual flag, Firefox's silent focus-sync never populates the
 remote X clipboard, so the browser falls back to whatever UI path funnels
-typed/pasted text through `#keyboard-input-assist` — which is exactly the
+typed/pasted text through `#keyboard-input-assist`, which is exactly the
 buggy `_handleMobileInput` retype path described above. This is
 architecturally distinct from "paste into a web page rendered inside the
 browser tab" (what `createClipboardGestures` targets, and which is absent
@@ -424,15 +424,15 @@ from this pin anyway); it is specific to getting text into a **native X11
 app inside the stream** when the silent clipboard channel is unavailable.
 
 **Note on the `about:config` recommendation's currency:** upstream `main`
-has since replaced this FAQ entry — a later commit ("Performance
+has since replaced this FAQ entry, a later commit ("Performance
 optimizations", 2026-06-13) added a synchronous-copy fallback and rewrote
 the FAQ to say no browser configuration is needed at all. That fallback
 commit is not on `lsio` (confirmed: not an ancestor of the pinned commit), so
 it is not in the image krusader ships. Its read-direction mechanism has a
-narrower port up as PR #302 (see "Options considered" below) — until that
+narrower port up as PR #302 (see "Options considered" below), until that
 merges and reaches this image, the `about:config` workaround below is
 checked against the code actually running in this container, not against
-whatever upstream's live docs page currently says — the two have diverged.
+whatever upstream's live docs page currently says; the two have diverged.
 
 ### Why `setxkbmap` alone can't close the gap
 
@@ -440,12 +440,12 @@ The keymap fix (still worth keeping) addresses one real failure mode: with no
 Xvfb keymap at all, `Shift_L` has nothing to bind to. Loading a real keymap
 makes `Shift_L` bindable, but `_handleMobileInput`'s retype path still sends
 a held-modifier + lowercase-keysym sequence per uppercase character instead
-of the character's own keysym — a design that stays fragile regardless of
+of the character's own keysym, a design that stays fragile regardless of
 keymap state, which is exactly the class of problem PR #296 avoids entirely
 by not depending on modifier state at all. (Server-side dispatch in
 `input_handler.py` was checked for a timing/ordering explanation too: each
 `kd`/`ku` message is drained from a single `asyncio.Queue` and fully
-`await`ed before the next is processed, i.e. strictly serialized — there is
+`await`ed before the next is processed, i.e. strictly serialized; there is
 no race there, so the gap is the client-side keysym choice, not server-side
 timing.) That the bug reproduces identically after the keymap fix shipped is
 consistent with this: the keymap was a necessary condition for one theorized
@@ -453,26 +453,26 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 
 ### Options considered for a krusader-local fix
 
-- **Wait for upstream.** Step (a) is done — the fix landed on `main` as
+- **Wait for upstream.** Step (a) is done: the fix landed on `main` as
   `4edd73a` (superseding #296). Step (b), porting the keysym-lookup part onto
   `lsio` itself (not the whole `4edd73a`, which also carries an unrelated
   chord-modifier feature `lsio` doesn't have): **submitted 2026-08-17 as
   [selkies-project/selkies#301](https://github.com/selkies-project/selkies/pull/301)**,
-  open. The clipboard-sync commit `00ce739` was investigated too — it's
+  open. The clipboard-sync commit `00ce739` was investigated too; it's
   deeply entangled in a much larger, unrelated "Performance optimizations"
   commit (26 files, 3131 lines) with real conflicts against `lsio`'s current
   state, and about half of it is a *write*-direction (Ctrl+C) feature
-  needing a new client/server protocol `lsio` doesn't have — but its
+  needing a new client/server protocol `lsio` doesn't have, but its
   *read*-direction mechanism (trigger the existing clipboard-read-and-send
   logic on a real Ctrl/Cmd+V keydown instead of only on window focus, since
   Firefox/Safari require real user-gesture activation for that read) turned
   out to be self-contained. That narrower slice was extracted and
   **submitted 2026-08-17 as
   [selkies-project/selkies#302](https://github.com/selkies-project/selkies/pull/302)**,
-  open — see the "Why Firefox specifically" section above for the mechanism.
+  open, see the "Why Firefox specifically" section above for the mechanism.
   Once/if both merge, still needed: (c) a new `docker-baseimage-selkies` pin
   bump (its Dockerfile hard-pins an exact commit SHA, `348bc4f...`, not the
-  `lsio` branch HEAD — merging to `lsio` alone does not reach downstream
+  `lsio` branch HEAD; merging to `lsio` alone does not reach downstream
   images), (d) a new `linuxserver/baseimage-selkies` published tag that
   krusader then adopts via a `BASE_TAG` bump. Still out of krusader's
   control end-to-end, but now a tracked, concrete chain instead of "wait and
@@ -481,15 +481,15 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
   and **rejected for now**: `docker-baseimage-selkies` builds
   `selkies-web-core`/`selkies-dashboard` with `vite build`, which minifies by
   default, and krusader only inherits the pre-built, already-bundled
-  `ghcr.io/linuxserver/baseimage-selkies` image — there is no source tree to
+  `ghcr.io/linuxserver/baseimage-selkies` image; there is no source tree to
   patch, only a minified artifact whose exact contents were not inspected
   (no local `docker` available to pull and open the real image; the
   `docker-baseimage-selkies` Dockerfile itself was read directly instead, at
   its actual `ubunturesolute` branch HEAD, which is real inspection, not a
-  guess — but the *served* file is one build step further than that and
+  guess, but the *served* file is one build step further than that and
   wasn't verified byte-for-byte). Note that `docker-baseimage-selkies` **does**
   already have precedent for exactly this "`COPY` a patch into the build
-  context, `git apply` it before building" pattern — its own Dockerfile does
+  context, `git apply` it before building" pattern; its own Dockerfile does
   this for `labwc-ipc.patch` before building `labwc` from source (line ~284:
   `COPY /labwc-ipc.patch /labwc-ipc.patch` → `git apply labwc-ipc.patch`). So
   the mechanism is not the blocker; the blocker is that krusader's own
@@ -498,7 +498,7 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
   point at which to apply such a patch without forking that upstream repo's
   build. Shipping a blind `sed`/patch against an unverified minified string
   in the already-built image would be exactly the kind of unsafe,
-  unverifiable local workaround this doc is trying to avoid — a wrong guess
+  unverifiable local workaround this doc is trying to avoid, a wrong guess
   would either silently no-op (pattern doesn't match) or, worse, corrupt the
   bundle. If this route is picked up later, the first step has to be pulling
   the real `ghcr.io/linuxserver/baseimage-selkies:ubunturesolute` image and
@@ -510,7 +510,7 @@ failure mode, not a sufficient fix for the actual client-side design flaw.
 - **Immediate, zero-risk mitigation shipped in this revision.** Point Firefox
   users at the same upstream-documented `about:config` flag
   (`dom.events.testing.asyncClipboard` → `true`) that unlocks Chromium-parity
-  silent clipboard sync — see the README's Troubleshooting section. This
+  silent clipboard sync, see the README's Troubleshooting section. This
   routes Firefox onto the same byte-exact X11-clipboard path Chromium already
   uses and sidesteps `_handleMobileInput` entirely, with no image rebuild and
   no risk.
@@ -526,7 +526,7 @@ docker exec krusader setxkbmap -display "${DISPLAY:-:1}" -query
 
 ---
 
-## Bug #6 — Shift plus a function key arrives without the Shift
+## Bug #6: Shift plus a function key arrives without the Shift
 
 ### Symptom
 
@@ -570,8 +570,8 @@ letter it really does select a level.
 **Now carried by the base image.** Upstream solved this one layer up on
 2026-09-13 (selkies commit `720fad27`): `is_function_keysym()` feeds the
 neutralize derivation, so a function keysym never asks for the lift in the first
-place. That covers more than our bridge did — the whole X function block
-(`0xFF00`–`0xFFFF`) plus the XF86 vendor block, so Shift+Home and Shift+Arrow
+place. That covers more than our bridge did: the whole X function block
+(`0xFF00` to `0xFFFF`) plus the XF86 vendor block, so Shift+Home and Shift+Arrow
 keep their Shift as well, not just Shift+F*n*.
 
 Between v2.4.0 and v2.5.0 this repo shipped its own bridge,
@@ -583,12 +583,12 @@ patch plus its Dockerfile step were deleted. Nothing to do here anymore.
 
 ---
 
-## Bug #7 — Quitting Krusader leaves a black screen
+## Bug #7: Quitting Krusader leaves a black screen
 
 ### Symptom
 
 1. Open the WebUI, use Krusader normally.
-2. Quit the application — `File → Quit`, `Ctrl+Q`, or the window's `X`.
+2. Quit the application: `File → Quit`, `Ctrl+Q`, or the window's `X`.
 3. The viewport goes black. Refreshing the browser tab, reconnecting, or
    opening the WebUI from another machine all give the same empty desktop.
 
@@ -606,7 +606,7 @@ Krusader is the container's only window, and nothing supervised it:
 - `krusader-session` started krusader **once** and `wait`ed for it.
 
 So when krusader exited, `krusader-session` exited, `dbus-launch` followed, and
-`autostart` was done — but **openbox itself kept running**. An openbox with no
+`autostart` was done, but **openbox itself kept running**. An openbox with no
 windows and no desktop environment is exactly a black viewport. The container
 stayed up (s6 saw no failed service), which is why nothing appeared in the log
 and why only a restart helped.
@@ -660,7 +660,7 @@ watch -n1 'docker exec krusader pgrep -a krusader'
 
 ---
 
-## Architectural background — why a session manager is the real fix
+## Architectural background: why a session manager is the real fix
 
 `baseimage-selkies` boots `Xvfb + openbox + the Selkies web frontend`
 plus a single user application. It deliberately ships **no** desktop
@@ -670,10 +670,10 @@ to be remembered.
 
 Krusader is different. It's a KDE/KF5 app that expects:
 
-- A **DBus session bus** (already started by the LSIO baseimage — good).
+- A **DBus session bus** (already started by the LSIO baseimage, good).
 - A **session manager** (`ksmserver`) on that bus that emits
-  `saveYourself` at shutdown — **missing**.
-- A correct **process locale** matching the user's language choice — **missing,
+  `saveYourself` at shutdown: **missing**.
+- A correct **process locale** matching the user's language choice: **missing,
   partial**.
 
 The first time we tried to fix UI persistence with the idempotent
@@ -692,17 +692,17 @@ Bug #4 is genuinely independent (it's a shell-script bug + a missing locale).
 
 If/when this work is picked up again, this is the cheapest-first / highest-leverage order:
 
-1. **Bug #4** — pure shell-script fix in `cont-init.d`, no new packages, no
+1. **Bug #4**: pure shell-script fix in `cont-init.d`, no new packages, no
    image-size hit. ~30 min including the locale-gen verification. Standalone
    value to users (Unraid template language picker actually works).
-2. **Bug #3** — single edit in `rootfs/defaults/openbox-rc.xml`, no new
+2. **Bug #3**: single edit in `rootfs/defaults/openbox-rc.xml`, no new
    packages. Standalone value, no regression risk (rule is class-scoped).
-3. **Bug #1 + Bug #2** (together) — install `plasma-workspace`, add s6 oneshot
+3. **Bug #1 + Bug #2** (together): install `plasma-workspace`, add s6 oneshot
    for `ksmserver`, export `SESSION_MANAGER`, add the Kate openbox rule.
-   ~1 evening of debugging plus a multi-arch rebuild. Image grows by ~150–200 MB.
+   ~1 evening of debugging plus a multi-arch rebuild. Image grows by ~150 to 200 MB.
    This is the "real" fix; the previous three steps are stop-gaps.
 
-After step 3, the idempotent key injector (commit `3f2ed7c`) can be **kept** —
+After step 3, the idempotent key injector (commit `3f2ed7c`) can be **kept**,
 it still gives users sensible defaults on a fresh `appdata`, and `ksmserver`
 will then layer real saved state on top.
 
@@ -740,16 +740,16 @@ cat /var/log/cont-init.d/30-krusader-keys.log 2>/dev/null
 
 ## Out of scope for this doc
 
-- Reverse-proxy issues (Cloudflare, NPM, websockets) — see Section 9 of the README.
+- Reverse-proxy issues (Cloudflare, NPM, websockets), see Section 9 of the README.
 - Multi-user separation (this image is single-user by design).
-- Mounting RAR/unrar tooling on arm64 — already handled by the build matrix in
+- Mounting RAR/unrar tooling on arm64, already handled by the build matrix in
   `.github/workflows/build.yml`.
-- Adding more KDE apps (Dolphin, Konsole, …) — out of scope; if needed, fork
+- Adding more KDE apps (Dolphin, Konsole, …), out of scope; if needed, fork
   and add them in `Dockerfile`'s apt layer plus a new openbox rule.
 
 ---
 
-*Last updated 2026-08-17 — Bug #5's client-side Firefox retype bug and the
+*Last updated 2026-08-17: Bug #5's client-side Firefox retype bug and the
 underlying clipboard-permission issue are both fixed on `selkies-project/selkies`
 `main` (`4edd73a`, `00ce739`) but not yet on the `lsio` branch this image
 builds from. Narrower ports of each are up for `lsio` as PR #301 (retype
