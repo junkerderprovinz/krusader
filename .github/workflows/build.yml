@@ -71,7 +71,7 @@ jobs:
 
       # Build natively for this arch and load it locally for the smoke gate.
       - name: Build ${{ matrix.arch }} image for smoke test
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           file: ./Dockerfile
@@ -157,7 +157,7 @@ jobs:
       # manifest under the final tags.
       - name: Push ${{ matrix.arch }} by digest
         id: push
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           file: ./Dockerfile
