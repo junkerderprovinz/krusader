@@ -23,7 +23,7 @@
 # paste event instead of the Shift_L retype and the async clipboard workaround)
 # without waiting for lsio to port upstream PR #301/#302. The price is that the
 # base follows selkies main on every rebuild instead of a reviewed pin bump.
-ARG BASE_TAG=dev
+ARG BASE_TAG=dev@sha256:e00907648e3675afff81558667084fc840de46ca2b0a7b4f45e09d89c523379a
 # 1 builds Krusader from source with the panel icon tint patches in patches/
 # and installs it over the apt package; 0 keeps the plain apt Krusader as an
 # emergency fallback.
