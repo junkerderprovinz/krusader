@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.26
+# syntax=docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
 #
 # Krusader for Unraid, community edition, on the LinuxServer Selkies base image
 # (successor of their KasmVNC packaging): X11 and openbox streamed to a web
@@ -42,7 +42,7 @@ ARG KRUSADER_SHA256=c9b79bfade6cc69fe0e341ecef932fcac8afd9fe94e8cbcfbd729feb5439
 # another one (a rollback to noble, say), build with KRUSADER_SOURCE_BUILD=0:
 # a resolute binary over another series' runtime would not start, and the CI
 # smoke gate checks that the patched binary runs.
-FROM ubuntu:resolute AS krusader-build
+FROM ubuntu:resolute@sha256:da6fc2be547864451aa253836dd926da33623312df4a9a243e35dc877c378a78 AS krusader-build
 ARG KRUSADER_VERSION
 ARG KRUSADER_SHA256
 RUN set -eux; \
@@ -83,7 +83,7 @@ RUN set -eux; \
     touch /staging/usr/share/krusader/.icontint
 
 # KRUSADER_SOURCE_BUILD=0 selects an empty staging tree, so the apt krusader stays.
-FROM ubuntu:resolute AS krusader-artifact-0
+FROM ubuntu:resolute@sha256:da6fc2be547864451aa253836dd926da33623312df4a9a243e35dc877c378a78 AS krusader-artifact-0
 RUN mkdir -p /staging
 FROM krusader-build AS krusader-artifact-1
 # hadolint ignore=DL3006
