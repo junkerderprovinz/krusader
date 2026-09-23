@@ -69,11 +69,11 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 ## 1. Overview
 
-This image packages [Krusader](https://krusader.org), KDE's twin-pane file manager, into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (a hybrid VNC/H.264 pipeline) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
+This image packages [Krusader](https://krusader.org), KDE's twin-pane file manager, into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (H.264 video to the browser) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
 
 What's included beyond bare Krusader:
 
-- **Selkies** instead of noVNC: a hybrid VNC/H.264 pipeline for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
+- **Selkies** instead of noVNC: H.264 video for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
 - **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
 - **Row-aware panel icons**: Krusader is built from source with our icon-tint patch, the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
 - **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
@@ -82,7 +82,7 @@ What's included beyond bare Krusader:
 - **Quit and come back**: closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
 - **Full archive support**: RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
 - **33 UI languages** picked from a dropdown in the Unraid template
-- **Your screen size, your call**: pick it from a dropdown of presets or type your own. It is what the container's memory use hangs on: the full size costs 530 MB of framebuffer, 1440p costs 30 MB, and everything in between is one field away (see [Screen size and memory use](#screen-size-and-memory-use))
+- **The desktop follows your browser window**: no screen size to set, and memory only grows with the window you actually use (see [Screen size and memory use](#screen-size-and-memory-use))
 - **Update-safe configs**: first-run-only seeding, your customisations in `/config` survive every `docker pull`
 - **Multi-arch**: amd64 and arm64
 
@@ -189,8 +189,6 @@ docker run -d \
 | `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
 | `KRUSADER_LANG` | `de` | UI language, see [Languages](#5-languages) |
 | `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
-| `MAX_RES` | `15360x8640` | Virtual screen the container serves, from a dropdown of presets. Costs ~4 bytes of RAM per pixel (see [Screen size and memory use](#screen-size-and-memory-use)) |
-| `MAX_RES_CUSTOM` | *(empty)* | Your own `WIDTHxHEIGHT` instead of a preset, e.g. `3440x1440`. Wins over `MAX_RES` when set |
 | `CUSTOM_USER` | *(empty)* | WebUI login username; leave empty with `PASSWORD` for no login |
 | `PASSWORD` | *(empty)* | WebUI password, **set this if exposed beyond LAN** |
 | `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
@@ -203,39 +201,11 @@ docker run -d \
 
 ### Screen size and memory use
 
-A browser desktop costs more RAM than a plain noVNC one, and almost all of the
-difference is one allocation. The X server reserves its whole virtual
-framebuffer up front, at roughly **4 bytes per pixel**, no matter how big your
-browser window actually is. At the full `15360x8640` that is 530 MB before
-anything else runs.
-
-The image ships that full size, so every resolution stays available. If you
-would rather have the RAM back, pick a smaller screen in the template. Measured
-on a live container with one client connected at 2528x1324:
-
-| Screen size | X server resident | Container total |
-|---|---:|---:|
-| `15360x8640` (default, full) | 578 MB | 778 MiB |
-| `5120x2880` | 119 MB | 252 MiB |
-| `3840x2160` | 93 MB | 266 MiB |
-
-Two template fields set this, because Unraid renders any variable with preset
-values as a plain dropdown with no way to type into it:
-
-- **`MAX_RES`** is the dropdown, from 1080p up to the full size, each entry
-  labelled with what it costs.
-- **`MAX_RES_CUSTOM`** is a free field for anything not in the list, for
-  example `3440x1440` or `6016x3384`. When it has a value it wins. A typo is
-  ignored with a note in the container log rather than stopping the container.
-
-Pick a size at least as big as the largest browser window you open the WebUI
-in. A bigger window does not get a bigger desktop: the desktop keeps its last
-size in the top-left corner and the rest of the window stays black. This image
-streams at the size your browser reports, so a 1600x1000 window on a laptop set
-to 200 % counts as 1600x1000. With HiDPI switched on in the Selkies sidebar the
-same window counts in physical pixels, 3200x2000. GPU rendering (`DRI_NODE`)
-changes where frames are *encoded*, not this allocation, which is why enabling
-it does not move the number much.
+The desktop follows your browser window: Selkies resizes the screen to the size
+the browser reports, so there is no screen size to set and memory only grows
+with the window you actually use. A 1600x1000 window on a laptop set to 200 %
+counts as 1600x1000. With HiDPI switched on in the Selkies sidebar the same
+window counts in physical pixels, 3200x2000.
 
 **Display scaling** follows the browser without any setting. Every browser is
 streamed at the size it reports, with the desktop at 96 DPI, so Krusader looks
