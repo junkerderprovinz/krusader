@@ -2,7 +2,7 @@
 #
 # Krusader for Unraid, community edition, on the LinuxServer Selkies base image
 # (successor of their KasmVNC packaging): X11 and openbox streamed to a web
-# client over a hybrid VNC/H.264 pipeline.
+# client as H.264 video.
 #
 # Added on top of the base image:
 #   * Krusader (twin-pane file manager)
@@ -16,14 +16,9 @@
 # Repository:  https://github.com/junkerderprovinz/krusader
 # License:     AGPL-3.0-only (this wrapper); Krusader upstream is GPL-3.0
 #
-# BASE_TAG=dev carries the same Ubuntu resolute series as the pinned
-# ubunturesolute tag (Krusader 2.9.0 on KF6, #16), but builds selkies from its
-# main branch instead of the frozen lsio pin. That is the only way to get the
-# Firefox/Safari clipboard fix for #27 (the real _typeText() path and a native
-# paste event instead of the Shift_L retype and the async clipboard workaround)
-# without waiting for lsio to port upstream PR #301/#302. The price is that the
-# base follows selkies main on every rebuild instead of a reviewed pin bump.
-ARG BASE_TAG=dev@sha256:e00907648e3675afff81558667084fc840de46ca2b0a7b4f45e09d89c523379a
+# ubunturesolute is Ubuntu 26.04 (Krusader 2.9.0 on KF6, #16) with Selkies 2.0,
+# which carries the Firefox/Safari clipboard fix for #27.
+ARG BASE_TAG=ubunturesolute@sha256:6cfa54196b6e0dade64f5e51517fd12c4275ceda7519c0e18ad168cb4508c050
 # 1 builds Krusader from source with the panel icon tint patches in patches/
 # and installs it over the apt package; 0 keeps the plain apt Krusader as an
 # emergency fallback.
@@ -103,12 +98,10 @@ LABEL org.opencontainers.image.vendor="junkerderprovinz"
 # TITLE feeds the PWA manifest and SELKIES_UI_TITLE the tab and sidebar title
 # of the Selkies client; this base needs both.
 #
-# Selkies turns basic auth on by default with the well-known ubuntu/mypasswd
-# credentials, so SELKIES_ENABLE_BASIC_AUTH=false keeps a container without a
-# password free of a login. The base's nginx would still turn a set but empty
-# PASSWORD into one, which is why init-nologin drops an empty PASSWORD and
-# CUSTOM_USER before nginx starts. Selkies listens on localhost only, so a real
-# CUSTOM_USER/PASSWORD is enforced by nginx, the one reachable entry point.
+# Selkies turns basic auth on by default and will not start without a password,
+# so SELKIES_ENABLE_BASIC_AUTH=false keeps a container without one free of a
+# login. Selkies listens on localhost only, so a real CUSTOM_USER/PASSWORD is
+# enforced by nginx, the one reachable entry point.
 ENV TITLE="Krusader" \
     SELKIES_UI_TITLE="Krusader" \
     SELKIES_ENABLE_BASIC_AUTH="false"
@@ -307,16 +300,16 @@ RUN set -eux; \
     cp /usr/local/share/krusader-icon.png "$dst"; \
     echo "krusader: branded selkies icon at $dst"
 
-# rootfs/ ships svc-xorg/dependencies.d/init-krusader-res so the screen size is
-# settled before Xvfb reads it. If a base bump renamed that service, COPY
+# rootfs/ ships svc-xorg/dependencies.d/init-dpi so the DPI is settled before
+# Xvfb starts. If a base bump renamed that service, COPY
 # rootfs/ / would create svc-xorg as a service directory without a type file;
 # s6-rc-compile would then abort and every container would exit at boot while
 # the build stays green. Checking for the base's own type file makes that a
 # build error.
 RUN set -eux; \
     t=/etc/s6-overlay/s6-rc.d/svc-xorg/type; \
-    [ -f "$t" ] || { echo "ERROR: $t missing, the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-krusader-res at the new service"; exit 1; }; \
-    echo "krusader: screen-size oneshot ordered before $(cat "$t") service svc-xorg"
+    [ -f "$t" ] || { echo "ERROR: $t missing, the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-dpi at the new service"; exit 1; }; \
+    echo "krusader: dpi oneshot ordered before $(cat "$t") service svc-xorg"
 
 # The status bar's MediaButton uses the system-file-manager icon, while the
 # file panel draws a directory as inode-directory, which Breeze ships as a
@@ -364,10 +357,8 @@ RUN set -eux; \
 RUN chmod +x /usr/local/bin/krusader-*.sh \
              /usr/local/bin/krusader-session \
              /usr/local/bin/print-banner.sh \
-             /etc/s6-overlay/s6-rc.d/init-krusader-res/run \
              /etc/s6-overlay/s6-rc.d/init-dpi/run \
              /etc/s6-overlay/s6-rc.d/init-krusader/run \
-             /etc/s6-overlay/s6-rc.d/init-nologin/run \
              /etc/s6-overlay/s6-rc.d/svc-krusader-ready/run \
              /defaults/autostart \
              /defaults/startwm.sh
@@ -383,21 +374,6 @@ RUN chmod +x /usr/local/bin/krusader-*.sh \
 # LANGUAGE=${LC_ALL%.UTF-8} and LANG=${LC_ALL} whenever LC_ALL is set, and KDE
 # gives that LANGUAGE priority over kdeglobals, so a user with KRUSADER_LANG=en
 # would get a German UI (#21).
-#
-# There is no MAX_RES default here. The screen size is the container's biggest
-# single memory item: Xvfb allocates the whole framebuffer up front in shared
-# memory, about 4 bytes per pixel, whatever the size of the browser window.
-# Measured on a live container (Unraid, one client at 2528x1324):
-#
-#   15360x8640 (base default)  ->  Xvfb RSS 578 MB, container 778 MiB
-#   5120x2880                  ->  Xvfb RSS 119 MB, container 252 MiB
-#   3840x2160                  ->  Xvfb RSS  93 MB, container 266 MiB
-#
-# The full range has to stay available, so the choice is the user's: the image
-# keeps the base default and the Unraid template offers a preset dropdown
-# (MAX_RES) plus a free field (MAX_RES_CUSTOM) that wins. init-krusader-res
-# settles the two before svc-xorg starts; krusader-resolution.sh holds the
-# rules and tests/test-krusader-resolution.sh pins them.
 ENV KRUSADER_LANG=de \
     KRUSADER_THEME=dark \
     KEYBOARD_LAYOUT=us \

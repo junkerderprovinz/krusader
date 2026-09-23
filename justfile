@@ -54,7 +54,6 @@ lint: hadolint shellcheck xmllint
 # Behaviour tests for the shipped shell scripts (no container needed).
 test:
     bash tests/test-krusader-session.sh
-    bash tests/test-krusader-resolution.sh
 
 # Hadolint the Dockerfile (the CI ignores plus DL3059).
 hadolint:

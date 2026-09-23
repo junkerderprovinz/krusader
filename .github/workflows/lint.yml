@@ -69,11 +69,8 @@ jobs:
       - name: Run behaviour tests
         # krusader-session: restart-after-quit, no restart after SIGTERM, the
         # quit-before-signal order and both spin guards, all against a stub
-        # krusader on PATH. krusader-resolution: which screen size wins and
-        # what happens to a malformed one.
-        run: |
-          bash tests/test-krusader-session.sh
-          bash tests/test-krusader-resolution.sh
+        # krusader on PATH.
+        run: bash tests/test-krusader-session.sh
 
   xml-validate:
     name: XML Validation
