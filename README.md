@@ -12,7 +12,7 @@
   <a href="https://hub.docker.com/r/junkerderprovinz/krusader"><img src="https://img.shields.io/docker/image-size/junkerderprovinz/krusader/latest?style=for-the-badge&logo=docker&logoColor=white&label=Size&color=1d99f3" alt="Image Size" height="36"></a>&nbsp;
   <a href="https://github.com/junkerderprovinz/krusader/pkgs/container/krusader"><img src="https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-success?style=for-the-badge&logo=linux&logoColor=white" alt="Arch" height="36"></a>&nbsp;
   <a href="https://github.com/selkies-project/selkies"><img src="https://img.shields.io/badge/Web-Selkies-3daee9?style=for-the-badge&logo=kde&logoColor=white" alt="Selkies" height="36"></a>&nbsp;
-  <a href="#5-languages"><img src="https://img.shields.io/badge/Languages-33-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
+  <a href="#2-what-it-does"><img src="https://img.shields.io/badge/Languages-33-3daee9?style=for-the-badge&logo=googletranslate&logoColor=white" alt="Languages" height="36"></a>&nbsp;
   <a href="https://unraid.net"><img src="https://img.shields.io/badge/Unraid-Template-f15a2c?style=for-the-badge&logo=unraid&logoColor=white" alt="Unraid" height="36"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge&logo=gnu&logoColor=white" alt="License: AGPL-3.0" height="36"></a>
 </p>
@@ -26,6 +26,16 @@ external editor, full archive support and 33 UI languages, all configurable
 from the Unraid template, no SSH or config-file editing required.
 </p>
 
+<!-- download-buttons: written by scripts/gen_download_buttons.py -->
+<p align="center">
+  <a href="https://ca.unraid.net/apps/krusader-1gjxcb9125o7ip"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://hub.docker.com/r/junkerderprovinz/krusader/"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(866,0,841.9,245.3))" alt="Run it with Docker" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/krusader/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(1732,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+</p>
+<!-- /download-buttons -->
+
 <br>
 
 <p align="center">
@@ -36,55 +46,59 @@ A one-knight job: I build it, keep it running, work through the issues and add w
 If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
 </p>
 
-<br>
-
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(0,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.62"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(841.9,0,841.9,245.3))" alt="PayPal" width="160" height="46.62"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(1683.8,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.62"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
 
 <br>
 
 ## Table of Contents
 
-1. [Overview](#1-overview)
-2. [Screenshots](#2-screenshots)
-3. [Quick Start](#3-quick-start)
-4. [Configuration](#4-configuration)
-5. [Languages](#5-languages)
-6. [Right-Click Actions](#6-right-click-actions)
-7. [Customisation & Persistence](#7-customisation--persistence)
-8. [Building Locally](#8-building-locally)
-9. [Updating](#9-updating)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Architecture](#11-architecture)
-12. [Contributing / License](#12-contributing--license)
-13. [License](#13-license)
-14. [How AI is used here](#14-how-ai-is-used-here)
-15. [Support this project](#15-support-this-project)
+1. [What it looks like](#1-what-it-looks-like)
+2. [What it does](#2-what-it-does)
+3. [How it compares](#3-how-it-compares)
+4. [Getting started](#4-getting-started)
+5. [How AI is used here](#5-how-ai-is-used-here)
+6. [Support this project](#6-support-this-project)
+
 <br>
 
-## 1. Overview
+## 1. What it looks like
 
-This image packages [Krusader](https://krusader.org), KDE's twin-pane file manager, into a self-contained Docker container that runs in any modern web browser. It is built on top of [`linuxserver/baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies), so it benefits from LSIO's actively-maintained Selkies desktop-streaming stack (H.264 video to the browser) and weekly security updates, while everything Krusader-specific (theme, archive tools, right-click actions, language packs, default configs) is layered on top in this repo.
+The files and folders in these pictures are made up.
 
-What's included beyond bare Krusader:
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-panes.png" alt="Krusader in a browser window, with a folder of movies on the left and a downloads folder on the right" width="100%">
+  <br><em>Two panes side by side in Dark Mode, streamed to any browser on your network</em>
+</p>
 
-- **Selkies** instead of noVNC: H.264 video for a smooth 60fps web desktop, real bidirectional browser clipboard, native file upload and download, high-DPI ready
-- **Dark Mode** pre-applied to Krusader, Kate and the whole KDE stack; switch to light with one variable
-- **Row-aware panel icons**: Krusader is built from source with our icon-tint patch, the file-list icons follow each row's effective text colour (normal, current and marked rows, including custom Konfigurator colours), so icons stay legible on any row highlight
-- **Kate** wired up as Krusader's external editor, also Dark Mode, with spell-check
-- **krename**: KDE's batch-rename dialog bundled; rename hundreds of files at once using regex, counters, case transforms and metadata patterns
-- **Kompare**: a side-by-side diff viewer bundled, so **File → Compare by Content…** opens two selected files in a real diff instead of the "cannot find any of the supported diff-frontends" error
-- **Quit and come back**: closing Krusader in the browser starts a fresh Krusader instead of leaving a black screen; no container restart needed
-- **Full archive support**: RAR, 7z, ZIP, TAR, GZ, BZ2, XZ, LHA, ARJ, ACE, RPM, CPIO; right-click "Extract RAR here" works out of the box
-- **33 UI languages** picked from a dropdown in the Unraid template
-- **The desktop follows your browser window**: no screen size to set, and memory only grows with the window you actually use (see [Screen size and memory use](#screen-size-and-memory-use))
-- **Update-safe configs**: first-run-only seeding, your customisations in `/config` survive every `docker pull`
-- **Multi-arch**: amd64 and arm64
+<p align="center">
+  <img src=".github/assets/screenshots/krusader-extract.png" alt="The right-click menu on a RAR archive, with Extract here, Rename with KRename and the copy and move actions" width="100%">
+  <br><em>The right-click menu on an archive: extract it, rename in bulk with KRename, copy it to the other pane</em>
+</p>
+
+<br>
+
+## 2. What it does
+
+- **Selkies instead of noVNC.** H.264 video for a smooth desktop at 60 fps, a real clipboard in both directions, and file upload and download from the browser.
+- **Dark Mode** for Krusader, Kate and the rest of KDE. One variable switches to light.
+- **Icons that follow the row colour.** Krusader is built from source with a patch that tints each file icon in its row's text colour, so icons stay readable on any highlight.
+- **Kate, KRename and Kompare included.** Kate is the editor behind F4, KRename renames hundreds of files at once, and File → Compare by Content opens a real diff.
+- **Archives out of the box:** RAR, 7z, ZIP, TAR, GZ, BZ2, XZ and more, with Extract RAR here in the right-click menu.
+- **33 languages**, picked from a dropdown in the Unraid template.
+- **The desktop follows your browser window**, so there is no screen size to set, and quitting Krusader starts a fresh one instead of leaving a black screen.
+- **Your settings survive updates**, and the image runs on amd64 and arm64.
+
+<br>
+
+## 3. How it compares
 
 | | **This image** | binhex | jlesage | ich777 |
 |---|:---:|:---:|:---:|:---:|
@@ -102,384 +116,28 @@ What's included beyond bare Krusader:
 
 <br>
 
-## 2. Screenshots
+## 4. Getting started
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-2.png" alt="Krusader twin-pane main view with Dark Mode theme" width="90%">
-  <br><em>Twin-pane file manager: Dark Mode, F-key shortcuts, in-browser via Selkies.</em>
-</p>
+On Unraid, install Krusader from [Community Applications](https://ca.unraid.net/apps/krusader-1gjxcb9125o7ip). The defaults work as they are. Check the storage path (`/mnt` by default, which shows every share and disk), the language and the theme, and set a WebUI password if the server can be reached from outside your network. The first start takes 30 to 60 seconds.
 
-<br>
+Then open `https://<server-ip>:3001/` and accept the self-signed certificate once. The Selkies client needs HTTPS. Port `3000` is plain HTTP and only works behind a reverse proxy that handles TLS.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/screenshots/krusader-3.png" alt="Krusader configurator: Colors" width="90%">
-  <br><em>Configurator → Colors: full control over panel foreground / background / selection.</em>
-</p>
-
-<br>
-
-## 3. Quick Start
-
-### Step 1: Install the template
-
-On Unraid: **Apps** → search for **Krusader** → click **Install**. The Community Applications
-template is published from the
-[`unraid-apps`](https://github.com/junkerderprovinz/unraid-apps) feed
-(one feed for all of junkerderprovinz's apps).
-
-To load it by hand, pull it into Unraid's user-template folder via the console / SSH:
+Without Unraid:
 
 ```bash
-mkdir -p /boot/config/plugins/dockerMan/templates-user && \
-curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/my-Krusader.xml \
-  https://raw.githubusercontent.com/junkerderprovinz/unraid-apps/main/krusader/krusader.xml
-```
-
-### Step 2: Add the container
-
-In the Unraid Web UI: **Docker** tab → **Add Container** → in the **Template** dropdown, pick **Krusader** under *User templates*. All fields are pre-filled.
-
-### Step 3: Adjust paths and start
-
-The defaults work out of the box, but you may want to tweak:
-
-- **Storage (`/storage`)**: defaults to `/mnt`, which exposes all shares and disks. Restrict to e.g. `/mnt/user` if you want.
-- **UI Language**: dropdown, default `de`.
-- **Theme**: `dark` or `light`.
-- **WebUI Password**: leave empty for LAN-only, set anything for exposure beyond the LAN.
-
-Hit **Apply**. The first start takes 30 to 60 seconds while the container seeds its config and Selkies generates a self-signed certificate.
-
-### Step 4: Open the WebUI
-
-`https://<unraid-ip>:3001/` (HTTPS, self-signed, accept the certificate once). **Use HTTPS:** the Selkies web client requires a secure context, so direct browser access must go through the HTTPS port. Port `3000` (HTTP) is **not** a usable direct fallback; opening `http://<unraid-ip>:3000/` shows a *"requires a secure connection (HTTPS)"* error and won't load. It exists for a reverse proxy that terminates TLS in front of the container (the proxy serves HTTPS to the browser and forwards HTTP to `3000`).
-
-> Once Community Applications has accepted this image it will also be installable via **Apps** → search `Krusader`.
-
-<details>
-<summary>Plain Docker (no Unraid)</summary>
-
-```bash
-docker run -d \
-  --name krusader \
-  --restart unless-stopped \
-  --shm-size=1gb \
-  -p 3000:3000 -p 3001:3001 \
-  -e PUID=99 -e PGID=100 \
-  -e TZ=Europe/Vienna \
-  -e KRUSADER_LANG=de \
-  -e KRUSADER_THEME=dark \
-  -v /mnt/user/appdata/krusader:/config \
+docker run -d --name krusader --shm-size=1gb \
+  -p 3001:3001 \
+  -e PUID=99 -e PGID=100 -e KRUSADER_LANG=en \
+  -v /path/to/appdata/krusader:/config \
   -v /mnt:/storage \
   junkerderprovinz/krusader:latest
 ```
 
-**`--shm-size=1gb`** is required for smooth KDE rendering. The Unraid template sets it for you.
-
-</details>
+`--shm-size=1gb` keeps KDE rendering smooth; the Unraid template sets it for you. Known problems and their fixes are in [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 <br>
 
-## 4. Configuration
-
-| Variable | Default | Description |
-|---|---|---|
-| `PUID` | `99` | User ID, Unraid's *nobody* |
-| `PGID` | `100` | Group ID, Unraid's *users* |
-| `TZ` | `Etc/UTC` | Timezone, e.g. `Europe/Vienna` |
-| `KRUSADER_LANG` | `de` | UI language, see [Languages](#5-languages) |
-| `KRUSADER_THEME` | `dark` | `dark` (Dark Mode) or `light` (Breeze) |
-| `CUSTOM_USER` | *(empty)* | WebUI login username; leave empty with `PASSWORD` for no login |
-| `PASSWORD` | *(empty)* | WebUI password, **set this if exposed beyond LAN** |
-| `TITLE` | `Krusader` | Browser tab / PWA title (see also `SELKIES_UI_TITLE`) |
-| `UMASK` | `000` | File-creation mask. Keeps new files writable for other containers on the same shares |
-
-| Port | Purpose | | Volume | Purpose |
-|---|---|---|---|---|
-| `3001` | Selkies HTTPS *(self-signed)*, **default WebUI, needed for clipboard** | | `/config` | Persistent KDE / Krusader / Kate configs |
-| `3000` | Selkies HTTP *(reverse-proxy only; direct access needs HTTPS)* | | `/storage` | Files to manage, default host `/mnt` |
-
-### Screen size and memory use
-
-The desktop follows your browser window: Selkies resizes the screen to the size
-the browser reports, so there is no screen size to set and memory only grows
-with the window you actually use. A 1600x1000 window on a laptop set to 200 %
-counts as 1600x1000. With HiDPI switched on in the Selkies sidebar the same
-window counts in physical pixels, 3200x2000.
-
-**Display scaling** follows the browser without any setting. Every browser is
-streamed at the size it reports, with the desktop at 96 DPI, so Krusader looks
-the same on a 100 % desktop and on a laptop set to 200 %. On the laptop the
-picture is a little softer, because the browser stretches it. The **HiDPI**
-switch in the Selkies sidebar is remembered per browser and wins over this
-default. With it on, a high-resolution display gets its physical pixels and
-Krusader is drawn at half size, so if Krusader looks tiny on a laptop, switch
-HiDPI off there.
-
-> **Web file transfers:** the Selkies sidebar's upload/download panel and the WebUI's `/files` browser both use the base image's `FILE_MANAGER_PATH`, which defaults to **`/config/Desktop`**, so a file dragged into the browser lands there, not in `/storage`. It is inside the persisted `/config` volume, and Krusader can navigate to it like any other folder. Point `FILE_MANAGER_PATH` somewhere under `/storage` if you would rather upload straight into your data, but choose with care: without `PASSWORD` set, `/files` serves that directory to anyone who can reach the WebUI, and `/storage` defaults to all of `/mnt`.
-
-<br>
-
-## 5. Languages
-
-The Unraid template ships a **dropdown** with **33 UI languages** (German default, plus `system` fallback). Each language has its `language-pack-<code>` and `language-pack-kde-<code>` baked in, switching is instant after a restart.
-
-| Region | Languages |
-|---|---|
-| **Western Europe** | 🇩🇪 `de` Deutsch · 🇬🇧 `en` English · 🇫🇷 `fr` Français · 🇪🇸 `es` Español · 🇮🇹 `it` Italiano · 🇵🇹 `pt` Português · 🇳🇱 `nl` Nederlands · 🇪🇸 `ca` Català · 🇪🇸 `eu` Euskara · 🇮🇪 `ga` Gaeilge |
-| **Northern Europe** | 🇩🇰 `da` Dansk · 🇸🇪 `sv` Svenska · 🇳🇴 `nb` Norsk Bokmål · 🇫🇮 `fi` Suomi · 🇮🇸 `is` Íslenska |
-| **Central / Eastern Europe** | 🇵🇱 `pl` Polski · 🇨🇿 `cs` Čeština · 🇸🇰 `sk` Slovenčina · 🇭🇺 `hu` Magyar · 🇷🇴 `ro` Română · 🇸🇮 `sl` Slovenščina · 🇭🇷 `hr` Hrvatski · 🇷🇸 `sr` Српски · 🇧🇬 `bg` Български · 🇺🇦 `uk` Українська · 🇷🇺 `ru` Русский · 🇬🇷 `el` Ελληνικά |
-| **Middle East** | 🇹🇷 `tr` Türkçe · 🇮🇱 `he` עברית · 🇸🇦 `ar` العربية |
-| **Asia / CJK** | 🇯🇵 `ja` 日本語 · 🇰🇷 `ko` 한국어 · 🇨🇳 `zh` 中文 |
-| **Fallback** | `system`, use the container's default locale |
-
-*Default: `de` (Deutsch). Set via `KRUSADER_LANG` or the Unraid dropdown.*
-
-> **How it works:** Unraid renders any `<Default>a|b|c</Default>` value with at least one `|` as a native `<select>` dropdown. The cont-init hook re-applies the language on every start.
-
-<br>
-
-## 6. Right-Click Actions
-
-Krusader's *UserActions* are pre-loaded with extras:
-
-| Action | Command |
-|---|---|
-| **Extract RAR here** | `unrar x -o+` into the current directory |
-| **Extract RAR to subfolder** | Same, but into a folder named after the archive |
-| **Open with Kate** | Opens the selected file(s) in Kate |
-| **Open Konsole here** | New Konsole tab in the current directory |
-
-> For generic archive extraction (7z, ZIP, TAR, …) use Ark's built-in right-click menu; it is already installed and avoids a duplicate "Extract" entry in the context menu.
-
-Edit them via *Krusader → Settings → Configure UserActions*, or directly at `/config/.local/share/krusader/useractions.xml`.
-
-<br>
-
-## 7. Customisation & Persistence
-
-On the **first start only**, the container seeds defaults from `/defaults/` into `/config/`:
-
-```
-/config/
-├── .config/
-│   ├── kdeglobals          # KDE color scheme + Dark Mode
-│   ├── krusaderrc          # Editor=kate, theme, panel layout
-│   └── katerc              # Kate Dark Mode
-└── .local/share/krusader/
-    └── useractions.xml     # right-click actions
-```
-
-A marker file `/config/.krusader-firstrun.done` is written so subsequent container starts **never overwrite your customisations**. To re-seed defaults, delete the marker and restart.
-
-The two env-driven knobs (`KRUSADER_LANG`, `KRUSADER_THEME`) are re-applied on **every** start via a `cont-init.d` hook, so you can flip them freely.
-
-The base image also supports `/config/custom-cont-init.d/` for your own init scripts, see the [LinuxServer docs](https://docs.linuxserver.io/general/container-customization/).
-
-<br>
-
-## 8. Building Locally
-
-```bash
-git clone https://github.com/junkerderprovinz/krusader.git
-cd krusader
-
-# amd64 only (your local arch)
-docker build -t krusader:dev .
-
-# Multi-arch (amd64 + arm64) – needs buildx
-docker buildx build --platform linux/amd64,linux/arm64 -t krusader:dev --load .
-
-# Test run — http://localhost:3000 is fine here: browsers treat localhost as a
-# secure context, so the HTTP port works for local testing but not over the LAN
-docker run --rm -it \
-  -p 3000:3000 \
-  -v "$PWD/.dev-config:/config" \
-  -v "$PWD:/storage" \
-  krusader:dev
-```
-
-<br>
-
-## 9. Updating
-
-```bash
-docker pull junkerderprovinz/krusader:latest
-docker stop krusader && docker rm krusader
-# re-create with the same template / docker run args
-```
-
-On Unraid: **Docker** tab → click the container → **Force Update**. Your `/config` is untouched.
-
-> The image is rebuilt **weekly** via GitHub Actions for upstream Selkies, Ubuntu and KDE patches.
-
-<br>
-
-## 10. Troubleshooting
-
-<details>
-<summary><b>WebUI is black / desktop never appears</b></summary>
-
-- Make sure `--shm-size` is at least `512mb` (Unraid template sets `1gb`)
-- Check the container log for Selkies startup errors
-- Make sure you opened `https://<ip>:3001/` (self-signed) and not `http://<ip>:3000/`; over plain HTTP the Selkies client aborts with *"requires a secure connection (HTTPS)"* and the desktop never appears
-- Wait 30 to 60 seconds on first start; KDE caches need to be built once
-</details>
-
-<details>
-<summary><b>I closed Krusader and got a black screen</b></summary>
-
-Fixed in **v2.5.0**. Quitting Krusader (File → Quit, `Ctrl+Q`, the window X) now
-starts a fresh Krusader, so refreshing the browser tab brings the file manager
-back instead of an empty desktop. On older versions the desktop kept running
-without any window and only a container restart helped.
-
-If Krusader cannot stay up (five failed starts in a row, or twenty instant
-exits of any kind) the session stops trying instead of looping. That means
-something is genuinely broken (config, X, a missing library), so restart the
-container and check the log.
-</details>
-
-<details>
-<summary><b>A window slipped behind another / I can't get it back</b></summary>
-
-- Press **Alt+Tab** to cycle windows (Alt+Shift+Tab goes backwards), or **middle-click the empty desktop background** for a list of every open window (minimised ones included) and pick one. Krusader also stays maximised so it does not slip behind on its own.
-- Krusader's "Show and close to tray" option is disabled in this container on purpose: the minimal openbox desktop has no system tray, so a tray-hidden window could not be recovered. A normal minimise stays reachable via Alt+Tab or the desktop menu.
-</details>
-
-<details>
-<summary><b>WebUI is unreachable</b></summary>
-
-- Check the host port isn't already taken: `netstat -tlnp | grep 3000`
-- Disable the host firewall briefly to rule it out
-- Verify the container is listening: `docker exec krusader ss -tlnp`
-- Confirm the network is `bridge` (or `host`), not a custom `br0` whose IP isn't reachable from your client
-</details>
-
-<details>
-<summary><b>Right-click "Extract RAR here" does nothing</b></summary>
-
-- Open a Konsole inside the container: `which unrar` should print `/usr/bin/unrar`. If empty, file an issue.
-</details>
-
-<details>
-<summary><b>Language change doesn't take effect</b></summary>
-
-- Restart the container; language is applied at start, not live
-- Check the env value matches a code from the [Languages](#5-languages) table
-- The script writes `/etc/profile.d/zz-krusader-lang.sh` and updates `kdeglobals[Translations]`
-</details>
-
-<details>
-<summary><b>Files outside /storage not visible</b></summary>
-
-- That's by design. Map another path: `-v /mnt/disks/somepool:/storage/somepool`
-</details>
-
-<details>
-<summary><b>"Permission denied" on /storage/...</b></summary>
-
-- Check `PUID` / `PGID`. On Unraid, `99:100` (nobody:users) match share permissions.
-</details>
-
-<details>
-<summary><b>WebUI password not accepted</b></summary>
-
-- Open in a private window once; your browser may have cached old credentials.
-</details>
-
-<details>
-<summary><b>Container fails to start with "mkdir /etc/localtime: file exists"</b></summary>
-
-You have a `/etc/localtime:/etc/localtime:ro` bind-mount configured (e.g. from an old template version). The LSIO base image manages `/etc/localtime` internally as a symlink; a bind-mount on top causes the conflict.
-
-**Fix:** Remove the `/etc/localtime` path mapping from your container settings and use the `TZ` environment variable instead (e.g. `TZ=Europe/Vienna`). The `TZ` variable is the correct and supported way to set the timezone in LSIO-based containers.
-</details>
-
-<details>
-<summary><b>Pasted UPPERCASE text arrives lowercase (Firefox)</b></summary>
-
-Known Firefox-specific issue, see [issue #27](https://github.com/junkerderprovinz/krusader/issues/27) and
-[TROUBLESHOOTING.md Bug #5](TROUBLESHOOTING.md#bug-5-pasted-uppercase-arrives-lowercase-on-firefox-issue-27)
-for the full root-cause chain. Firefox restricts silent clipboard reads more
-than Chromium, so it falls back to a Selkies retype path with a real bug,
-already fixed upstream, just not yet on the Selkies branch this image
-builds from. **Workaround:** in Firefox, open `about:config`,
-search for `dom.events.testing.asyncClipboard`, and set it to `true`. This
-gives Firefox the same silent clipboard-sync behaviour Chromium already has,
-which sidesteps the retype path (and its case bug) entirely. No container
-change or restart needed; it takes effect on the next paste. Chromium-based
-browsers (Brave, Edge, Chrome) are not affected.
-</details>
-
-<details>
-<summary><b>Bottom status bar hides persistently now</b></summary>
-
-Fixed as of the Selkies release (Krusader 2.9.0). Uncheck **View → Show Statusbar** once and it stays hidden across restarts; Krusader 2.9.0 auto-saves the statusbar state about a second after toggling and also saves settings on `docker stop`, so no clean exit is needed. (On the old KasmVNC image, Krusader 2.8.1 could not persist this.) The per-panel (upper) free-space / device status bar is a different widget and is unaffected.
-</details>
-
-<br>
-
-## 11. Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ghcr.io/linuxserver/baseimage-selkies:dev                      │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │  s6-overlay v3 init                                       │  │
-│  │   ↓                                                       │  │
-│  │  s6-rc.d/init-krusader/run                                │  │
-│  │   ↓ seeds /config from /defaults  (first run only)        │  │
-│  │   ↓ sets theme, locale → s6 container environment         │  │
-│  │   ↓                                                       │  │
-│  │  Selkies (Xvfb+openbox) ← /defaults/autostart             │  │
-│  │              → dbus-launch krusader-session               │  │
-│  │                 → ksmserver (KDE session manager)         │  │
-│  │                 → krusader                                │  │
-│  └───────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-<br>
-
-## 12. Contributing / License
-
-Pull requests welcome. Issues: <https://github.com/junkerderprovinz/krusader/issues>.
-
-**Licensing, dual:**
-
-- This **wrapper repository** (Dockerfile, `rootfs/`, scripts, Unraid templates, README and banner/icon artwork) is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
-- **Krusader itself** and the bundled KDE / Qt / Selkies / unrar / LSIO base-image components retain their upstream licenses (mostly GPL-2.0+ / GPL-3.0+ / LGPL-2.1+, plus unrar's non-free terms). When you run, redistribute or rebuild the resulting container image, you must comply with **all** of those licenses, not only with this wrapper's AGPL-3.0 license. See the `LICENSE` file for the full notice.
-
-```bash
-# Run lints locally (CI runs them too)
-docker run --rm -i hadolint/hadolint < Dockerfile
-docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable \
-  $(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' -o -name 'krusader-session' \))
-find . -name '*.xml' -not -path './.git/*' -exec xmllint --noout {} +
-```
-
-### Credits
-
-- [**Krusader**](https://krusader.org), KDE community, the actual file manager
-- [**LinuxServer.io**](https://www.linuxserver.io), for [`baseimage-selkies`](https://github.com/linuxserver/docker-baseimage-selkies)
-- [**Selkies**](https://github.com/selkies-project/selkies), for an actively developed browser desktop stack
-- [**Kate**](https://kate-editor.org), a lightweight editor on Linux
-- Inspiration: binhex, jlesage and ich777 Krusader containers, they paved the way
-
-<br>
-
-## 13. License
-
-**Copyright (C) 2026 Junker der Provinz.**
-
-This repository packages Krusader as a container for Unraid. The packaging in this repository (Dockerfile, scripts, theme, web assets and everything else original here) is free software under the **GNU Affero General Public License v3.0** (AGPL-3.0); see [LICENSE](LICENSE). If you distribute it, or run a modified version as a network service, you must release your source under the same AGPL-3.0 terms and keep the existing copyright and attribution notices intact.
-
-**Scope.** The AGPL applies to this repository's own code and assets. Krusader itself is a separate project under its own license and name; this repository does not claim it. The banner, logo, theme and other branding original to this repository remain reserved: a fork must use its own branding and may not present itself as this project.
-
-<br>
-
-## 14. How AI is used here
+## 5. How AI is used here
 
 One knight builds this, and AI is one of the tools I work with, the same way I work with an editor or a compiler. It helps me write code and documentation and it checks my work, and that saves me a good many evenings. It does not make the decisions, though. I read and understand everything before it ships, and if something here breaks, that is on me and not on the tool.
 
@@ -487,7 +145,7 @@ You do not have to take my word for it. The code is open and every release note 
 
 <br>
 
-## 15. Support this project
+## 6. Support this project
 
 Questions? Check the [support thread](https://forums.unraid.net/topic/198816-support-junkerderprovinz-krusader/). Bugs, ideas or feature requests? Please [open a GitHub issue](https://github.com/junkerderprovinz/krusader/issues).
 
@@ -495,10 +153,16 @@ A one-knight job: I build it, keep it running, work through the issues and add w
 
 If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
 
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(0,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.62"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(841.9,0,841.9,245.3))" alt="PayPal" width="160" height="46.62"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(1683.8,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.62"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
+
+<br>
+
+<sub>The packaging in this repository is AGPL-3.0. Krusader and the bundled KDE, Qt, Selkies, unrar and LinuxServer components keep their own licences; see [LICENSE](LICENSE).</sub>
