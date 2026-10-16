@@ -32,9 +32,9 @@ from the Unraid template, no SSH or config-file editing required.
   &nbsp;
   <a href="https://mos-official.net/apps.html?search=Krusader"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/zimaos-apps#krusader"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/umbrel-apps#krusader"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
 </p>
 <p align="center">
   <a href="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/krusader/main/.github/assets/download-buttons/buttons.svg?v=977e0b9ec7fb#svgView(viewBox(3464,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
