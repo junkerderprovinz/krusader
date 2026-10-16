@@ -9,9 +9,8 @@ REPO = "krusader"
 
 BUTTONS = {
     "unraid": "https://ca.unraid.net/apps/krusader-1gjxcb9125o7ip",
-    # A browser cannot download an image, so this opens its Docker Hub page,
-    # which carries the pull command and every tag.
-    "docker": "https://hub.docker.com/r/junkerderprovinz/krusader/",
+    "mos": "https://mos-official.net/apps.html?search=Krusader",
+    "compose": "https://raw.githubusercontent.com/junkerderprovinz/krusader/main/compose.yaml",
     # A release's "Source code (zip)" is the whole repository at that tag, and
     # GitHub gives the newest one no fixed address, so this leads to the release
     # that lists it.
