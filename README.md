@@ -135,6 +135,14 @@ docker run -d --name krusader --shm-size=1gb \
 
 `--shm-size=1gb` keeps KDE rendering smooth; the Unraid template sets it for you. Known problems and their fixes are in [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
+### Other Docker hosts
+
+[compose.yaml](compose.yaml) runs Krusader on any Linux server with Docker. Put it in a folder of its own, point the folders under `volumes` at your files and start it with `docker compose up -d`. The folders are created next to the file.
+
+- **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
+- **Proxmox:** run it in a VM or an LXC container that has Docker.
+- **MOS:** install Krusader from the [MOS Hub](https://mos-official.net/apps.html?search=Krusader).
+
 <br>
 
 ## 5. How AI is used here

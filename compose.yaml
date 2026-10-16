@@ -1,0 +1,27 @@
+# Built from the Unraid template in junkerderprovinz/unraid-apps by
+# .github/gen-compose.py. Change the template there, not this file.
+#
+# Folders are created next to this file on the first start. Point the ones
+# that hold your own files (downloads, storage and the like) at real folders
+# first, and fill in every value marked "required".
+
+services:
+  krusader:
+    image: junkerderprovinz/krusader:latest
+    container_name: krusader
+    restart: unless-stopped
+    shm_size: 1gb
+    ports:
+      - "3001:3001"
+      - "3000:3000"
+    volumes:
+      - "./appdata:/config"
+      - "./storage:/storage"
+    environment:
+      KRUSADER_LANG: "de = Deutsch"
+      KRUSADER_THEME: dark
+      KEYBOARD_LAYOUT: us
+      TZ: Europe/Vienna
+      PUID: "1000"
+      PGID: "1000"
+      UMASK: "022"
