@@ -1,6 +1,10 @@
 # Krusader defaults, copied to /config/.config/krusaderrc on the first start
 # when no file exists there; an existing config is left alone.
 
+# Skips the first-run wizard (welcome dialog, tool search, Konfigurator): the
+# image ships every tool it looks for.
+First Time=false
+
 [General]
 Editor=kate
 View Font=Noto Sans,10,-1,5,50,0,0,0,0,0

@@ -145,6 +145,18 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
             >> "${CONFIG_HOME}/krusaderrc"
         log "krusaderrc: panels start in /storage"
     fi
+    # Archive support reads this list, and only Krusader's first-run wizard
+    # writes it. The defaults skip that wizard, so the same checks as
+    # KrArcHandler::supportedPackers() run here.
+    packers=()
+    for pair in tar:tar gzip:gzip bzip2:bzip2 lzma:lzma xz:xz unzip:unzip zip:zip zip:cbz \
+                lha:lha cpio:cpio unrar:unrar rar:rar rar:cbr arj:arj unarj:unarj \
+                unace:unace dpkg:dpkg 7z:7z 7za:7z; do
+        command -v "${pair%%:*}" >/dev/null || continue
+        [[ " ${packers[*]} " == *" ${pair##*:} "* ]] || packers+=("${pair##*:}")
+    done
+    command -v rpm >/dev/null && command -v rpm2cpio >/dev/null && packers+=(rpm)
+    ensure_ini_key "${CONFIG_HOME}/krusaderrc" "Archives" "Supported Packers" "$(IFS=,; echo "${packers[*]}")"
 fi
 
 # 2b) Theme files are redeployed on every start.
