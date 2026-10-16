@@ -125,7 +125,7 @@ The files and folders in these pictures are made up.
 
 ## 4. Getting started
 
-On Unraid, install Krusader from [Community Applications](https://ca.unraid.net/apps/krusader-1gjxcb9125o7ip). The defaults work as they are. Check the storage path (`/mnt` by default, which shows every share and disk), the language and the theme, and set a WebUI password if the server can be reached from outside your network. The first start takes 30 to 60 seconds.
+On Unraid, install Krusader from [Community Applications](https://ca.unraid.net/apps/krusader-1gjxcb9125o7ip). The defaults work as they are. Check the storage path (`/mnt` by default, which shows every share and disk, and where both panels open on the first start), the language and the theme, and set a WebUI password if the server can be reached from outside your network. The first start takes 30 to 60 seconds.
 
 Then open `https://<server-ip>:3001/` and accept the self-signed certificate once. The Selkies client needs HTTPS. Port `3000` is plain HTTP and only works behind a reverse proxy that handles TLS.
 

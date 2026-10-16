@@ -138,6 +138,13 @@ if [[ -f "${CONFIG_HOME}/krusaderrc" ]]; then
     # Tray mode is forced off even when a user turned it on (#26).
     sed -i 's|^Minimize To Tray=.*|Minimize To Tray=false|'     "${CONFIG_HOME}/krusaderrc"
     log "krusaderrc: statusbar + command line hidden, tray disabled (issue #26)"
+    # Without a saved session Krusader opens both panels in $HOME, which is
+    # /config here. A session saved on exit replaces these entries.
+    if ! grep -q '^\[Startup\]\[Left Tab Bar\]' "${CONFIG_HOME}/krusaderrc"; then
+        printf '\n[Startup][Left Tab Bar][Tabs][Tab0]\nUrl=file:///storage\n\n[Startup][Right Tab Bar][Tabs][Tab0]\nUrl=file:///storage\n' \
+            >> "${CONFIG_HOME}/krusaderrc"
+        log "krusaderrc: panels start in /storage"
+    fi
 fi
 
 # 2b) Theme files are redeployed on every start.
