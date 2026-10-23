@@ -18,7 +18,7 @@
 #
 # ubunturesolute is Ubuntu 26.04 (Krusader 2.9.0 on KF6, #16) with Selkies 2.0,
 # which carries the Firefox/Safari clipboard fix for #27.
-ARG BASE_TAG=ubunturesolute@sha256:e73f4ce644db0e9ba8deb33f03b559c880e3e3eec78046252a178c2ee3c2b6f6
+ARG BASE_TAG=ubunturesolute@sha256:62331d22f597a374be78a2ef593ca0c685bc6e1e080080d082e96a85286f6300
 # 1 builds Krusader from source with the panel icon tint patches in patches/
 # and installs it over the apt package; 0 keeps the plain apt Krusader as an
 # emergency fallback.
