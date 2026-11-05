@@ -236,7 +236,7 @@ jobs:
           set -euo pipefail
           newest=$(git ls-remote --tags --refs \
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" 'v*.*.*' \
-            | sed 's#.*refs/tags/##' | sort -V | tail -1)
+            | sed 's#.*refs/tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
           echo "this tag: ${GITHUB_REF_NAME}"
           echo "newest:   ${newest}"
           if [ "$newest" = "${GITHUB_REF_NAME}" ]; then
@@ -254,6 +254,9 @@ jobs:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
+          # The action adds latest to every semver tag unless the flavor turns that off.
+          flavor: |
+            latest=false
           # `latest` is set only by a tag build of the newest release (see the
           # step above). {{is_default_branch}} would not do: it is true for
           # every push to main, and metadata-action counts a tag cut from the
