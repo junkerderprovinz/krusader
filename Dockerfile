@@ -278,6 +278,14 @@ RUN set -eux; \
     done; \
     locale-gen
 
+# The base serves the web client without a cache header, so browsers keep the
+# page for days and show a black "connecting" screen while the container is
+# stopped. no-cache makes every load ask the container first.
+RUN set -eux; \
+    conf=/defaults/default.conf; \
+    grep -q 'location SUBFOLDER {' "$conf"; \
+    sed -i 's|^\( *\)location SUBFOLDER {|&\n\1  add_header Cache-Control "no-cache" always;|' "$conf"
+
 COPY rootfs/ /
 
 # The init log banner has one source, .github/assets/banner-raw.txt. CR is
