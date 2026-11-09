@@ -17,8 +17,9 @@ name: Build & Push
 #   * push to main           → edge, main, sha-<short>
 #   * tag v*.*.*             → <version>, <major>, <major.minor>, and latest
 #                              when that tag is the newest release
-#   * weekly cron (Sun 04 UTC), which picks up Selkies base updates
-#   * manual workflow_dispatch
+#   * weekly cron (Sun 04 UTC) and manual workflow_dispatch
+#                            → rebuild the newest release without the layer
+#                              cache, which picks up Selkies base updates
 
 on:
   push:
@@ -32,7 +33,28 @@ env:
   IMAGE_NAME: krusader
 
 jobs:
+  # Rebuilds refresh the newest release, which is what people run, not the
+  # tip of main.
+  release:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.newest.outputs.tag }}
+    steps:
+      - name: Find the newest release
+        id: newest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          echo "rebuilding $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release
+    if: ${{ !failure() && !cancelled() }}
     strategy:
       fail-fast: true
       matrix:
@@ -52,6 +74,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -80,6 +104,7 @@ jobs:
           load: true
           tags: krusader:smoke-${{ matrix.arch }}
           cache-from: type=gha,scope=build-${{ matrix.arch }}
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
       # Boot the image and require the Selkies WebUI to respond before anything
       # is pushed. It also asserts that the patched Krusader landed (the
@@ -166,6 +191,7 @@ jobs:
           outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=build-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
       - name: Export digest
         run: |
@@ -182,7 +208,8 @@ jobs:
           retention-days: 1
 
   merge:
-    needs: build
+    needs: [ release, build ]
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -258,15 +285,15 @@ jobs:
           flavor: |
             latest=false
           # `latest` is set only by a tag build of the newest release (see the
-          # step above). {{is_default_branch}} would not do: it is true for
-          # every push to main, and metadata-action counts a tag cut from the
-          # default branch as the default branch too.
+          # step above) and by a rebuild of it. {{is_default_branch}} would not
+          # do: it is true for every push to main, and metadata-action counts a
+          # tag cut from the default branch as the default branch too.
           #
-          # The tip of main, including the weekly cron rebuild, goes to `edge`:
-          # built, smoke-tested and pullable, but nobody gets it without asking
-          # for it. `edge` names the branch instead of using
-          # {{is_default_branch}} for the same reason, since `edge` on a
-          # release build would make the name meaningless.
+          # The tip of main goes to `edge`: built, smoke-tested and pullable,
+          # but nobody gets it without asking for it. `edge` names the branch
+          # instead of using {{is_default_branch}} for the same reason, since
+          # `edge` on a release build would make the name meaningless, and it
+          # stays off a rebuild of the newest release.
           #
           # {{major}} and {{major}}.{{minor}} follow whichever tag built last,
           # so re-cutting an old version drags `2` back with it. That is right
@@ -274,15 +301,14 @@ jobs:
           # hand: re-run the newest tag's build and check that latest, 2 and
           # 2.<minor> resolve to the same digest.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ needs.release.outputs.tag == '' }}
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=schedule,pattern=weekly
-            type=raw,value=edge,enable=${{ github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch }}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true' }}
-            type=sha,format=short
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ needs.release.outputs.tag }}
+            type=raw,value=edge,enable=${{ github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch && needs.release.outputs.tag == '' }}
+            type=raw,value=latest,enable=${{ (github.ref_type == 'tag' && steps.newest.outputs.is_newest == 'true') || needs.release.outputs.tag != '' }}
+            type=sha,format=short,enable=${{ needs.release.outputs.tag == '' }}
 
       # Assemble the multi-arch manifest for every tag in both registries from
       # the per-arch digests on GHCR; imagetools copies the platform images to
