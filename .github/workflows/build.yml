@@ -42,6 +42,7 @@ jobs:
       contents: read
     outputs:
       tag: ${{ steps.newest.outputs.tag }}
+      sha: ${{ steps.newest.outputs.sha }}
     steps:
       - name: Find the newest release
         id: newest
@@ -51,6 +52,7 @@ jobs:
           tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
           echo "rebuilding $tag"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha)" >> "$GITHUB_OUTPUT"
 
   build:
     needs: release
@@ -92,6 +94,10 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          # A rebuild of the newest release describes that release, not main.
+          labels: |
+            ${{ needs.release.outputs.tag != '' && format('org.opencontainers.image.version={0}', needs.release.outputs.tag) || '' }}
+            ${{ needs.release.outputs.tag != '' && format('org.opencontainers.image.revision={0}', needs.release.outputs.sha) || '' }}
 
       # Build natively for this arch and load it locally for the smoke gate.
       - name: Build ${{ matrix.arch }} image for smoke test
