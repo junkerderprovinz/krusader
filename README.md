@@ -64,6 +64,12 @@ from the Unraid template, no SSH or config-file editing required.
 
 <br>
 
+<p align="center">
+  <a href="https://github.com/junkerderprovinz/cannoncommander"><img src=".github/assets/cannoncommander-ad.png" alt="CannonCommander, Krusader's cousin and a smarter two-pane file manager for your server: it knows the cache, the array and sleeping disks, copies run in the background with an undo, and it is a real web app instead of a streamed desktop. Why don't you try?" width="100%"></a>
+</p>
+
+<br>
+
 <p><a id="2-support" href="#2-support"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/2-support-dark.svg"><img src=".github/assets/sections/2-support.svg" alt="2. Support" width="100%"></picture></a></p>
 
 <p align="center">
