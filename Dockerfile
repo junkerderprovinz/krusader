@@ -37,7 +37,7 @@ ARG KRUSADER_SHA256=c9b79bfade6cc69fe0e341ecef932fcac8afd9fe94e8cbcfbd729feb5439
 # another one (a rollback to noble, say), build with KRUSADER_SOURCE_BUILD=0:
 # a resolute binary over another series' runtime would not start, and the CI
 # smoke gate checks that the patched binary runs.
-FROM ubuntu:resolute@sha256:6a06111c3b0a8600feadb270aec771dc239bf407b25625f93f44ab00e11f4d3c AS krusader-build
+FROM ubuntu:resolute@sha256:065aa8626841f16057b78b027b464cd59c4fac36c204c72dcbf48d66f5fa8a96 AS krusader-build
 ARG KRUSADER_VERSION
 ARG KRUSADER_SHA256
 RUN set -eux; \
@@ -78,7 +78,7 @@ RUN set -eux; \
     touch /staging/usr/share/krusader/.icontint
 
 # KRUSADER_SOURCE_BUILD=0 selects an empty staging tree, so the apt krusader stays.
-FROM ubuntu:resolute@sha256:6a06111c3b0a8600feadb270aec771dc239bf407b25625f93f44ab00e11f4d3c AS krusader-artifact-0
+FROM ubuntu:resolute@sha256:065aa8626841f16057b78b027b464cd59c4fac36c204c72dcbf48d66f5fa8a96 AS krusader-artifact-0
 RUN mkdir -p /staging
 FROM krusader-build AS krusader-artifact-1
 # hadolint ignore=DL3006
