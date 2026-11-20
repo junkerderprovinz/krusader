@@ -1,54 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    "helpers:pinGitHubActionDigests",
-    ":semanticCommits",
-    ":dependencyDashboard",
-    ":enableVulnerabilityAlertsWithLabel(security)",
-    "docker:pinDigests"
+    "local>junkerderprovinz/junkerderprovinz//renovate/base",
+    "local>junkerderprovinz/junkerderprovinz//renovate/components"
   ],
-  "timezone": "Europe/Vienna",
-  "schedule": [
-    "before 6am on monday"
-  ],
-  "labels": [
-    "dependencies"
-  ],
-  "prHourlyLimit": 4,
-  "prConcurrentLimit": 6,
   "packageRules": [
-    {
-      "description": "LinuxServer Selkies base image — group and label all updates, manual review required",
-      "matchPackageNames": [
-        "ghcr.io/linuxserver/baseimage-selkies"
-      ],
-      "groupName": "LSIO Selkies base",
-      "commitMessageTopic": "LSIO Selkies base",
-      "commitMessagePrefix": "feat:",
-      "labels": [
-        "base-image"
-      ]
-    },
-    {
-      "description": "GitHub Actions: auto-merge all updates (major/minor/patch/digest). No CI runs on PRs, so platformAutomerge merges as soon as the PR is open.",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "digest"
-      ],
-      "automerge": true,
-      "automergeType": "pr",
-      "platformAutomerge": true,
-      "commitMessagePrefix": "ci:",
-      "labels": [
-        "github-actions"
-      ]
-    },
     {
       "description": "Docker: auto-merge digest pins and digest refreshes (same tag, new build). Major/minor stay open for review.",
       "matchManagers": [
@@ -60,8 +16,6 @@
         "digest"
       ],
       "automerge": true,
-      "automergeType": "pr",
-      "platformAutomerge": true,
       "commitMessagePrefix": "ci:",
       "labels": [
         "docker"
@@ -76,21 +30,6 @@
         "junkerderprovinz/krusader"
       ],
       "enabled": false
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Track LinuxServer Selkies base image tag and digest from ARG BASE_TAG=<tag>[@<digest>]",
-      "managerFilePatterns": [
-        "/(^|/)Dockerfile$/"
-      ],
-      "matchStrings": [
-        "ARG BASE_TAG=(?<currentValue>[^\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
-      ],
-      "autoReplaceStringTemplate": "ARG BASE_TAG={{{newValue}}}{{#if newDigest}}@{{{newDigest}}}{{/if}}",
-      "depNameTemplate": "ghcr.io/linuxserver/baseimage-selkies",
-      "datasourceTemplate": "docker"
     }
   ]
 }
