@@ -24,6 +24,7 @@ ARG BASE_TAG=ubunturesolute@sha256:6c5843fa3df0c9463d0c0d97f17f9d974704a63e43fc1
 # and installs it over the apt package; 0 keeps the plain apt Krusader as an
 # emergency fallback.
 ARG KRUSADER_SOURCE_BUILD=1
+# renovate: datasource=github-tags depName=KDE/krusader
 ARG KRUSADER_VERSION=2.9.0
 # download.kde.org redirects to arbitrary third-party mirrors, so the tarball
 # is hash-pinned; a different KRUSADER_VERSION needs its own hash.
