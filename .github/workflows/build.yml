@@ -25,6 +25,9 @@ on:
   push:
     branches: [ main ]
     tags: [ 'v*.*.*' ]
+  # A pull request builds and smoke-tests the image but pushes nothing.
+  pull_request:
+    branches: [ main ]
   schedule:
     - cron: '0 4 * * 0'
   workflow_dispatch:
@@ -83,6 +86,7 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: ghcr.io
@@ -187,6 +191,7 @@ jobs:
       # Push this arch by digest; the merge job assembles the multi-arch
       # manifest under the final tags.
       - name: Push ${{ matrix.arch }} by digest
+        if: github.event_name != 'pull_request'
         id: push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
@@ -200,12 +205,14 @@ jobs:
           no-cache: ${{ needs.release.outputs.tag != '' }}
 
       - name: Export digest
+        if: github.event_name != 'pull_request'
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.push.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: Upload digest
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: digests-${{ matrix.arch }}
@@ -215,7 +222,7 @@ jobs:
 
   merge:
     needs: [ release, build ]
-    if: ${{ !failure() && !cancelled() }}
+    if: ${{ !failure() && !cancelled() && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -2,7 +2,7 @@ name: Component update
 
 on:
   workflow_run:
-    workflows: ["Lint", "Style"]
+    workflows: ["Build & Push", "Lint", "Style"]
     types: [completed]
 
 permissions:
