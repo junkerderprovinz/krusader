@@ -2,7 +2,9 @@
  * Renders the README banner that points Krusader users at CannonCommander, in the
  * style of the KnightLoader banner in the JDownloader repos: 1920x640, the logo and
  * the name large so the app is known at a glance, the two panels on the right.
- * Logo and screenshot come from the CannonCommander repo.
+ * Logo and screenshot come from the CannonCommander repo. The name is set in Bree Serif
+ * Light and the lines below it in Bree Light, read as TTF from HOUSE_FONTS (default
+ * %LOCALAPPDATA%\halleluja-fonts).
  *
  * Needs playwright-core installed globally and Chrome.
  * Run: node .github/assets/gen-cannoncommander-ad.mjs
@@ -30,16 +32,21 @@ async function cached(file, url) {
 }
 
 const dataUrl = (buf, type) => `data:${type};base64,${buf.toString("base64")}`;
-const fonts = "https://github.com/google/fonts/raw/main/ofl";
+// The house typeface is licensed, so it is read from a local folder and never committed.
+const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
+const houseFont = (file) => dataUrl(readFileSync(join(fonts, file)), "font/ttf");
+const breeSerif = houseFont("bree-serif-light.ttf");
+const bree = houseFont("bree-light.ttf");
+const breeRegular = houseFont("bree-regular.ttf");
+const google = "https://github.com/google/fonts/raw/main/ofl/lato";
+const lato = dataUrl(await cached("Lato-Regular.ttf", `${google}/Lato-Regular.ttf`), "font/ttf");
+const latoBold = dataUrl(await cached("Lato-Bold.ttf", `${google}/Lato-Bold.ttf`), "font/ttf");
 const cc = "https://raw.githubusercontent.com/junkerderprovinz/cannoncommander/main/.github/assets";
-const bree = dataUrl(await cached("BreeSerif-Regular.ttf", `${fonts}/breeserif/BreeSerif-Regular.ttf`), "font/ttf");
-const lato = dataUrl(await cached("Lato-Regular.ttf", `${fonts}/lato/Lato-Regular.ttf`), "font/ttf");
-const latoBold = dataUrl(await cached("Lato-Bold.ttf", `${fonts}/lato/Lato-Bold.ttf`), "font/ttf");
 const mark = dataUrl(await cached("logo.svg", `${cc}/logo.svg`), "image/svg+xml");
 // The raw capture rather than the README picture: it is the bare interface at twice the
 // pixels, so it stays sharp at this size and the window around it can match the store pictures.
 const shot = dataUrl(await cached("panels.png", `${cc}/screenshots/captures/panels.png`), "image/png");
-// Drawn rather than typed, since Bree Serif has no check mark.
+// Drawn rather than typed, since Bree has no check mark.
 const tick = dataUrl(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#FCC419" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`), "image/svg+xml");
 
 // The capture is 1440x700 in twice the pixels.
@@ -48,11 +55,13 @@ const viewHeight = Math.round((winWidth * 700) / 1440);
 const barHeight = 40;
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face { font-family: "Bree Serif"; src: url(${bree}); }
+@font-face { font-family: "Bree Serif"; src: url(${breeSerif}); font-weight: 300; }
+@font-face { font-family: Bree; src: url(${bree}); font-weight: 300; }
+@font-face { font-family: Bree; src: url(${breeRegular}); font-weight: 400; }
 @font-face { font-family: Lato; src: url(${lato}); font-weight: 400; }
 @font-face { font-family: Lato; src: url(${latoBold}); font-weight: 700; }
 * { box-sizing: border-box; margin: 0; }
-body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-family: Lato, sans-serif; background: #0c0c0b; }
+body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-family: Bree, sans-serif; background: #0c0c0b; }
 .wall { position: absolute; inset: 0; background: radial-gradient(55% 60% at 62% 35%, #26231d, #0f0e0c 72%); }
 .relief { position: absolute; width: 34%; left: 52%; top: -26%; transform: rotate(-10deg); opacity: .32;
   filter: grayscale(1) brightness(.36) contrast(1.2) drop-shadow(-2px -2px 0 rgba(255,255,255,.16)) drop-shadow(12px 18px 26px rgba(0,0,0,.85)); }
@@ -60,10 +69,10 @@ body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-
 .crest { position: absolute; left: 64px; top: 150px; width: 340px; height: 340px; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
 .copy { position: absolute; left: 450px; top: 0; bottom: 0; width: 650px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 22px; }
 .label { padding: 8px 18px; border-radius: 8px; background: #FCC419; color: #141414; font: 700 22px/1 Lato, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.name { font: 400 118px/1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
-.what { margin-top: -12px; font: 400 28px/1.1 Lato, sans-serif; color: #c9bfa9; white-space: nowrap; }
-.what em { font-style: normal; font-weight: 700; color: #FCC419; }
-.points { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; font: 400 38px/1.1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
+.name { font: 300 118px/1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
+.what { margin-top: -4px; font: 300 28px/1.1 Bree, sans-serif; color: #c9bfa9; white-space: nowrap; }
+.what em { font-style: normal; font-weight: 400; color: #FCC419; }
+.points { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; font: 300 38px/1.1 Bree, sans-serif; color: #f4f4f4; white-space: nowrap; }
 .points li { display: flex; align-items: center; gap: 16px; }
 .points li::before { content: ""; flex: none; width: 30px; height: 30px; background: url("${tick}") center / contain no-repeat; }
 .points em { font-style: normal; color: #FCC419; }
@@ -95,7 +104,9 @@ body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-
 const browser = await chromium.launch({ channel: "chrome" });
 const big = await browser.newPage({ viewport: { width: 1920, height: 640 }, deviceScaleFactor: 2 });
 await big.setContent(html);
-await big.evaluate(() => document.fonts.ready);
+await big.evaluate(() =>
+  Promise.all(['300 1em "Bree Serif"', "300 1em Bree", "400 1em Bree", "1em Lato", "700 1em Lato"].map((f) => document.fonts.load(f))),
+);
 // The name is longer than KnightLoader's and the lines below it run long, so each shrinks until it fits beside the window.
 await big.evaluate(() => {
   for (const el of document.querySelectorAll(".name, .what, .points")) {
