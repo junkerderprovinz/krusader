@@ -7,9 +7,10 @@
  * README serves the pair via <picture>.
  *
  * The official wordmark (krusader.org header) is a lowercase "krusader" in
- * DejaVu Sans Bold Oblique; the claim uses DejaVu Sans Book. Both fonts are
- * free, fetched at runtime from the dejavu-fonts-ttf npm package via jsDelivr,
- * cached in the OS temp dir and never committed. The text becomes SVG paths
+ * DejaVu Sans Bold Oblique, a free font fetched at runtime from the
+ * dejavu-fonts-ttf npm package via jsDelivr, cached in the OS temp dir and
+ * never committed. The claim is in Bree Light, read as TTF from HOUSE_FONTS
+ * (default %LOCALAPPDATA%\halleluja-fonts). The text becomes SVG paths
  * (opentype.js), so the SVG is self-contained.
  *
  * The support threads use the logo-only krusader-banner-logo.png, which
@@ -85,7 +86,9 @@ async function loadFont(url, cacheName) {
 }
 const DEJAVU = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf";
 const nameFont = await loadFont(`${DEJAVU}/DejaVuSans-BoldOblique.ttf`, "DejaVuSans-BoldOblique");
-const claimFont = await loadFont(`${DEJAVU}/DejaVuSans.ttf`, "DejaVuSans-Book");
+// The house typeface is licensed, so it is read from a local folder and never committed.
+const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
+const claimFont = opentype.parse(readFileSync(join(fonts, "bree-light.ttf")).buffer);
 
 const nameW = runWidth(nameFont, NAME, nameSize);
 const claimW = runWidth(claimFont, CLAIM, claimSize);
