@@ -9,7 +9,7 @@
  * Needs playwright-core installed globally and Chrome.
  * Run: node .github/assets/gen-cannoncommander-ad.mjs
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -21,14 +21,11 @@ const { chromium } = require(`${execSync("npm root -g").toString().trim()}/playw
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-async function cached(file, url) {
-  const path = join(tmpdir(), `cannoncommander-ad-${file}`);
-  if (!existsSync(path)) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`${file}: fetch ${res.status}`);
-    writeFileSync(path, Buffer.from(await res.arrayBuffer()));
-  }
-  return readFileSync(path);
+// Logo and screenshot are fetched on every run, so the ad always shows the current CannonCommander.
+async function fetched(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: fetch ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
 }
 
 const dataUrl = (buf, type) => `data:${type};base64,${buf.toString("base64")}`;
@@ -38,14 +35,13 @@ const houseFont = (file) => dataUrl(readFileSync(join(fonts, file)), "font/ttf")
 const breeSerif = houseFont("bree-serif-light.ttf");
 const bree = houseFont("bree-light.ttf");
 const breeRegular = houseFont("bree-regular.ttf");
-const google = "https://github.com/google/fonts/raw/main/ofl/lato";
-const lato = dataUrl(await cached("Lato-Regular.ttf", `${google}/Lato-Regular.ttf`), "font/ttf");
-const latoBold = dataUrl(await cached("Lato-Bold.ttf", `${google}/Lato-Bold.ttf`), "font/ttf");
+// Lato only for the address bar, which imitates a browser.
+const lato = dataUrl(await fetched("https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf"), "font/ttf");
 const cc = "https://raw.githubusercontent.com/junkerderprovinz/cannoncommander/main/.github/assets";
-const mark = dataUrl(await cached("logo.svg", `${cc}/logo.svg`), "image/svg+xml");
+const mark = dataUrl(await fetched(`${cc}/logo.svg`), "image/svg+xml");
 // The raw capture rather than the README picture: it is the bare interface at twice the
 // pixels, so it stays sharp at this size and the window around it can match the store pictures.
-const shot = dataUrl(await cached("panels.png", `${cc}/screenshots/captures/panels.png`), "image/png");
+const shot = dataUrl(await fetched(`${cc}/screenshots/captures/panels.png`), "image/png");
 // Drawn rather than typed, since Bree has no check mark.
 const tick = dataUrl(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#FCC419" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`), "image/svg+xml");
 
@@ -59,7 +55,6 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face { font-family: Bree; src: url(${bree}); font-weight: 300; }
 @font-face { font-family: Bree; src: url(${breeRegular}); font-weight: 400; }
 @font-face { font-family: Lato; src: url(${lato}); font-weight: 400; }
-@font-face { font-family: Lato; src: url(${latoBold}); font-weight: 700; }
 * { box-sizing: border-box; margin: 0; }
 body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-family: Bree, sans-serif; background: #0c0c0b; }
 .wall { position: absolute; inset: 0; background: radial-gradient(55% 60% at 62% 35%, #26231d, #0f0e0c 72%); }
@@ -68,7 +63,7 @@ body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-
 .vignette { position: absolute; inset: 0; box-shadow: inset 0 0 200px rgba(0,0,0,.6); }
 .crest { position: absolute; left: 64px; top: 150px; width: 340px; height: 340px; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
 .copy { position: absolute; left: 450px; top: 0; bottom: 0; width: 650px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 22px; }
-.label { padding: 8px 18px; border-radius: 8px; background: #FCC419; color: #141414; font: 700 22px/1 Lato, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+.label { padding: 8px 18px; border-radius: 8px; background: #FCC419; color: #141414; font: 300 22px/1 Bree, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
 .name { font: 300 118px/1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
 .what { margin-top: -4px; font: 300 28px/1.1 Bree, sans-serif; color: #c9bfa9; white-space: nowrap; }
 .what em { font-style: normal; font-weight: 400; color: #FCC419; }
@@ -76,7 +71,7 @@ body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-
 .points li { display: flex; align-items: center; gap: 16px; }
 .points li::before { content: ""; flex: none; width: 30px; height: 30px; background: url("${tick}") center / contain no-repeat; }
 .points em { font-style: normal; color: #FCC419; }
-.go { margin-top: 10px; padding: 20px 38px; border-radius: 18px; background: #FCC419; color: #141414; font: 700 32px/1 Lato, sans-serif;
+.go { margin-top: 10px; padding: 20px 38px; border-radius: 18px; background: #FCC419; color: #141414; font: 300 32px/1 Bree, sans-serif;
   box-shadow: 0 0 0 6px rgba(252,196,25,.18), 0 18px 40px rgba(0,0,0,.5); }
 .window { position: absolute; right: 48px; top: 50%; width: ${winWidth}px; overflow: hidden; border-radius: 14px; background: #1c1c1c;
   transform: translateY(-50%) perspective(1800px) rotateY(-9deg); box-shadow: 0 30px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.06); }
@@ -105,7 +100,7 @@ const browser = await chromium.launch({ channel: "chrome" });
 const big = await browser.newPage({ viewport: { width: 1920, height: 640 }, deviceScaleFactor: 2 });
 await big.setContent(html);
 await big.evaluate(() =>
-  Promise.all(['300 1em "Bree Serif"', "300 1em Bree", "400 1em Bree", "1em Lato", "700 1em Lato"].map((f) => document.fonts.load(f))),
+  Promise.all(['300 1em "Bree Serif"', "300 1em Bree", "400 1em Bree", "1em Lato"].map((f) => document.fonts.load(f))),
 );
 // The name is longer than KnightLoader's and the lines below it run long, so each shrinks until it fits beside the window.
 await big.evaluate(() => {
