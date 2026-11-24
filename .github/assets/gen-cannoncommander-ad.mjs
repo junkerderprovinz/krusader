@@ -3,7 +3,7 @@
  * style of the KnightLoader banner in the JDownloader repos: 1920x640, the logo and
  * the name large so the app is known at a glance, the two panels on the right.
  * Logo and screenshot come from the CannonCommander repo. The name is set in Bree Serif
- * Light and the lines below it in Bree Light, read as TTF from HOUSE_FONTS (default
+ * Regular and the lines below it in Bree Light, read as TTF from HOUSE_FONTS (default
  * %LOCALAPPDATA%\halleluja-fonts).
  *
  * Needs playwright-core installed globally and Chrome.
@@ -32,7 +32,7 @@ const dataUrl = (buf, type) => `data:${type};base64,${buf.toString("base64")}`;
 // The house typeface is licensed, so it is read from a local folder and never committed.
 const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
 const houseFont = (file) => dataUrl(readFileSync(join(fonts, file)), "font/ttf");
-const breeSerif = houseFont("bree-serif-light.ttf");
+const breeSerif = houseFont("bree-serif-regular.ttf");
 const bree = houseFont("bree-light.ttf");
 const breeRegular = houseFont("bree-regular.ttf");
 // Lato only for the address bar, which imitates a browser.
@@ -51,7 +51,7 @@ const viewHeight = Math.round((winWidth * 700) / 1440);
 const barHeight = 40;
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face { font-family: "Bree Serif"; src: url(${breeSerif}); font-weight: 300; }
+@font-face { font-family: "Bree Serif"; src: url(${breeSerif}); font-weight: 400; }
 @font-face { font-family: Bree; src: url(${bree}); font-weight: 300; }
 @font-face { font-family: Bree; src: url(${breeRegular}); font-weight: 400; }
 @font-face { font-family: Lato; src: url(${lato}); font-weight: 400; }
@@ -64,7 +64,7 @@ body { position: relative; width: 1920px; height: 640px; overflow: hidden; font-
 .crest { position: absolute; left: 64px; top: 150px; width: 340px; height: 340px; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
 .copy { position: absolute; left: 450px; top: 0; bottom: 0; width: 650px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 22px; }
 .label { padding: 8px 18px; border-radius: 8px; background: #FCC419; color: #141414; font: 300 22px/1 Bree, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.name { font: 300 118px/1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
+.name { font: 400 118px/1 "Bree Serif", serif; color: #f4f4f4; white-space: nowrap; }
 .what { margin-top: -4px; font: 300 28px/1.1 Bree, sans-serif; color: #c9bfa9; white-space: nowrap; }
 .what em { font-style: normal; font-weight: 400; color: #FCC419; }
 .points { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; font: 300 38px/1.1 Bree, sans-serif; color: #f4f4f4; white-space: nowrap; }
@@ -100,7 +100,7 @@ const browser = await chromium.launch({ channel: "chrome" });
 const big = await browser.newPage({ viewport: { width: 1920, height: 640 }, deviceScaleFactor: 2 });
 await big.setContent(html);
 await big.evaluate(() =>
-  Promise.all(['300 1em "Bree Serif"', "300 1em Bree", "400 1em Bree", "1em Lato"].map((f) => document.fonts.load(f))),
+  Promise.all(['400 1em "Bree Serif"', "300 1em Bree", "400 1em Bree", "1em Lato"].map((f) => document.fonts.load(f))),
 );
 // The name is longer than KnightLoader's and the lines below it run long, so each shrinks until it fits beside the window.
 await big.evaluate(() => {
