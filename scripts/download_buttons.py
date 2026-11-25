@@ -14,6 +14,9 @@ BUTTONS = {
     "umbrel": "https://github.com/junkerderprovinz/umbrel-apps#install",
     "compose": "https://raw.githubusercontent.com/junkerderprovinz/krusader/main/compose.yaml",
     "proxmox": "#proxmox-ve",
+    "synology": "#synology",
+    "qnap": "#qnap",
+    "ugreen": "#ugreen",
     # A release's "Source code (zip)" is the whole repository at that tag, and
     # GitHub gives the newest one no fixed address, so this leads to the release
     # that lists it.
