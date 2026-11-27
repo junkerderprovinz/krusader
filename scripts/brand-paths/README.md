@@ -17,12 +17,15 @@ Unraid, its `unraid.svg` with the gradient left out, since the button draws it
 in one ink. **Apache-2.0**, whose licence text is beside this file as
 `LICENSE-dashboard-icons.txt`. Copyright the Homarr Labs team and contributors.
 
+**Simple Icons** (<https://simpleicons.org>): TrueNAS, its `truenas.svg`.
+**CC0 1.0** for the path data.
+
 ## Trademarks
 
-Docker and Unraid are trademarks of their owners. They are used the one way a
+Docker, Unraid and TrueNAS are trademarks of their owners. They are used the one way a
 trademark may be used without permission, which is to refer to the thing they
 name: each sits on a button for that platform, unmodified, and nothing here
-claims endorsement by or affiliation with Docker or Lime Technology. The ZIP is
+claims endorsement by or affiliation with Docker, Lime Technology or iXsystems. The ZIP is
 no one's mark; it stands for the source archive.
 
 ## Adding one
